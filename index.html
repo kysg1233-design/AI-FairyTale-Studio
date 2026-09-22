@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#fffaf5"><title>몽글몽글 | AI 동화 제작 스튜디오</title>
-<link rel="stylesheet" href="style.css?v=free-20260923"><script src="config.js?v=free-20260923"></script><script src="app.js?v=esm-browser-tested-5" defer></script>
+<link rel="stylesheet" href="style.css?v=free-20260923"><script src="config.js?v=free-20260923"></script><script src="app.js?v=remember-key-6" defer></script>
 </head>
 <body>
 <div class="shell">
@@ -19,5 +19,5 @@
 <footer><button id="new" class="plain" type="button">＋ 새 동화 시작</button><span>하나의 이야기, 한 편의 영상</span></footer>
 </main>
 </div>
-<dialog id="authDialog"><form id="authForm" method="dialog"><h2>스튜디오 연결</h2><p>Google AI Studio에서 발급받은 Gemini API 키를 입력하세요. 이 키는 현재 탭의 세션 저장소에만 보관되며 GitHub에 업로드되지 않습니다. 무료 할당량 초과 또는 유료 API 사용 시 Google 정책에 따른 요금이 발생할 수 있습니다.</p><p id="authError" role="alert"></p><label for="token">Gemini API 키</label><input id="token" type="password" required autocomplete="off"><div class="actions"><button id="cancelAuth" type="button" class="secondary">취소</button><button type="submit" class="primary">연결하기</button></div></form></dialog>
+<dialog id="authDialog"><form id="authForm" method="dialog"><h2>스튜디오 연결</h2><p>Google AI Studio에서 발급받은 Gemini API 키를 입력하세요. 아래 '이 기기에 기억하기'를 선택하면 다음에 다시 입력하지 않아도 됩니다. 이 브라우저에만 저장되며 GitHub에 업로드되지 않습니다. 공용 기기에서는 선택을 해제하세요. 무료 할당량 초과 또는 유료 API 사용 시 Google 정책에 따른 요금이 발생할 수 있습니다.</p><p id="authError" role="alert"></p><label for="token">Gemini API 키</label><input id="token" type="password" required autocomplete="off"><label for="rememberKey" style="display:flex;align-items:center;gap:10px;margin-top:14px;font-size:14px"><input id="rememberKey" type="checkbox" checked style="width:20px;height:20px;flex:none"> 이 기기에 API 키 기억하기</label><button id="forgetKey" type="button" class="plain" style="margin-top:12px">저장된 API 키 삭제</button><div class="actions"><button id="cancelAuth" type="button" class="secondary">취소</button><button type="submit" class="primary">연결하기</button></div></form></dialog>
 </body></html>
