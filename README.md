@@ -6,7 +6,7 @@
 - [x] 공개 GitHub 저장소 및 홈페이지 코드 등록
 - [x] GitHub Pages 자동 배포 워크플로 등록
 - [ ] GitHub Pages 공개 URL에서 실제 화면 확인
-- [ ] Cloudflare R2/KV/Workers 배포 및 연결
+- [ ] Cloudflare R2/Workers 배포 및 연결
 - [ ] Google Gemini 실제 프롬프트 응답 검증
 - [ ] 개인 영상 파일 업로드/삭제 실환경 검증
 - [ ] 별도 **Private** 저장소에 렌더러 배포
@@ -20,7 +20,7 @@ UI는 서버가 연결되지 않으면 생성·합성을 **작동하는 척하�
 ```
 GitHub Pages / ① 동화 입력 → ② 프롬프트 → ③ 영상 업로드·완성
     ↕ 인증된 API (Cloudflare Workers)
-Gemini 2.5 Flash + Private R2 bucket + KV job state
+Gemini 2.5 Flash + Private R2 bucket + R2 job state
     → GitHub Actions workflow_dispatch (별도의 PRIVATE 저장소)
         → Gemini 2.5 Flash TTS + FFmpeg
         → Private R2 최종 MP4
@@ -44,7 +44,7 @@ Cloudflare Workers의 Secrets에는 다음을 등록해야 합니다.
 Private GitHub Actions 저장소의 Secrets에는 `WORKER_URL`, `WORKER_JOB_KEY`, `GEMINI_API_KEY`가 필요합니다.
 프런트엔드 `config.js`에는 **공개 Workers URL**만 입력하며 비밀키를 넣지 않습니다.
 
-Cloudflare Workers `wrangler.toml`의 `R2_ACCOUNT_ID`, `[[kv_namespaces]] id`는 실제 발급된 값으로 교체해야 합니다.
+Cloudflare Workers `wrangler.toml`의 `R2_ACCOUNT_ID`는 실제 계정 ID로 교체해야 합니다. 프로젝트·진행 상태 메타데이터도 비공개 R2에 저장하며 별도 KV 설정은 필요하지 않습니다.
 Cloudflare에 Private R2 bucket `fairytale-private-videos`와 KV namespace를 만들고 R2 bucket CORS를 `worker/r2-cors.json`으로 설정하세요.
 
 ### 영상 업로드 제한
@@ -56,7 +56,7 @@ Cloudflare에 Private R2 bucket `fairytale-private-videos`와 KV namespace를 �
 
 ## 다음 단계
 1. GitHub Pages 활성화 및 실제 URL 확인.
-2. Cloudflare 계정/R2/KV/Workers 생성 (외부 계정 소유자 승인 필요).
+2. Cloudflare 계정/R2/Workers 생성 (외부 계정 소유자 승인 필요).
 3. 비공개 `AI-FairyTale-Worker` 저장소 생성 및 renderer 파일 추가.
 4. 키를 사용자가 직접 Cloudflare Secret / private GitHub Actions Secret에 등록.
 5. 2컷 샘플로 프롬프트→컷별 업로드→합성→MP4 파일 검증, 그다음 10컷.
