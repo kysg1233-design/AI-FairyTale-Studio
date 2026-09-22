@@ -4,7 +4,7 @@ const API = window.FAIRYTALE_CONFIG || {};
 const KEY = 'fairytale-studio-v2';
 const state = {project:null,step:1,token:sessionStorage.getItem('fairytale-access') || '',uploading:new Set(),timer:null,busy:false};
 const node = (tag,cls,content) => {const x=document.createElement(tag);if(cls)x.className=cls;if(content!==undefined)x.textContent=content;return x;};
-const persist = () => localStorage.setItem(KEY,JSON.stringify({project:state.project,step:state.step}));
+const persist = () => localStorage.setItem(KEY,JSON.stringify({project:state.project,step:state.step,draft:{title:$('title').value,story:$('story').value,cuts:$('cuts').value}}));
 function message(s,bad=false){$('notice').textContent=s;$('notice').className='notice'+(bad?' error':'');}
 function clearMessage(){$('notice').className='notice hidden';$('notice').textContent='';}
 async function api(path,method='GET',data) {
@@ -26,9 +26,11 @@ function step(n){
  persist();window.scrollTo({top:0,behavior:'smooth'});
 }
 let saveTimer;
-function saveLater(){clearTimeout(saveTimer);saveTimer=setTimeout(async()=>{
+function saveLater(){clearTimeout(saveTimer);
  const p=state.project;if(!p)return;
- try{await api('/api/projects/'+p.id,'PATCH',{characters:p.characters,scenes:p.scenes});}
+ const data=JSON.parse(JSON.stringify({characters:p.characters,scenes:p.scenes}));
+ saveTimer=setTimeout(async()=>{
+ try{await api('/api/projects/'+p.id,'PATCH',data);}
  catch(e){message('수정한 내용은 이 브라우저에 보관했습니다. 서버 저장 실패: '+e.message,true);}
 },950);}
 function edit(container,label,value,change,copy=true){
@@ -85,19 +87,24 @@ function uploads(){
  box.append(buttons);edit(box,'한국어 나레이션',s.narration,v=>s.narration=v,false);list.append(box);
  });
 }
+let pollVersion=0;
 async function poll(id){
- clearInterval(state.timer);if(!id)return;
+ clearTimeout(state.timer);const version=++pollVersion;if(!id)return;
  const check=async()=>{
-  if(state.project?.jobId!==id){clearInterval(state.timer);return;}
+  if(state.project?.jobId!==id||version!==pollVersion)return;
+  let terminal=false;
   try{
-   const j=await api('/api/jobs/'+id);const box=$('renderStatus');box.className='status'+(j.status==='failed'?' error':'');box.replaceChildren(node('strong','',j.status==='complete'?'완성 영상 준비 완료':j.status==='failed'?'영상 합성 실패':j.stage||'작업 대기 중'));
+   const j=await api('/api/jobs/'+id);if(state.project?.jobId!==id||version!==pollVersion)return;
+   terminal=j.status==='complete'||j.status==='failed';
+   const box=$('renderStatus');box.className='status'+(j.status==='failed'?' error':'');box.replaceChildren(node('strong','',j.status==='complete'?'완성 영상 준비 완료':j.status==='failed'?'영상 합성 실패':j.stage||'작업 대기 중'));
    if(j.detail)box.append(node('p','',j.detail));
    if(j.status==='complete'){
     const b=node('button','primary','최종 MP4 다운로드');b.type='button';b.addEventListener('click',async()=>{try{const d=await api('/api/projects/'+state.project.id+'/download');location.href=d.url;}catch(e){message('다운로드 실패: '+e.message,true);}});box.append(b);clearInterval(state.timer);history();
    }else if(j.status==='failed')clearInterval(state.timer);
-  }catch(e){$('renderStatus').className='status error';$('renderStatus').textContent='진행 상황 조회 실패: '+e.message;}
+  }catch(e){if(state.project?.jobId!==id||version!==pollVersion)return;$('renderStatus').className='status error';$('renderStatus').textContent='진행 상황 조회 실패: '+e.message;}
+  if(!terminal&&state.project?.jobId===id&&version===pollVersion)state.timer=setTimeout(check,4000);
  };
- await check();if(state.project?.jobId===id)state.timer=setInterval(check,4000);
+ await check();
 }
 async function history(){
  if(!API.apiBase||!state.token)return;
@@ -141,8 +148,9 @@ async function generate(e){
  finally{state.busy=false;$('generate').disabled=false;$('generate').textContent='AI 프롬프트 생성 →';}
 }
 function reset(){
+ if(state.busy||state.uploading.size){message('현재 작업이 끝난 뒤 새 동화를 시작해 주세요.',true);return;}
  if(!confirm('새 동화를 시작할까요? 현재 열려 있는 입력과 컷 연결만 초기화합니다. 기존 서버 제작 내역은 따로 삭제할 수 있습니다.'))return;
- clearInterval(state.timer);clearTimeout(saveTimer);state.project=null;state.uploading.clear();localStorage.removeItem(KEY);
+ clearTimeout(state.timer);pollVersion++;clearTimeout(saveTimer);state.project=null;state.uploading.clear();localStorage.removeItem(KEY);
  $('title').value='';$('story').value='';$('cuts').value='8';$('characters').replaceChildren();$('prompts').replaceChildren();$('uploads').replaceChildren();$('renderStatus').className='status hidden';clearMessage();step(1);
 }
 async function finish(){
@@ -158,13 +166,15 @@ async function finish(){
 }
 function init(){
  for(let i=1;i<=10;i++){const opt=node('option','',i+'컷');opt.value=i;if(i===8)opt.selected=true;$('cuts').append(opt);}
- try{const data=JSON.parse(localStorage.getItem(KEY)||'null');if(data?.project){state.project=data.project;$('title').value=data.project.title||'';$('story').value=data.project.story||'';$('cuts').value=data.project.cuts||8;prompts();step([1,2,3].includes(data.step)?data.step:1);}}catch{localStorage.removeItem(KEY);}
+ try{const data=JSON.parse(localStorage.getItem(KEY)||'null');if(data){const draft=data.draft||data.project||{};$('title').value=draft.title||'';$('story').value=draft.story||'';$('cuts').value=draft.cuts||8;if(data.project){state.project=data.project;prompts();step([1,2,3].includes(data.step)?data.step:1);}}}catch{localStorage.removeItem(KEY);}
+ for(const id of ['title','story','cuts'])$(id).addEventListener('input',persist);
  document.querySelectorAll('.step').forEach(b=>b.onclick=()=>step(Number(b.dataset.step)));
  $('storyForm').onsubmit=generate;$('back1').onclick=()=>step(1);$('back2').onclick=()=>step(2);$('next3').onclick=()=>step(3);$('new').onclick=reset;$('render').onclick=finish;$('refresh').onclick=history;
- $('connect').onclick=()=>{$('token').value=state.token;$('authDialog').showModal();};
+ $('connect').onclick=()=>{$('authError').textContent='';$('token').value=state.token;$('authDialog').showModal();};
  $('cancelAuth').onclick=()=>$('authDialog').close();
- $('authForm').onsubmit=e=>{e.preventDefault();state.token=$('token').value;sessionStorage.setItem('fairytale-access',state.token);$('authDialog').close();message('접근키를 임시 저장했습니다. 실제 서버 연결은 프롬프트 요청 때 검증됩니다.');history();};
+ $('authForm').onsubmit=async e=>{e.preventDefault();const previous=state.token;state.token=$('token').value.trim();const button=e.submitter;if(button)button.disabled=true;try{await api('/api/projects');sessionStorage.setItem('fairytale-access',state.token);$('authDialog').close();message('스튜디오 연결을 확인했습니다.');history();}catch(err){state.token=previous;$('authError').textContent=err.message;}finally{if(button)button.disabled=false;}};
  for(const [a,b] of [['narrationVolume','narrationOut'],['backgroundVolume','backgroundOut']])$(a).oninput=()=>$(b).value=$(a).value+'%';
  if(state.project&&state.token&&API.apiBase)api('/api/projects/'+state.project.id).then(p=>{state.project={...state.project,...p};persist();if(state.step===3)uploads();}).catch(e=>message('서버에서 이전 작업을 조회하지 못했습니다: '+e.message,true));
+ if(!API.apiBase){message('제작 서버 연결을 준비 중입니다. 입력한 이야기는 이 기기에 자동 저장되며, AI 생성과 영상 합성은 연결 후 사용할 수 있습니다.');$('generate').disabled=true;$('generate').textContent='제작 서버 연결 준비 중';}
 }
 init();

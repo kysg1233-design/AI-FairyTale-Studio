@@ -45,7 +45,7 @@ Private GitHub Actions 저장소의 Secrets에는 `WORKER_URL`, `WORKER_JOB_KEY`
 프런트엔드 `config.js`에는 **공개 Workers URL**만 입력하며 비밀키를 넣지 않습니다.
 
 Cloudflare Workers `wrangler.toml`의 `R2_ACCOUNT_ID`는 실제 계정 ID로 교체해야 합니다. 프로젝트·진행 상태 메타데이터도 비공개 R2에 저장하며 별도 KV 설정은 필요하지 않습니다.
-Cloudflare에 Private R2 bucket `fairytale-private-videos`와 KV namespace를 만들고 R2 bucket CORS를 `worker/r2-cors.json`으로 설정하세요.
+Cloudflare에 Private R2 bucket `fairytale-private-videos`을 만들고 R2 bucket CORS를 `worker/r2-cors.json`으로 설정하세요.
 
 ### 영상 업로드 제한
 파일당 최대 1GiB, MP4/MOV/WebM/M4V. 서명된 단일 PUT(15분 만료)을 사용하며 브라우저가 원본 파일을 Workers에 중계하지 않고 R2에 직접 전송합니다. 네트워크가 끊길 경우 동일 컷을 다시 선택해서 재시도합니다. 매우 느린 업로드에는 향후 multipart 지원이 필요할 수 있습니다.

@@ -29,6 +29,8 @@ jobs:
           node --check worker/src/index.js
       - name: Validate Python syntax
         run: python3 -m py_compile renderer/scripts/render.py
+      - name: Validate draft saving and job polling
+        run: node tests/frontend-state.cjs
       - name: Install FFmpeg + Hangul fonts for two-cut smoke test
         run: |
           sudo apt-get update -qq
