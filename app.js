@@ -181,7 +181,7 @@ function init(){
  if(!API.apiBase){message('제작 서버 주소가 아직 등록되지 않았습니다. 입력한 이야기는 이 기기에 자동 저장됩니다.',true);$('generate').disabled=true;$('generate').textContent='제작 서버 연결 준비 중';}
  else {
   $('generate').disabled=true;$('generate').textContent='제작 서버 확인 중…';
-  fetch(API.apiBase.replace(/\\/$/,'')+'/health',{signal:AbortSignal.timeout(10000)})
+  fetch(API.apiBase.replace(/\/$/,'')+'/health',{signal:AbortSignal.timeout(10000)})
    .then(async r=>{const d=await r.json();if(!r.ok||d.service!=='ai-fairytale-studio-api'||d.ready!==true)throw Error('Cloudflare 서버 배포와 비밀키 설정이 아직 완료되지 않았습니다.');
     $('generate').disabled=false;$('generate').textContent='AI 프롬프트 생성 →';message('제작 서버가 준비됐습니다. 상단 연결 설정에서 스튜디오 접근키를 입력하세요.');
    }).catch(e=>{message('제작 서버 준비 중: '+e.message+' 입력한 이야기는 이 기기에 자동 저장됩니다.',true);$('generate').disabled=true;$('generate').textContent='제작 서버 연결 준비 중';});
