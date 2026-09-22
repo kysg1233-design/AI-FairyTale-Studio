@@ -4,8 +4,10 @@ on:
     branches: [main]
     paths:
       - 'app.js'
+      - 'narration.js'
       - 'index.html'
       - 'tests/browser-merge.cjs'
+      - 'tests/narration-merge.cjs'
       - '.github/workflows/pages.yml'
       - '.github/workflows/browser-merge.yml'
   workflow_dispatch:
@@ -24,7 +26,7 @@ jobs:
       - name: Serve actual published file layout
         run: |
           mkdir -p /tmp/fairytale-site/ffmpeg
-          cp index.html style.css app.js config.js /tmp/fairytale-site/
+          cp index.html style.css app.js narration.js config.js /tmp/fairytale-site/
           cp node_modules/@ffmpeg/ffmpeg/dist/esm/*.js /tmp/fairytale-site/ffmpeg/
           cp node_modules/@ffmpeg/core/dist/esm/ffmpeg-core.js node_modules/@ffmpeg/core/dist/esm/ffmpeg-core.wasm /tmp/fairytale-site/ffmpeg/
           cd /tmp/fairytale-site
@@ -36,3 +38,5 @@ jobs:
           ffmpeg -hide_banner -loglevel error -f lavfi -i color=c=blue:s=160x288:r=10 -t 0.5 -c:v libx264 -pix_fmt yuv420p -y /tmp/fairytale-clip-2.mp4
       - name: Merge both MP4 clips in real Chromium
         run: node tests/browser-merge.cjs
+      - name: Generate mandatory narration and subtitles in real Chromium
+        run: node tests/narration-merge.cjs
