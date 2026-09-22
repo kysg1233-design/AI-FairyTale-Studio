@@ -18,7 +18,8 @@ async function api(path,method='GET',data) {
  return j;
 }
 function step(n){
- if(n>1 && !state.project?.scenes?.length)return;
+ if(n>1 && !state.project?.scenes?.length){message('먼저 동화 프롬프트를 생성해 주세요.',true);return;}
+ if(n===3 && state.busy)return;
  state.step=n;
  for(let i=1;i<=3;i++)$('step'+i).classList.toggle('hidden',i!==n);
  document.querySelectorAll('.step').forEach(x=>{const yes=Number(x.dataset.step)===n;x.classList.toggle('active',yes);x.setAttribute('aria-current',yes?'step':'false');});
@@ -28,10 +29,11 @@ function step(n){
 let saveTimer;
 function saveLater(){clearTimeout(saveTimer);
  const p=state.project;if(!p)return;
+ const projectId=p.id;
  const data=JSON.parse(JSON.stringify({characters:p.characters,scenes:p.scenes}));
  saveTimer=setTimeout(async()=>{
- try{await api('/api/projects/'+p.id,'PATCH',data);}
- catch(e){message('수정한 내용은 이 브라우저에 보관했습니다. 서버 저장 실패: '+e.message,true);}
+ try{await api('/api/projects/'+projectId,'PATCH',data);}
+ catch(e){if(state.project?.id===projectId)message('수정한 내용은 이 브라우저에 보관했습니다. 서버 저장 실패: '+e.message,true);}
 },950);}
 function edit(container,label,value,change,copy=true){
  const wrap=node('div');const row=node('div','field-heading');row.append(node('label','',label));
@@ -119,6 +121,7 @@ async function history(){
     if(state.project?.id!==p.id && ($('title').value.trim()||$('story').value.trim()) &&
        !confirm('현재 열려 있는 작업 대신 선택한 동화를 열까요? 저장하지 않은 입력은 사라질 수 있습니다.'))return;
     try{
+     clearTimeout(saveTimer);
      const loaded=await api('/api/projects/'+p.id);
      if(!Array.isArray(loaded.scenes)||loaded.scenes.length!==loaded.cuts)throw Error('컷 정보가 올바르지 않습니다.');
      state.project=loaded;state.project.videos=loaded.videos||{};
@@ -143,7 +146,7 @@ async function generate(e){
  try{
   const p=await api('/api/generate','POST',{title,story,cuts});
   if(!Array.isArray(p.scenes)||p.scenes.length!==cuts||!Array.isArray(p.characters))throw Error('AI가 요청한 컷수의 결과를 반환하지 않았습니다.');
-  p.videos=p.videos||{};state.project=p;persist();prompts();clearMessage();step(2);
+  clearTimeout(saveTimer);p.videos=p.videos||{};state.project=p;persist();prompts();clearMessage();step(2);
  }catch(err){message('프롬프트 생성 실패: '+err.message,true);}
  finally{state.busy=false;$('generate').disabled=false;$('generate').textContent='AI 프롬프트 생성 →';}
 }
@@ -175,6 +178,6 @@ function init(){
  $('authForm').onsubmit=async e=>{e.preventDefault();const previous=state.token;state.token=$('token').value.trim();const button=e.submitter;if(button)button.disabled=true;try{await api('/api/projects');sessionStorage.setItem('fairytale-access',state.token);$('authDialog').close();message('스튜디오 연결을 확인했습니다.');history();}catch(err){state.token=previous;$('authError').textContent=err.message;}finally{if(button)button.disabled=false;}};
  for(const [a,b] of [['narrationVolume','narrationOut'],['backgroundVolume','backgroundOut']])$(a).oninput=()=>$(b).value=$(a).value+'%';
  if(state.project&&state.token&&API.apiBase)api('/api/projects/'+state.project.id).then(p=>{state.project={...state.project,...p};persist();if(state.step===3)uploads();}).catch(e=>message('서버에서 이전 작업을 조회하지 못했습니다: '+e.message,true));
- if(!API.apiBase){message('제작 서버 연결을 준비 중입니다. 입력한 이야기는 이 기기에 자동 저장되며, AI 생성과 영상 합성은 연결 후 사용할 수 있습니다.');$('generate').disabled=true;$('generate').textContent='제작 서버 연결 준비 중';}
+ if(!API.apiBase){message('제작 서버가 아직 연결되지 않았습니다. 입력한 이야기는 이 기기에 자동 저장되지만 AI 생성과 영상 합성은 아직 사용할 수 없습니다.',true);$('generate').disabled=true;$('generate').textContent='제작 서버 연결 준비 중';}
 }
 init();
