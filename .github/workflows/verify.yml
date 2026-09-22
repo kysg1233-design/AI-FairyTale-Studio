@@ -35,7 +35,7 @@ jobs:
           node - <<'JS'
           const fs=require('fs');
           const js=fs.readFileSync('app.js','utf8');
-          for(const token of ['sessionStorage','localStorage','gemini-2.5-flash','FFmpegWASM','state.files']){
+          for(const token of ['sessionStorage','localStorage','gemini-3.6-flash','FFmpegWASM','state.files']){
             if(!js.includes(token))throw Error('Missing local studio feature: '+token);
           }
           if(js.includes('R2_ACCESS_KEY_ID')||js.includes('GITHUB_ACTIONS_TOKEN'))throw Error('Unexpected server credentials in frontend');
