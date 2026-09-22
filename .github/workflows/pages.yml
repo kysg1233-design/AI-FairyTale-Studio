@@ -34,10 +34,18 @@ jobs:
         uses: actions/configure-pages@v5
         with:
           enablement: true
+      - name: Download pinned browser video engine
+        run: |
+          mkdir -p /tmp/fairytale-deps
+          npm install --prefix /tmp/fairytale-deps --no-audit --no-fund @ffmpeg/ffmpeg@0.12.10 @ffmpeg/core@0.12.10
       - name: Collect ONLY public website files
         run: |
           mkdir -p site
           cp index.html style.css app.js config.js site/
+          mkdir -p site/ffmpeg
+          cp /tmp/fairytale-deps/node_modules/@ffmpeg/ffmpeg/dist/umd/814.ffmpeg.js site/ffmpeg/worker.js
+          cp /tmp/fairytale-deps/node_modules/@ffmpeg/core/dist/umd/ffmpeg-core.js site/ffmpeg/
+          cp /tmp/fairytale-deps/node_modules/@ffmpeg/core/dist/umd/ffmpeg-core.wasm site/ffmpeg/
           touch site/.nojekyll
       - name: Upload static website
         uses: actions/upload-pages-artifact@v3
