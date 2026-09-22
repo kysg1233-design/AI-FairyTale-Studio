@@ -29,7 +29,7 @@ with tempfile.TemporaryDirectory(prefix="studio-smoke-") as tmp:
         wav=wd/f"voice{i}.wav"
         with wave.open(str(wav),"wb") as out:
             out.setnchannels(1);out.setsampwidth(2);out.setframerate(24000)
-            out.writeframes(b"\\0\\0" * 24000 * 2)
+            out.writeframes(b"\0\0" * 24000 * 2)
         sub=wd/f"sub{i}.ass"
         renderer.captions(sub,"아주 따뜻한 밤이에요. 함께 이야기를 들어볼까요?",2.0)
         output=wd/f"cut{i}.mp4"
@@ -40,7 +40,7 @@ with tempfile.TemporaryDirectory(prefix="studio-smoke-") as tmp:
         assert renderer.duration(output)>=2.0
         outputs.append(output)
     manifest=wd/"list.txt"
-    manifest.write_text("".join(f"file '{x}'\\n" for x in outputs),encoding="utf-8")
+    manifest.write_text("".join(f"file '{x}'\n" for x in outputs),encoding="utf-8")
     final=wd/"final.mp4"
     ff("-f","concat","-safe","0","-i",manifest,"-c","copy",final)
     assert renderer.duration(final)>=4.0, "Both cuts must appear in final output"
