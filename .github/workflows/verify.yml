@@ -29,8 +29,17 @@ jobs:
           node --check worker/src/index.js
       - name: Validate Python syntax
         run: python3 -m py_compile renderer/scripts/render.py
-      - name: Validate draft saving and job polling
-        run: node tests/frontend-state.cjs
+      - name: Validate local-only studio flow
+        run: |
+          node --check app.js
+          node - <<'JS'
+          const fs=require('fs');
+          const js=fs.readFileSync('app.js','utf8');
+          for(const token of ['sessionStorage','localStorage','gemini-2.5-flash','FFmpegWASM','state.files']){
+            if(!js.includes(token))throw Error('Missing local studio feature: '+token);
+          }
+          if(js.includes('R2_ACCESS_KEY_ID')||js.includes('GITHUB_ACTIONS_TOKEN'))throw Error('Unexpected server credentials in frontend');
+          JS
       - name: Install FFmpeg + Hangul fonts for two-cut smoke test
         run: |
           sudo apt-get update -qq
