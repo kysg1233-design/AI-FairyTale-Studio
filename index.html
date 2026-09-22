@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#fffaf5"><title>몽글몽글 | AI 동화 제작 스튜디오</title>
+<link rel="stylesheet" href="style.css"><script src="config.js"></script><script src="app.js" defer></script>
+</head>
+<body>
+<div class="shell">
+<header><div class="brand"><span class="star">✦</span><div>몽글몽글<small>AI 동화 제작 스튜디오</small></div></div><button id="connect" class="plain">연결 설정</button></header>
+<main>
+<div class="hero"><span class="eyebrow">STORY TO SHORTS</span><h1>우리의 이야기를<br><em>한 편의 동화 영상으로</em></h1><p>동화를 쓰고, Veo 영상을 만든 다음, 여기서 한 편으로 완성해요.</p></div>
+<nav class="steps" aria-label="제작 단계"><button type="button" class="step active" data-step="1"><b>01</b><span>동화 입력</span></button><span class="arr">→</span><button type="button" class="step" data-step="2"><b>02</b><span>프롬프트</span></button><span class="arr">→</span><button type="button" class="step" data-step="3"><b>03</b><span>영상 완성</span></button></nav>
+<div id="notice" role="status" aria-live="polite" class="notice hidden"></div>
+<section id="step1" class="panel"><div class="heading"><span class="eyebrow">STEP 01</span><h2>어떤 이야기를 들려줄까요?</h2><p>제목과 이야기를 적어 주세요. 장면 구성은 AI가 도와드려요.</p></div>
+<form id="storyForm"><label for="title">동화 제목</label><input id="title" placeholder="예: 달빛을 줍는 작은 여우" maxlength="120" required autocomplete="off"><label for="story">동화 전체 스토리</label><textarea id="story" placeholder="동화의 처음부터 끝까지 적어 주세요." rows="10" maxlength="30000" required></textarea><div class="select-row"><div><label for="cuts">영상 컷수</label><p>1~10컷 · 컷당 약 10초</p></div><select id="cuts"></select></div><div class="info">✦ &nbsp;9:16 세로 영상 · Google Veo에서 영상은 직접 제작</div><div class="actions"><button class="primary" id="generate" type="submit">AI 프롬프트 생성 →</button></div></form></section>
+<section id="step2" class="panel hidden"><div class="heading"><span class="eyebrow">STEP 02</span><h2>동화의 장면을 준비해요</h2><p>프롬프트를 복사해 이미지와 Veo 영상을 만들어 주세요.</p></div><div class="section-head"><h3>공통 캐릭터</h3><span id="countLabel" class="pill"></span></div><div id="characters" class="stack"></div><div class="section-head"><h3>컷별 프롬프트</h3></div><div id="prompts" class="stack"></div><div class="actions"><button id="back1" class="secondary" type="button">← 동화 입력</button><button id="next3" class="primary" type="button">영상 업로드 →</button></div></section>
+<section id="step3" class="panel hidden"><div class="heading"><span class="eyebrow">STEP 03</span><h2>영상에 이야기를 입혀요</h2><p>Veo에서 다운로드한 MP4를 컷별로 업로드해 주세요.</p></div><div class="progress-title" id="uploadSummary">영상 준비: 0 / 0컷</div><div class="meter"><div id="meterFill"></div></div><div id="uploads" class="stack"></div><div class="settings"><h3>완성 영상 설정</h3><label for="voice">목소리</label><select id="voice"><option value="Charon">차분한 남성 · Charon</option><option value="Iapetus">부드러운 남성 · Iapetus</option><option value="Puck">밝은 남성 · Puck</option><option value="Kore">부드러운 여성 · Kore</option></select><label for="narrationVolume">나레이션 음량 <output id="narrationOut">100%</output></label><input id="narrationVolume" type="range" min="30" max="150" value="100"><label for="backgroundVolume">원본 배경음 음량 <output id="backgroundOut">25%</output></label><input id="backgroundVolume" type="range" min="0" max="100" value="25"></div><div class="actions"><button class="secondary" id="back2" type="button">← 프롬프트</button><button class="primary" id="render" type="button" disabled>모든 컷을 올려 주세요</button></div><div id="renderStatus" class="status hidden" aria-live="polite"></div><div class="section-head"><h3>제작 내역</h3><button id="refresh" class="plain" type="button">새로고침</button></div><div id="history" class="history">연결 후 제작 내역을 불러옵니다.</div></section>
+<footer><button id="new" class="plain" type="button">＋ 새 동화 시작</button><span>하나의 이야기, 한 편의 영상</span></footer>
+</main>
+</div>
+<dialog id="authDialog"><form id="authForm" method="dialog"><h2>스튜디오 연결</h2><p>처음 설정한 개인용 스튜디오 접근키를 입력해 주세요. 홈페이지 코드에는 저장되지 않습니다.</p><label for="token">접근키</label><input id="token" type="password" required autocomplete="off"><div class="actions"><button id="cancelAuth" type="button" class="secondary">취소</button><button type="submit" class="primary">연결하기</button></div></form></dialog>
+</body></html>
