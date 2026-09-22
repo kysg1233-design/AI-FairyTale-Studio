@@ -22,6 +22,20 @@ const readJSON = async (env,key) => {
 };
 const writeJSON = (env,key,value) =>
  env.VIDEOS.put(key,JSON.stringify(value),{httpMetadata:{contentType:'application/json'}});
+async function removePrefix(bucket,prefix) {
+ // Delete all outputs, abandoned uploads and historical cut versions.
+ let cursor;
+ do {
+  const page=await bucket.list({prefix,limit:1000,cursor});
+  await Promise.all(page.objects.map(object=>bucket.delete(object.key)));
+  cursor=page.truncated?page.cursor:undefined;
+ }while(cursor);
+}
+const activeJob=async (env,p) => {
+ if(!p.jobId)return false;
+ const j=await job(env,p.jobId);
+ return j && (j.status==='running'||j.status==='queued');
+};
 async function get(env,id) {return readJSON(env,'meta/projects/'+id+'.json');}
 async function set(env,p) {p.updatedAt=iso();await writeJSON(env,'meta/projects/'+p.id+'.json',p);}
 async function job(env,id) {return readJSON(env,'meta/jobs/'+id+'.json');}
@@ -131,7 +145,7 @@ async function route(request,env,url) {
     typeof d.story!=='string'||!d.story.trim()||d.story.length>30000||
     !Number.isInteger(cuts)||cuts<1||cuts>10)return fail('동화 입력 또는 컷수 형식이 올바르지 않습니다.');
   const v=await gemini(env,d.title.trim(),d.story.trim(),cuts),id=crypto.randomUUID();
-  const p={id,title:d.title.trim(),story:d.story.trim(),cuts,characters:v.characters,scenes:v.scenes,videos:{},
+  const p={id,title:d.title.trim(),story:d.story.trim(),cuts,characters:v.characters,scenes:v.scenes,videos:{},jobIds:[],
    createdAt:iso(),updatedAt:iso(),completed:false,jobId:null};
   await set(env,p);
   return okay(p,201);
@@ -148,14 +162,20 @@ async function route(request,env,url) {
    p.characters=d.characters;p.scenes=d.scenes;p.completed=false;await set(env,p);return okay({ok:true});
   }
   if(parts.length===3&&method==='DELETE'){
-   const keys=Object.values(p.videos||{}).filter(Boolean).map(v=>v.key);
-   if(p.jobId){const j=await job(env,p.jobId);if(j){if(j.status==='running'||j.status==='queued')return fail('합성 진행 중에는 삭제할 수 없습니다.',409);if(j.outputKey)keys.push(j.outputKey);await env.VIDEOS.delete('meta/jobs/'+p.jobId+'.json');}}
-   await Promise.all(keys.map(k=>env.VIDEOS.delete(k)));await env.VIDEOS.delete('meta/projects/'+id+'.json');
-   for(let i=0;i<p.cuts;i++)await env.VIDEOS.delete(`meta/pending/${id}/${i}.json`);return okay({ok:true});
+   if(await activeJob(env,p))return fail('합성 진행 중에는 삭제할 수 없습니다.',409);
+   // Delete real media first. If storage removal fails, keep project metadata
+   // so the user can retry instead of falsely claiming deletion.
+   await removePrefix(env.VIDEOS,`projects/${id}/`);
+   await removePrefix(env.VIDEOS,`meta/pending/${id}/`);
+   for(const jobId of new Set([...(p.jobIds||[]),p.jobId].filter(Boolean)))
+    await env.VIDEOS.delete('meta/jobs/'+jobId+'.json');
+   await env.VIDEOS.delete('meta/projects/'+id+'.json');
+   return okay({ok:true});
   }
   if(parts[3]==='cuts'&&/^\d+$/.test(parts[4]||'')){
    const i=Number(parts[4]);if(i<0||i>=p.cuts)return fail('존재하지 않는 컷',404);
    if(parts[5]==='upload-url'&&method==='POST'){
+    if(await activeJob(env,p))return fail('합성 중에는 영상을 교체할 수 없습니다.',409);
     const d=await body(request),size=Number(d.size),fileName=String(d.fileName||'');
     if(!/\.(mp4|mov|webm|m4v)$/i.test(fileName)||!Number.isInteger(size)||size<1||size>MAX_FILE)return fail('허용되지 않는 영상 형식 또는 파일 크기 (최대 1GiB)');
     const contentType={'.mp4':'video/mp4','.mov':'video/quicktime','.webm':'video/webm','.m4v':'video/x-m4v'}[fileName.match(/\.[^.]+$/)[0].toLowerCase()];
@@ -165,6 +185,7 @@ async function route(request,env,url) {
     return okay({url,contentType});
    }
    if(parts[5]==='complete'&&method==='POST'){
+    if(await activeJob(env,p))return fail('합성 중에는 영상을 교체할 수 없습니다.',409);
     const pending=await readJSON(env,`meta/pending/${id}/${i}.json`);if(!pending||Date.now()-pending.createdAt>1800000)return fail('업로드 요청이 만료됐습니다. 다시 파일을 선택해 주세요.',409);
     const h=await env.VIDEOS.head(pending.objectKey);
     if(!h||h.size!==pending.size)return fail('R2 저장을 확인하지 못했거나 파일 크기가 다릅니다.',409);
@@ -177,6 +198,7 @@ async function route(request,env,url) {
     return okay({url:await signed(env,'GET',v.key)});
    }
    if(parts.length===5&&method==='DELETE'){
+    if(await activeJob(env,p))return fail('합성 중에는 영상을 삭제할 수 없습니다.',409);
     const v=p.videos?.[i];if(v?.key)await env.VIDEOS.delete(v.key);
     delete p.videos[i];p.completed=false;await set(env,p);return okay({ok:true});
    }
@@ -192,7 +214,7 @@ async function route(request,env,url) {
    if(!Number.isFinite(nv)||nv<0.3||nv>1.5||!Number.isFinite(bv)||bv<0||bv>1)return fail('음량 설정이 올바르지 않습니다.');
    const idJob=crypto.randomUUID(),j={id:idJob,projectId:id,status:'queued',stage:'GitHub Actions 실행 요청 중',
     voice,narrationVolume:nv,backgroundVolume:bv,outputKey:`projects/${id}/outputs/${idJob}.mp4`,createdAt:iso()};
-   await putJob(env,j);p.jobId=idJob;p.completed=false;await set(env,p);
+   await putJob(env,j);p.jobId=idJob;p.jobIds=[...(p.jobIds||[]),idJob];p.completed=false;await set(env,p);
    try{await runDispatch(env,j);}catch(e){j.status='failed';j.stage='작업 시작 실패';j.detail=e.message;await putJob(env,j);throw e;}
    return okay({jobId:idJob},202);
   }
