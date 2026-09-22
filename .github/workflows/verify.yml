@@ -1,0 +1,44 @@
+name: Validate studio source
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'app.js'
+      - 'config.js'
+      - 'style.css'
+      - 'worker/**'
+      - 'renderer/**'
+      - '.github/workflows/verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  syntax-and-structure:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate JavaScript syntax
+        run: |
+          node --check app.js
+          node --check config.js
+          node --check worker/src/index.js
+      - name: Validate Python syntax
+        run: python3 -m py_compile renderer/scripts/render.py
+      - name: Validate three-step interface and no bundled secrets
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          page=Path('index.html').read_text()
+          for x in ('step1','step2','step3','storyForm','render'):
+              assert f'id="{x}"' in page, x
+          for x in ('step4','step5','step6'):
+              assert f'id="{x}"' not in page, x
+          assert Path('config.js').exists()
+          assert not re.search(r'AIza[0-9A-Za-z_-]{30,}',Path('config.js').read_text())
+          print('Three-step structure and public config checks passed.')
+          PY
