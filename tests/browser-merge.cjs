@@ -9,10 +9,9 @@ const fs = require('node:fs');
   const a=fs.readFileSync('/tmp/fairytale-clip-1.mp4').toString('base64');
   const b=fs.readFileSync('/tmp/fairytale-clip-2.mp4').toString('base64');
   const result=await page.evaluate(async ([a,b])=>{
-   const src=new URL('ffmpeg/ffmpeg.js',document.baseURI).href;
-   await new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=()=>reject(Error('Cannot load local FFmpeg entrypoint'));document.head.append(s)});
-   if(!window.FFmpegWASM?.FFmpeg)throw Error('FFmpeg class missing');
-   const ff=new FFmpegWASM.FFmpeg();
+   const mod=await import(new URL('ffmpeg/index.js',document.baseURI).href);
+   if(!mod.FFmpeg)throw Error('FFmpeg class missing');
+   const ff=new mod.FFmpeg();
    const base=new URL('ffmpeg/',document.baseURI);
    try {
     await ff.load({coreURL:new URL('ffmpeg-core.js',base).href,wasmURL:new URL('ffmpeg-core.wasm',base).href,classWorkerURL:new URL('worker.js',base).href});
