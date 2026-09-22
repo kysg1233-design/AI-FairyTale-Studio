@@ -14,12 +14,30 @@ async function same(a,b) {
  const [ha,hb]=await Promise.all([crypto.subtle.digest('SHA-256',encode(a)),crypto.subtle.digest('SHA-256',encode(b))]);
  return [...new Uint8Array(ha)].every((x,i)=>x===new Uint8Array(hb)[i]);
 }
-async function get(env,id) { return env.DATA.get(keyProject(id),'json'); }
-async function set(env,p) { p.updatedAt=iso(); await env.DATA.put(keyProject(p.id),JSON.stringify(p)); }
-async function job(env,id) { return env.DATA.get(keyJob(id),'json'); }
-async function putJob(env,j) { j.updatedAt=iso(); await env.DATA.put(keyJob(j.id),JSON.stringify(j)); }
-const getIndex = async env => await env.DATA.get('projects:index','json') || [];
-const putIndex = async (env,index) => env.DATA.put('projects:index',JSON.stringify(index));
+// Keep project/job records in the same strongly-consistent private R2 bucket as
+// media: KV's eventual consistency could make a just-uploaded cut appear absent.
+const readJSON = async (env,key) => {
+ const object=await env.VIDEOS.get(key);
+ return object ? object.json() : null;
+};
+const writeJSON = (env,key,value) =>
+ env.VIDEOS.put(key,JSON.stringify(value),{httpMetadata:{contentType:'application/json'}});
+async function get(env,id) {return readJSON(env,'meta/projects/'+id+'.json');}
+async function set(env,p) {p.updatedAt=iso();await writeJSON(env,'meta/projects/'+p.id+'.json',p);}
+async function job(env,id) {return readJSON(env,'meta/jobs/'+id+'.json');}
+async function putJob(env,j) {j.updatedAt=iso();await writeJSON(env,'meta/jobs/'+j.id+'.json',j);}
+async function getIndex(env) {
+ const ids=[];let cursor;
+ do {
+  const page=await env.VIDEOS.list({prefix:'meta/projects/',limit:1000,cursor});
+  for(const object of page.objects) {
+   const match=object.key.match(/^meta\/projects\/([0-9a-f-]{36})\.json$/);
+   if(match)ids.push(match[1]);
+  }
+  cursor=page.truncated?page.cursor:undefined;
+ }while(cursor);
+ return ids;
+}
 function client(env) {
  return new S3Client({region:'auto',
   endpoint:'https://'+env.R2_ACCOUNT_ID+'.r2.cloudflarestorage.com',
@@ -115,12 +133,12 @@ async function route(request,env,url) {
   const v=await gemini(env,d.title.trim(),d.story.trim(),cuts),id=crypto.randomUUID();
   const p={id,title:d.title.trim(),story:d.story.trim(),cuts,characters:v.characters,scenes:v.scenes,videos:{},
    createdAt:iso(),updatedAt:iso(),completed:false,jobId:null};
-  await set(env,p);const ids=await getIndex(env);ids.unshift(id);await putIndex(env,ids);
+  await set(env,p);
   return okay(p,201);
  }
  if(parts[1]==='projects'&&parts.length===2&&method==='GET'){
   const ids=await getIndex(env),ps=await Promise.all(ids.map(id=>get(env,id)));
-  return okay({projects:ps.filter(Boolean).map(p=>({id:p.id,title:p.title,cuts:p.cuts,completed:p.completed,createdAt:p.createdAt}))});
+  return okay({projects:ps.filter(Boolean).sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).map(p=>({id:p.id,title:p.title,cuts:p.cuts,completed:p.completed,createdAt:p.createdAt}))});
  }
  if(parts[1]==='projects'&&safeId(parts[2])) {
   const id=parts[2],p=await get(env,id);if(!p)return fail('프로젝트가 없습니다.',404);
@@ -131,9 +149,9 @@ async function route(request,env,url) {
   }
   if(parts.length===3&&method==='DELETE'){
    const keys=Object.values(p.videos||{}).filter(Boolean).map(v=>v.key);
-   if(p.jobId){const j=await job(env,p.jobId);if(j){if(j.status==='running'||j.status==='queued')return fail('합성 진행 중에는 삭제할 수 없습니다.',409);if(j.outputKey)keys.push(j.outputKey);await env.DATA.delete(keyJob(p.jobId));}}
-   await Promise.all(keys.map(k=>env.VIDEOS.delete(k)));await env.DATA.delete(keyProject(id));
-   await putIndex(env,(await getIndex(env)).filter(x=>x!==id));return okay({ok:true});
+   if(p.jobId){const j=await job(env,p.jobId);if(j){if(j.status==='running'||j.status==='queued')return fail('합성 진행 중에는 삭제할 수 없습니다.',409);if(j.outputKey)keys.push(j.outputKey);await env.VIDEOS.delete('meta/jobs/'+p.jobId+'.json');}}
+   await Promise.all(keys.map(k=>env.VIDEOS.delete(k)));await env.VIDEOS.delete('meta/projects/'+id+'.json');
+   for(let i=0;i<p.cuts;i++)await env.VIDEOS.delete(`meta/pending/${id}/${i}.json`);return okay({ok:true});
   }
   if(parts[3]==='cuts'&&/^\d+$/.test(parts[4]||'')){
    const i=Number(parts[4]);if(i<0||i>=p.cuts)return fail('존재하지 않는 컷',404);
@@ -143,15 +161,15 @@ async function route(request,env,url) {
     const contentType={'.mp4':'video/mp4','.mov':'video/quicktime','.webm':'video/webm','.m4v':'video/x-m4v'}[fileName.match(/\.[^.]+$/)[0].toLowerCase()];
     const objectKey=`projects/${id}/cuts/${i}/${crypto.randomUUID()}`;
     const url=await signed(env,'PUT',objectKey,contentType);
-    await env.DATA.put(`upload:${id}:${i}`,JSON.stringify({objectKey,size,fileName:fileName.slice(0,180),contentType}),{expirationTtl:1800});
+    await writeJSON(env,`meta/pending/${id}/${i}.json`,{objectKey,size,fileName:fileName.slice(0,180),contentType,createdAt:Date.now()});
     return okay({url,contentType});
    }
    if(parts[5]==='complete'&&method==='POST'){
-    const pending=await env.DATA.get(`upload:${id}:${i}`,'json');if(!pending)return fail('업로드 요청이 만료됐습니다. 다시 파일을 선택해 주세요.',409);
+    const pending=await readJSON(env,`meta/pending/${id}/${i}.json`);if(!pending||Date.now()-pending.createdAt>1800000)return fail('업로드 요청이 만료됐습니다. 다시 파일을 선택해 주세요.',409);
     const h=await env.VIDEOS.head(pending.objectKey);
     if(!h||h.size!==pending.size)return fail('R2 저장을 확인하지 못했거나 파일 크기가 다릅니다.',409);
     const old=p.videos?.[i]?.key;p.videos[i]={ready:true,key:pending.objectKey,size:h.size,fileName:pending.fileName};p.completed=false;
-    await set(env,p);await env.DATA.delete(`upload:${id}:${i}`);if(old && old!==pending.objectKey)await env.VIDEOS.delete(old);
+    await set(env,p);await env.VIDEOS.delete(`meta/pending/${id}/${i}.json`);if(old && old!==pending.objectKey)await env.VIDEOS.delete(old);
     return okay({ready:true});
    }
    if(parts[5]==='preview'&&method==='GET'){
@@ -202,7 +220,7 @@ export default {
   if(request.method==='OPTIONS')return new Response(null,{status:204,headers:cors});
   const url=new URL(request.url);
   try {
-   if(!env.DATA||!env.VIDEOS||!env.STUDIO_ACCESS_KEY||!env.GEMINI_API_KEY||!env.R2_ACCESS_KEY_ID||
+   if(!env.VIDEOS||!env.STUDIO_ACCESS_KEY||!env.GEMINI_API_KEY||!env.R2_ACCESS_KEY_ID||
     !env.R2_SECRET_ACCESS_KEY||!env.R2_ACCOUNT_ID||!env.R2_BUCKET_NAME||
     !env.GITHUB_ACTIONS_TOKEN||!env.WORKER_JOB_KEY)throw Error('필수 서버 설정이 완료되지 않았습니다.');
    const r=await route(request,env,url);Object.entries(cors).forEach(([k,v])=>r.headers.set(k,v));return r;
