@@ -25,9 +25,8 @@ jobs:
         run: |
           mkdir -p /tmp/fairytale-site/ffmpeg
           cp index.html style.css app.js config.js /tmp/fairytale-site/
-          cp node_modules/@ffmpeg/ffmpeg/dist/umd/ffmpeg.js /tmp/fairytale-site/ffmpeg/
-          cp node_modules/@ffmpeg/ffmpeg/dist/umd/814.ffmpeg.js /tmp/fairytale-site/ffmpeg/worker.js
-          cp node_modules/@ffmpeg/core/dist/umd/ffmpeg-core.js node_modules/@ffmpeg/core/dist/umd/ffmpeg-core.wasm /tmp/fairytale-site/ffmpeg/
+          cp node_modules/@ffmpeg/ffmpeg/dist/esm/*.js /tmp/fairytale-site/ffmpeg/
+          cp node_modules/@ffmpeg/core/dist/esm/ffmpeg-core.js node_modules/@ffmpeg/core/dist/esm/ffmpeg-core.wasm /tmp/fairytale-site/ffmpeg/
           cd /tmp/fairytale-site
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/fairytale-http.log 2>&1 &
       - name: Generate two tiny MP4 clips
