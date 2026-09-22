@@ -15,7 +15,3 @@ R2_ACCOUNT_ID = "REPLACE_WITH_CLOUDFLARE_ACCOUNT_ID"
 [[r2_buckets]]
 binding = "VIDEOS"
 bucket_name = "fairytale-private-videos"
-
-[[kv_namespaces]]
-binding = "DATA"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
