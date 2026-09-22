@@ -178,6 +178,13 @@ function init(){
  $('authForm').onsubmit=async e=>{e.preventDefault();const previous=state.token;state.token=$('token').value.trim();const button=e.submitter;if(button)button.disabled=true;try{await api('/api/projects');sessionStorage.setItem('fairytale-access',state.token);$('authDialog').close();message('스튜디오 연결을 확인했습니다.');history();}catch(err){state.token=previous;$('authError').textContent=err.message;}finally{if(button)button.disabled=false;}};
  for(const [a,b] of [['narrationVolume','narrationOut'],['backgroundVolume','backgroundOut']])$(a).oninput=()=>$(b).value=$(a).value+'%';
  if(state.project&&state.token&&API.apiBase)api('/api/projects/'+state.project.id).then(p=>{state.project={...state.project,...p};persist();if(state.step===3)uploads();}).catch(e=>message('서버에서 이전 작업을 조회하지 못했습니다: '+e.message,true));
- if(!API.apiBase){message('제작 서버가 아직 연결되지 않았습니다. 입력한 이야기는 이 기기에 자동 저장되지만 AI 생성과 영상 합성은 아직 사용할 수 없습니다.',true);$('generate').disabled=true;$('generate').textContent='제작 서버 연결 준비 중';}
+ if(!API.apiBase){message('제작 서버 주소가 아직 등록되지 않았습니다. 입력한 이야기는 이 기기에 자동 저장됩니다.',true);$('generate').disabled=true;$('generate').textContent='제작 서버 연결 준비 중';}
+ else {
+  $('generate').disabled=true;$('generate').textContent='제작 서버 확인 중…';
+  fetch(API.apiBase.replace(/\\/$/,'')+'/health',{signal:AbortSignal.timeout(10000)})
+   .then(async r=>{const d=await r.json();if(!r.ok||d.service!=='ai-fairytale-studio-api'||d.ready!==true)throw Error('Cloudflare 서버 배포와 비밀키 설정이 아직 완료되지 않았습니다.');
+    $('generate').disabled=false;$('generate').textContent='AI 프롬프트 생성 →';message('제작 서버가 준비됐습니다. 상단 연결 설정에서 스튜디오 접근키를 입력하세요.');
+   }).catch(e=>{message('제작 서버 준비 중: '+e.message+' 입력한 이야기는 이 기기에 자동 저장됩니다.',true);$('generate').disabled=true;$('generate').textContent='제작 서버 연결 준비 중';});
+ }
 }
 init();
