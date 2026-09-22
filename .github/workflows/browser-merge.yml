@@ -1,0 +1,39 @@
+name: Browser MP4 merge smoke test
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app.js'
+      - 'index.html'
+      - 'tests/browser-merge.cjs'
+      - '.github/workflows/pages.yml'
+      - '.github/workflows/browser-merge.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  merge-in-chromium:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pinned video engine and browser
+        run: |
+          npm install --no-save --no-audit --no-fund @ffmpeg/ffmpeg@0.12.10 @ffmpeg/core@0.12.10 playwright@1.55.1
+          npx playwright install --with-deps chromium
+      - name: Serve actual published file layout
+        run: |
+          mkdir -p /tmp/fairytale-site/ffmpeg
+          cp index.html style.css app.js config.js /tmp/fairytale-site/
+          cp node_modules/@ffmpeg/ffmpeg/dist/umd/ffmpeg.js /tmp/fairytale-site/ffmpeg/
+          cp node_modules/@ffmpeg/ffmpeg/dist/umd/814.ffmpeg.js /tmp/fairytale-site/ffmpeg/worker.js
+          cp node_modules/@ffmpeg/core/dist/umd/ffmpeg-core.js node_modules/@ffmpeg/core/dist/umd/ffmpeg-core.wasm /tmp/fairytale-site/ffmpeg/
+          cd /tmp/fairytale-site
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/fairytale-http.log 2>&1 &
+      - name: Generate two tiny MP4 clips
+        run: |
+          sudo apt-get install -y -qq ffmpeg
+          ffmpeg -hide_banner -loglevel error -f lavfi -i color=c=red:s=160x288:r=10 -t 0.5 -c:v libx264 -pix_fmt yuv420p -y /tmp/fairytale-clip-1.mp4
+          ffmpeg -hide_banner -loglevel error -f lavfi -i color=c=blue:s=160x288:r=10 -t 0.5 -c:v libx264 -pix_fmt yuv420p -y /tmp/fairytale-clip-2.mp4
+      - name: Merge both MP4 clips in real Chromium
+        run: node tests/browser-merge.cjs
