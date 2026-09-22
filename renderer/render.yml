@@ -36,3 +36,15 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           JOB_ID: ${{ inputs.job_id }}
         run: python3 scripts/render.py
+      - name: Report unexpected Actions failure
+        if: ${{ failure() }}
+        env:
+          WORKER_URL: ${{ secrets.WORKER_URL }}
+          WORKER_JOB_KEY: ${{ secrets.WORKER_JOB_KEY }}
+          JOB_ID: ${{ inputs.job_id }}
+        run: |
+          curl --fail --silent --show-error --max-time 20 \
+            -X POST "${WORKER_URL%/}/internal/jobs/${JOB_ID}/status" \
+            -H "Authorization: Bearer ${WORKER_JOB_KEY}" \
+            -H 'Content-Type: application/json' \
+            --data '{"status":"failed","stage":"GitHub Actions 실행 실패","detail":"합성 작업 단계나 서버 설정을 확인해 주세요."}' || true
