@@ -108,6 +108,17 @@ async function history(){
    const box=node('article','card');box.append(node('h4','',p.title||'제목 없음'),node('p','',p.cuts+'컷 · '+(p.completed?'완료':'제작 중')+' · '+(p.createdAt?.slice(0,10)||'')));
    const actions=node('div','actions');
    if(p.completed){const b=node('button','secondary','완성 MP4 다운로드');b.type='button';b.onclick=async()=>{try{const d=await api('/api/projects/'+p.id+'/download');location.href=d.url;}catch(e){message(e.message,true);}};actions.append(b);}
+   const open=node('button','secondary','이 동화 열기');open.type='button';open.onclick=async()=>{
+    if(state.project?.id!==p.id && ($('title').value.trim()||$('story').value.trim()) &&
+       !confirm('현재 열려 있는 작업 대신 선택한 동화를 열까요? 저장하지 않은 입력은 사라질 수 있습니다.'))return;
+    try{
+     const loaded=await api('/api/projects/'+p.id);
+     if(!Array.isArray(loaded.scenes)||loaded.scenes.length!==loaded.cuts)throw Error('컷 정보가 올바르지 않습니다.');
+     state.project=loaded;state.project.videos=loaded.videos||{};
+     $('title').value=loaded.title||'';$('story').value=loaded.story||'';$('cuts').value=loaded.cuts;
+     prompts();clearMessage();step(3);
+    }catch(e){message('동화 열기 실패: '+e.message,true);}
+   };actions.append(open);
    const del=node('button','secondary','제작 내역 삭제');del.type='button';del.onclick=async()=>{
     if(!confirm('이 동화의 서버 저장 영상과 완성본까지 삭제할까요?'))return;
     try{await api('/api/projects/'+p.id,'DELETE');if(state.project?.id===p.id){state.project=null;$('title').value='';$('story').value='';$('cuts').value='8';step(1);}history();}
