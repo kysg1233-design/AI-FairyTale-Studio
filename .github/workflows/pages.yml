@@ -41,7 +41,7 @@ jobs:
       - name: Collect ONLY public website files
         run: |
           mkdir -p site
-          cp index.html style.css app.js config.js site/
+          cp index.html style.css app.js narration.js config.js site/
           mkdir -p site/ffmpeg
           cp /tmp/fairytale-deps/node_modules/@ffmpeg/ffmpeg/dist/esm/*.js site/ffmpeg/
           cp /tmp/fairytale-deps/node_modules/@ffmpeg/core/dist/esm/ffmpeg-core.js site/ffmpeg/
