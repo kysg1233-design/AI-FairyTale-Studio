@@ -1,9 +1,9 @@
-name = "fairytale-studio-api"
+name = "ai-fairytale-studio-api"
 main = "src/index.js"
 compatibility_date = "2026-09-01"
 compatibility_flags = ["nodejs_compat"]
 
-# Rename via the Cloudflare dashboard or wrangler before deployment.
+# Matches the Worker created in Cloudflare.
 # The only public variable here is the allowed website origin.
 [vars]
 ALLOWED_ORIGIN = "https://kysg1233-design.github.io"
