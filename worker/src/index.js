@@ -241,6 +241,12 @@ export default {
    'Access-Control-Max-Age':'600'};
   if(request.method==='OPTIONS')return new Response(null,{status:204,headers:cors});
   const url=new URL(request.url);
+  if(url.pathname==='/health' && request.method==='GET'){
+   const required=['STUDIO_ACCESS_KEY','GEMINI_API_KEY','R2_ACCESS_KEY_ID','R2_SECRET_ACCESS_KEY','R2_ACCOUNT_ID','R2_BUCKET_NAME','GITHUB_ACTIONS_TOKEN','WORKER_JOB_KEY'];
+   const ready=Boolean(env.VIDEOS && required.every(k=>env[k] && !String(env[k]).startsWith('REPLACE_WITH_')));
+   const r=okay({service:'ai-fairytale-studio-api',ready},ready?200:503);
+   Object.entries(cors).forEach(([k,v])=>r.headers.set(k,v));return r;
+  }
   try {
    if(!env.VIDEOS||!env.STUDIO_ACCESS_KEY||!env.GEMINI_API_KEY||!env.R2_ACCESS_KEY_ID||
     !env.R2_SECRET_ACCESS_KEY||!env.R2_ACCOUNT_ID||!env.R2_BUCKET_NAME||
