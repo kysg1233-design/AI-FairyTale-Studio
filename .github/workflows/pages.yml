@@ -32,6 +32,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Configure Pages
         uses: actions/configure-pages@v5
+        with:
+          enablement: true
       - name: Collect ONLY public website files
         run: |
           mkdir -p site
