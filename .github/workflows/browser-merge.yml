@@ -7,6 +7,7 @@ on:
       - 'app-studio-v6.js'
       - 'narration.js'
       - 'index.html'
+      - 'studio-v6.html'
       - 'tests/browser-merge.cjs'
       - 'tests/ui-smoke.cjs'
       - 'tests/narration-merge.cjs'
@@ -28,7 +29,7 @@ jobs:
       - name: Serve actual published file layout
         run: |
           mkdir -p /tmp/fairytale-site/ffmpeg
-          cp index.html style.css app.js app-studio-v6.js narration.js config.js /tmp/fairytale-site/
+          cp index.html studio-v6.html style.css app.js app-studio-v6.js narration.js config.js /tmp/fairytale-site/
           cp node_modules/@ffmpeg/ffmpeg/dist/esm/*.js /tmp/fairytale-site/ffmpeg/
           cp node_modules/@ffmpeg/core/dist/esm/ffmpeg-core.js node_modules/@ffmpeg/core/dist/esm/ffmpeg-core.wasm /tmp/fairytale-site/ffmpeg/
           cd /tmp/fairytale-site
