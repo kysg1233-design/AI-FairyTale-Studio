@@ -7,6 +7,7 @@ on:
       - 'narration.js'
       - 'index.html'
       - 'tests/browser-merge.cjs'
+      - 'tests/ui-smoke.cjs'
       - 'tests/narration-merge.cjs'
       - '.github/workflows/pages.yml'
       - '.github/workflows/browser-merge.yml'
@@ -31,6 +32,8 @@ jobs:
           cp node_modules/@ffmpeg/core/dist/esm/ffmpeg-core.js node_modules/@ffmpeg/core/dist/esm/ffmpeg-core.wasm /tmp/fairytale-site/ffmpeg/
           cd /tmp/fairytale-site
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/fairytale-http.log 2>&1 &
+      - name: Verify mobile cut selector and API key dialog
+        run: node tests/ui-smoke.cjs
       - name: Generate two tiny MP4 clips
         run: |
           sudo apt-get install -y -qq ffmpeg
