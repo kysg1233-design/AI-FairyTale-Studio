@@ -7,7 +7,7 @@ const {chromium}=require('playwright');
    const errors=[];page.on('pageerror',e=>errors.push(e.message));
    await page.goto('http://127.0.0.1:8765'+path,{waitUntil:'load'});
    const values=await page.locator('#cuts option').evaluateAll(xs=>xs.map(x=>Number(x.value)));
-   if(values.length!==15||values[0]!==6||values.at(-1)!==20)throw Error(path+' cut options invalid: '+values);
+   if(JSON.stringify(values)!==JSON.stringify([9,12,15,18,20]))throw Error(path+' cut options invalid: '+values);
    if(await page.locator('#cuts').inputValue()!=='15')throw Error(path+' default must be 15');
    await page.locator('#cuts').selectOption('20');
    if(await page.locator('#cuts').inputValue()!=='20')throw Error(path+' cannot select 20');
@@ -15,7 +15,7 @@ const {chromium}=require('playwright');
    if(!await page.locator('#authDialog').evaluate(e=>e.open))throw Error(path+' API dialog missing');
    await page.locator('#cancelAuth').click();
    if(errors.length)throw Error(path+' browser errors: '+errors.join(' | '));
-   console.log('MOBILE UI PASS',path,'6–20 cuts; default 15; select 20');
+   console.log('MOBILE UI PASS',path,'9/12/15/18/20 cuts; default 15; select 20');
    await page.close();
   }
   const page=await browser.newPage();
