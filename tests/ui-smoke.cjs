@@ -28,7 +28,7 @@ const {chromium}=require('playwright');
   await page.route('https://generativelanguage.googleapis.com/**',route=>{
    calls++;
    const msg=JSON.parse(route.request().postData()).contents[0].parts[0].text;
-   if(calls===1&&!msg.includes('MAXIMUM 120 SECONDS'))throw Error('Missing 2-minute plan');
+   if(calls===1&&!msg.includes('STORY PLAN FIRST PASS'))throw Error('Missing story plan');
    if(calls===2&&!msg.includes('STORY_PLAN (immutable beat order'))throw Error('Missing story plan');
    const beats=Array.from({length:15},(_,i)=>({title:'사건 '+(i+1),cause:'앞 사건의 결과',event:'총각의 이야기 '+(i+1),result:'다음 사건의 원인',sourceExcerpt:source[Math.min(3,Math.floor(i/4))],timePlace:'낮 논'}));
    const plan={opening:'총각의 농사',centralConflict:'우렁이의 정체',originalEnding:'둘은 행복하게 살았어요.',beats};
