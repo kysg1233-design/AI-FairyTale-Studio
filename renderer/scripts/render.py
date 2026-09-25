@@ -34,8 +34,8 @@ def internal(suffix, method="GET", data=None):
     })
     return json.loads(raw)
 
-def status(stage, detail="", value="running"):
-    internal("/status", "POST", {"status": value, "stage": stage, "detail": detail})
+def status(stage, detail="", value="running", percent=0):
+    internal("/status", "POST", {"status": value, "stage": stage, "detail": detail, "percent": percent})
 
 def run(cmd, timeout=2700):
     # Capture failures without ever printing the command or signed URLs.
@@ -136,7 +136,7 @@ def speech(text, voice, output):
     if duration(output)<0.2:
         raise RuntimeError("Generated narration was empty")
 
-def render_cut(index, input_path, voice_path, ass_path, output, bg, narration):
+def render_cut(index, input_path, voice_path, ass_path, output, bg, narration, quality="balanced"):
     info = probe(input_path)
     streams=info["streams"]
     if not any(s["codec_type"]=="video" for s in streams):
@@ -152,7 +152,8 @@ def render_cut(index, input_path, voice_path, ass_path, output, bg, narration):
         args+=["-f","lavfi","-i","anullsrc=r=48000:cl=stereo"]
     audio="0:a:0" if has_audio else "2:a:0"
     # Extend final video frame; preserve original sound without repeating it.
-    video=f"[0:v]fps=30,scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2:black,setsar=1,tpad=stop_mode=clone:stop_duration={target:.3f},trim=duration={target:.3f},setpts=PTS-STARTPTS,ass={ass_path}[v]"
+    width,height,fps=(480,854,20) if quality=="fast" else ((720,1280,24) if quality=="high" else (540,960,24))
+    video=f"[0:v]fps={fps},scale={width}:{height}:force_original_aspect_ratio=decrease,pad={width}:{height}:(ow-iw)/2:(oh-ih)/2:black,setsar=1,tpad=stop_mode=clone:stop_duration={target:.3f},trim=duration={target:.3f},setpts=PTS-STARTPTS,ass={ass_path}[v]"
     audio_bg=f"[{audio}]volume={bg:.3f},apad,atrim=duration={target:.3f},asetpts=PTS-STARTPTS[bg]"
     audio_voice=f"[1:a:0]volume={narration:.3f},apad,atrim=duration={target:.3f},asetpts=PTS-STARTPTS[vo]"
     args+=["-filter_complex",";".join([video,audio_bg,audio_voice,"[bg][vo]amix=inputs=2:duration=longest:normalize=0[a]"]),
@@ -168,25 +169,25 @@ def main():
     info=internal("/manifest")
     videos=info["videos"]
     count=info["cuts"]
-    if not 1<=count==len(videos)<=10:
+    if not 1<=count==len(videos)<=20:
         raise RuntimeError("Video count mismatch")
     with tempfile.TemporaryDirectory(prefix="fairytale-") as tmp:
         wd=Path(tmp)
         completed=[]
         for i,v in enumerate(videos):
-            status(f"컷 {i+1} / {count} 다운로드 중")
+            status(f"컷 {i+1} / {count} 다운로드 중",percent=round(i*85/count))
             original=wd/f"source_{i:02d}.mp4"
             run(["curl","-fLsS","--max-time","1800","-o",original,v["sourceUrl"]],1900)
-            status(f"컷 {i+1} / {count} 한국어 나레이션 생성 중")
+            status(f"컷 {i+1} / {count} 한국어 나레이션 생성 중",percent=round((i+.2)*85/count))
             voice=wd/f"voice_{i:02d}.wav"
             speech(v["narration"],info["voice"],voice)
             ass=wd/f"subtitle_{i:02d}.ass"
             captions(ass,v["narration"],duration(voice))
-            status(f"컷 {i+1} / {count} 한국어 자막·배경음 합성 중")
+            status(f"컷 {i+1} / {count} 한국어 자막·배경음 합성 중",percent=round((i+.4)*85/count))
             out=wd/f"cut_{i:02d}.mp4"
-            render_cut(i,original,voice,ass,out,info["backgroundVolume"],info["narrationVolume"])
+            render_cut(i,original,voice,ass,out,info["backgroundVolume"],info["narrationVolume"],info.get("quality","balanced"))
             completed.append(out)
-        status("최종 MP4 연결·검증 중")
+        status("최종 MP4 연결·검증 중",percent=88)
         playlist=wd/"list.txt"
         playlist.write_text("".join("file '"+str(path)+"'\n" for path in completed),encoding="utf-8")
         finished=wd/"final.mp4"
@@ -196,10 +197,10 @@ def main():
         types={s["codec_type"] for s in final["streams"]}
         if not finished.exists() or finished.stat().st_size<10000 or not {"video","audio"}<=types:
             raise RuntimeError("Final MP4 validation failed")
-        status("완성 MP4 비공개 저장 중")
+        status("완성 MP4 비공개 저장 중",percent=96)
         run(["curl","-fLsS","--max-time","1800","-X","PUT","-H","Content-Type: video/mp4",
              "-T",finished,info["outputUrl"]],1900)
-        status("완료",f"{count}컷 영상과 한국어 나레이션·자막을 합쳤습니다.","complete")
+        status("완료",f"{count}컷 영상과 한국어 나레이션·자막을 합쳤습니다.","complete",100)
 
 if __name__=="__main__":
     try:
