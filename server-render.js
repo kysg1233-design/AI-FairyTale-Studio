@@ -1,60 +1,96 @@
 'use strict';
-// Server renderer: browser uploads original files directly to private R2 using
-// short-lived signed URLs; the private GitHub Actions runner performs the render.
+/* GitHub-only renderer. All user videos go to a PRIVATE GitHub repository.
+ * GitHub PAT is held in sessionStorage only; never in public code or URL.
+ * Git blobs are limited to 50 MiB per cut to avoid GitHub's 100 MiB file cap.
+ */
 const StudioServer=(()=>{
- const base=()=>String(window.FAIRYTALE_CONFIG?.apiBase||'').replace(/\/$/,'');
- const token=()=>sessionStorage.getItem('fairytale-worker-token')||'';
- async function request(path,method='GET',data){
-  const r=await fetch(base()+path,{method,headers:{'X-Studio-Token':token(),...(data?{'Content-Type':'application/json'}:{})},body:data?JSON.stringify(data):undefined});
-  const j=await r.json().catch(()=>({}));if(!r.ok)throw Error(j.error||'서버 HTTP '+r.status);return j;
+ const OWNER='kysg1233-design', REPO='AI-FairyTale-Worker';
+ const store='fairytale-github-job-';
+ const token=()=>sessionStorage.getItem('fairytale-github-token')||'';
+ const api='https://api.github.com';
+ const headers=()=>({'Accept':'application/vnd.github+json','Authorization':'Bearer '+token(),'X-GitHub-Api-Version':'2022-11-28'});
+ async function call(path,method='GET',body){
+  const r=await fetch(api+path,{method,headers:{...headers(),...(body?{'Content-Type':'application/json'}:{})},body:body?JSON.stringify(body):undefined});
+  if(r.status===204)return {};
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw Error('GitHub '+r.status+': '+(j.message||'요청 실패'));
+  return j;
  }
- async function health(){
-  try{const r=await fetch(base()+'/health',{signal:AbortSignal.timeout(12000)});const j=await r.json();return r.ok&&j.ready;}
-  catch{return false;}
- }
- async function ensureAccess(){
-  if(!(await health()))throw Error('서버 합성이 아직 연결되지 않았습니다. 비공개 Worker/R2/GitHub Actions 설정이 필요합니다. 모바일에서 영상을 다시 만들지 마세요.');
-  if(!token()){const t=prompt('비공개 스튜디오 접근키를 입력해 주세요 (Gemini API 키가 아닙니다).');if(!t)throw Error('스튜디오 접근키가 필요합니다.');sessionStorage.setItem('fairytale-worker-token',t.trim());}
- }
- const key=id=>'fairytale-server-job-'+id;
- async function poll(project,box,onProgress){
-  const saved=JSON.parse(localStorage.getItem(key(project.id))||'null');if(!saved)return false;
-  const j=await request('/api/jobs/'+saved.jobId);
-  const percent=Math.max(0,Math.min(100,Number(j.percent)||0));
-  onProgress({percent,phase:j.stage||'서버에서 합성 중',detail:j.detail||'브라우저를 닫아도 작업이 계속됩니다.'});
-  box.textContent=j.stage||'서버에서 합성 중';
-  if(j.status==='complete'){
-   const download=await request('/api/projects/'+saved.serverId+'/download');
-   const a=document.createElement('a');a.className='primary';a.textContent='완성 MP4 다운로드';a.href=download.url;a.target='_blank';a.rel='noopener';box.replaceChildren(a);
-   localStorage.removeItem(key(project.id));return true;
+ const path='/repos/'+OWNER+'/'+REPO;
+ async function connect(){
+  if(!token()){
+   const t=prompt('비공개 GitHub 저장소에 접근할 GitHub 토큰을 입력하세요. 이 탭에만 보관하며 채팅이나 공개 저장소에 전송하지 않습니다.');
+   if(!t)throw Error('GitHub 토큰이 필요합니다.');
+   sessionStorage.setItem('fairytale-github-token',t.trim());
   }
-  if(j.status==='failed'){box.textContent='서버 합성 실패: '+(j.detail||j.stage);box.className='status error';localStorage.removeItem(key(project.id));return true;}
-  return false;
+  const r=await call(path);
+  if(!r.private)throw Error('영상 저장소가 공개 상태입니다. 비공개 저장소만 허용합니다.');
+  const w=await call(path+'/contents/.github/workflows/render.yml');
+  if(!w.path)throw Error('비공개 저장소에 render.yml을 먼저 설치해야 합니다.');
  }
+ async function blob(file){
+  if(file.size>50*1024*1024)throw Error(file.name+' 용량이 50MiB를 초과합니다. GitHub Git 저장 제한으로 이 파일은 업로드할 수 없습니다.');
+  const bytes=new Uint8Array(await file.arrayBuffer());
+  let binary='';for(let i=0;i<bytes.length;i+=16384)binary+=String.fromCharCode(...bytes.subarray(i,i+16384));
+  return (await call(path+'/git/blobs','POST',{content:btoa(binary),encoding:'base64'})).sha;
+ }
+ const jobKey=id=>store+id;
+ function progress(onProgress,percent,phase,detail){onProgress({percent,phase,detail});}
  async function render({project,files,voice,bgVolume,narrationVolume,quality,box,onProgress}){
-  await ensureAccess();box.textContent='서버에 영상 업로드를 준비하고 있습니다.';
-  const projectData={title:project.title,story:project.story,cuts:project.cuts,characters:project.characters,scenes:project.scenes};
-  const created=await request('/api/projects','POST',projectData),id=created.id;
-  for(let i=0;i<project.cuts;i++){
-   const file=files.get(i);if(!file)throw Error('컷 '+(i+1)+' 파일이 없습니다.');
-   onProgress({percent:Math.floor(i/project.cuts*25),phase:'영상 업로드 '+(i+1)+'/'+project.cuts,detail:file.name});
-   const u=await request('/api/projects/'+id+'/cuts/'+i+'/upload-url','POST',{size:file.size,fileName:file.name});
-   const put=await fetch(u.url,{method:'PUT',headers:{'Content-Type':u.contentType},body:file});
-   if(!put.ok)throw Error('컷 '+(i+1)+' 업로드 실패 HTTP '+put.status+' · 업로드 파일은 유지됩니다.');
-   await request('/api/projects/'+id+'/cuts/'+i+'/complete','POST',{});
-  }
-  const voices={dad:'Charon',calmMale:'Charon',warmFemale:'Kore',storyteller:'Puck',grandma:'Kore',grandpa:'Iapetus'};
-  const j=await request('/api/projects/'+id+'/render','POST',{voice:voices[voice]||voice||'Charon',backgroundVolume:Number(bgVolume),narrationVolume:Number(narrationVolume),quality});
-  localStorage.setItem(key(project.id),JSON.stringify({serverId:id,jobId:j.jobId}));
-  onProgress({percent:25,phase:'GitHub Actions 합성 요청 완료',detail:'이제 크롬을 닫아도 서버에서 작업합니다.'});
-  box.textContent='서버 합성 중입니다. 이 페이지를 닫았다가 나중에 다시 열어도 됩니다.';
-  const tick=async()=>{try{const done=await poll(project,box,onProgress);if(!done)setTimeout(tick,12000);}catch(e){box.textContent='진행상황 연결 재시도 중: '+e.message;setTimeout(tick,20000);}};
-  setTimeout(tick,3000);
+  await connect();
+  const id=crypto.randomUUID(), branch='jobs/'+id;
+  const main=await call(path+'/git/ref/heads/main');
+  await call(path+'/git/refs','POST',{ref:'refs/heads/'+branch,sha:main.object.sha});
+  const tree=[];
+  const voices={warmFemale:'Kore',calmMale:'Charon',storyteller:'Puck',grandma:'Kore',grandpa:'Iapetus'};
+  const manifest={title:project.title,cuts:project.cuts,voice:voices[voice]||'Charon',backgroundVolume:Number(bgVolume),narrationVolume:Number(narrationVolume),quality:quality||'balanced',videos:[]};
+  try{
+   for(let i=0;i<project.cuts;i++){
+    const file=files.get(i);if(!file)throw Error('컷 '+(i+1)+' 파일 없음');
+    progress(onProgress,Math.floor(i/project.cuts*30),'GitHub 비공개 업로드 '+(i+1)+'/'+project.cuts,file.name);
+    const sha=await blob(file),name='jobs/'+id+'/cut_'+String(i).padStart(2,'0')+'.mp4';
+    tree.push({path:name,mode:'100644',type:'blob',sha});
+    manifest.videos.push({path:name,narration:project.scenes[i].narration});
+   }
+   const manifestSha=(await call(path+'/git/blobs','POST',{content:JSON.stringify(manifest),encoding:'utf-8'})).sha;
+   tree.push({path:'jobs/'+id+'/manifest.json',mode:'100644',type:'blob',sha:manifestSha});
+   const base=await call(path+'/git/commits/'+main.object.sha);
+   const t=await call(path+'/git/trees','POST',{base_tree:base.tree.sha,tree});
+   const commit=await call(path+'/git/commits','POST',{message:'Private fairy tale render job '+id,tree:t.sha,parents:[main.object.sha]});
+   await call(path+'/git/refs/heads/'+branch,'PATCH',{sha:commit.sha,force:false});
+   progress(onProgress,35,'GitHub Actions 시작','업로드 완료. 이후에는 크롬을 닫아도 됩니다.');
+   await call(path+'/actions/workflows/render.yml/dispatches','POST',{ref:branch,inputs:{job_id:id}});
+   localStorage.setItem(jobKey(project.id),JSON.stringify({id,branch,started:Date.now()}));
+   box.textContent='GitHub Actions에서 합성 중입니다. 이제 크롬을 닫아도 됩니다.';
+   await resume(project,box,onProgress);
+  }catch(e){throw Error(e.message+' (비공개 저장소 작업 브랜치 '+branch+' 확인)');}
  }
  async function resume(project,box,onProgress){
-  if(!localStorage.getItem(key(project.id)))return;
-  try{await ensureAccess();const done=await poll(project,box,onProgress);if(!done){const tick=async()=>{try{if(!await poll(project,box,onProgress))setTimeout(tick,12000);}catch{setTimeout(tick,20000);}};setTimeout(tick,12000);}}
-  catch(e){box.textContent='서버 작업 조회 대기: '+e.message;}
+  const saved=JSON.parse(localStorage.getItem(jobKey(project.id))||'null');if(!saved)return;
+  if(!token()){box.textContent='합성 작업이 저장되어 있습니다. 결과를 확인하려면 GitHub 토큰을 다시 입력하세요.';return;}
+  let stop=false;
+  async function tick(){
+   if(stop)return;
+   try{
+    const r=await call(path+'/actions/workflows/render.yml/runs?branch='+encodeURIComponent(saved.branch)+'&per_page=10');
+    const run=r.workflow_runs?.find(x=>x.head_branch===saved.branch);
+    if(!run){progress(onProgress,36,'Actions 작업 대기','GitHub 실행을 기다리는 중');}
+    else if(run.status!=='completed'){progress(onProgress,run.status==='in_progress'?55:40,'Actions '+run.status,'서버에서 MP4를 합성하고 있습니다.');}
+    else if(run.conclusion!=='success'){box.className='status error';box.textContent='서버 합성 실패: '+run.conclusion+' · GitHub Actions 로그를 확인하세요.';stop=true;return;}
+    else{
+     const arts=await call(path+'/actions/runs/'+run.id+'/artifacts');
+     const a=arts.artifacts?.find(x=>x.name==='fairytale-mp4-'+saved.id&&!x.expired);
+     if(a){
+      const link=document.createElement('a');link.className='primary';link.textContent='완성 MP4 받기 (GitHub 로그인 필요)';link.href='https://github.com/'+OWNER+'/'+REPO+'/actions/runs/'+run.id;link.target='_blank';link.rel='noopener';
+      box.replaceChildren(link);progress(onProgress,100,'서버 합성 완료','GitHub Actions의 Artifacts에서 MP4를 받으세요.');
+      stop=true;return;
+     }
+     progress(onProgress,95,'완성 파일 등록 중','GitHub Artifacts 반영을 기다립니다.');
+    }
+   }catch(e){box.textContent='작업 조회 오류: '+e.message;}
+   setTimeout(tick,15000);
+  }
+  await tick();
  }
- return {render,resume,health};
+ return {render,resume,connect};
 })();
