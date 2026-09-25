@@ -1,0 +1,51 @@
+name: Render fairy tale video
+on:
+  workflow_dispatch:
+    inputs:
+      job_id:
+        description: Private job UUID
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: render-${{ inputs.job_id }}
+  cancel-in-progress: false
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          persist-credentials: false
+      - name: Install FFmpeg and Korean fonts
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-noto-cjk
+      - name: Validate job input
+        env:
+          JOB_ID: ${{ inputs.job_id }}
+        run: |
+          python3 - <<'PY'
+          import os,re
+          from pathlib import Path
+          job=os.environ['JOB_ID']
+          assert re.fullmatch(r'[0-9a-f-]{36}',job)
+          assert Path('jobs',job,'manifest.json').is_file()
+          PY
+      - name: Render MP4 in GitHub Actions
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          JOB_ID: ${{ inputs.job_id }}
+        run: |
+          test -n "$GEMINI_API_KEY" || { echo "::error::Set GEMINI_API_KEY in private repo Actions secrets."; exit 1; }
+          python3 scripts/github_render.py
+      - name: Upload finished MP4 artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fairytale-mp4-${{ inputs.job_id }}
+          path: fairytale-final.mp4
+          if-no-files-found: error
+          retention-days: 7
