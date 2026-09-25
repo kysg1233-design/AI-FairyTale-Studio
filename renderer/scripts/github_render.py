@@ -114,10 +114,19 @@ def speech(text, voice, output):
             "speechConfig": {"voiceConfig": {"prebuiltVoiceConfig": {"voiceName": voice}}},
         },
     }
-    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-tts:generateContent"
-    reply = json.loads(fetch(url, "POST", payload, {
-        "Content-Type": "application/json", "x-goog-api-key": GEMINI_KEY,
-    }))
+    url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash-lite-tts:generateContent"
+    import time
+    reply = None
+    for attempt in range(4):
+        try:
+            reply = json.loads(fetch(url, "POST", payload, {
+                "Content-Type": "application/json", "x-goog-api-key": GEMINI_KEY,
+            }))
+            break
+        except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError):
+            if attempt == 3:
+                raise
+            time.sleep(2 ** attempt * 2)
     parts = reply.get("candidates", [{}])[0].get("content", {}).get("parts", [])
     data = next((p.get("inlineData") for p in parts if p.get("inlineData")), None)
     if not data or not data.get("data"):
