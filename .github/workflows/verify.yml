@@ -33,16 +33,16 @@ jobs:
           node --check config.js
       - name: Validate Python syntax
         run: python3 -m py_compile renderer/scripts/github_render.py
-      - name: Validate local-only studio flow
+      - name: Validate GitHub-only server render wiring
         run: |
-          node --check app.js
           node - <<'JS'
           const fs=require('fs');
-          const js=fs.readFileSync('app.js','utf8');
-          for(const token of ['sessionStorage','localStorage','gemini-3.6-flash','FFmpegWASM','state.files']){
-            if(!js.includes(token))throw Error('Missing local studio feature: '+token);
-          }
-          if(js.includes('R2_ACCESS_KEY_ID')||js.includes('GITHUB_ACTIONS_TOKEN'))throw Error('Unexpected server credentials in frontend');
+          const client=fs.readFileSync('server-render.js','utf8');
+          const app=fs.readFileSync('app-studio-v6.js','utf8');
+          for(const token of ['/git/blobs','/git/trees','/actions/workflows/render.yml/dispatches','/artifacts'])
+            if(!client.includes(token))throw Error('Missing GitHub-only render feature: '+token);
+          if(!app.includes('StudioServer.render('))throw Error('Render button does not use GitHub server');
+          if(/cloudflare|workers\\.dev|r2\\.cloudflarestorage/i.test(client))throw Error('External upload dependency remains');
           JS
       - name: Install FFmpeg + Hangul fonts for two-cut smoke test
         run: |
