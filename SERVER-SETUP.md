@@ -1,23 +1,15 @@
-# 서버 합성 연결 상태와 필수 설정
+# GitHub만 사용하는 합성 방식
 
-이 저장소의 GitHub Pages는 **정적 웹사이트**입니다. GitHub Pages만으로는 사용자의 MP4를 안전하게 받아 GitHub Actions에 넘길 수 없습니다.
+**Cloudflare, R2, Vercel 가입은 필요 없습니다.**
 
-## 실제 실행 경로
-1. 웹페이지에서 완성된 프롬프트와 선택한 MP4를 Worker API로 전달합니다.
-2. Worker가 비공개 Cloudflare R2 버킷의 짧은 수명 업로드 URL을 발급합니다.
-3. 브라우저는 MP4를 R2로 직접 업로드하고 각 컷의 업로드 완료를 확인합니다.
-4. Worker가 **별도의 비공개 GitHub 저장소**에 `workflow_dispatch`를 전송합니다. 브라우저는 GitHub 토큰을 보지 않습니다.
-5. Actions의 `scripts/render.py`가 R2 원본을 읽어 TTS, 자막, 합성을 수행하고 MP4를 R2로 업로드합니다.
-6. 브라우저가 작업 상태를 조회하고 완성본의 짧은 수명 다운로드 URL을 표시합니다. 업로드 후에는 크롬을 닫아도 됩니다.
+1. 홈페이지는 공개 GitHub Pages에 유지합니다.
+2. 최초 합성 시 GitHub 토큰을 브라우저 탭에 입력합니다. 이 토큰은 공개 코드에 넣지 않고 sessionStorage에만 저장합니다.
+3. 승인하면 GitHub에 `AI-FairyTale-Worker` **비공개 저장소**를 자동 생성하고 `.github/workflows/render.yml` 및 `scripts/github_render.py`를 설치합니다. 기존 저장소가 있으면 재사용합니다.
+4. GitHub 토큰에는 비공개 저장소 생성/Contents 쓰기/Actions 실행·읽기 권한이 필요합니다. Classic PAT를 사용한다면 repo 및 workflow 범위를 요구할 수 있습니다. 토큰은 채팅에 붙여넣지 마세요.
+5. 비공개 저장소 Settings → Secrets and variables → Actions → New repository secret에서 `GEMINI_API_KEY`를 한 번 등록해야 합니다. 홈페이지에 입력한 Gemini API 키를 Actions에 자동 전달하지 않습니다.
+6. 합성 버튼을 누르면 컷 MP4(각 최대 50MiB)가 비공개 GitHub 작업 브랜치에 올라갑니다. 업로드 완료 후에는 휴대폰 브라우저를 닫아도 됩니다.
+7. GitHub Actions가 TTS, FFmpeg, 자막 합성, MP4 검증을 실행하고 7일 보존하는 Actions Artifact로 결과물을 전달합니다. GitHub 로그인 후 해당 실행 페이지의 Artifacts에서 내려받습니다.
 
-## 아직 외부 계정에서 필요한 연결
-- Cloudflare R2의 비공개 `fairytale-private-videos` 버킷과 Worker 배포. R2 사용량/요금은 Cloudflare 계정 조건에 따르므로 **무조건 무료라고 보장할 수 없습니다**.
-- Worker의 환경 변수 및 비밀값: `STUDIO_ACCESS_KEY`, `GEMINI_API_KEY`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`, `R2_ACCOUNT_ID`, `R2_BUCKET_NAME`, `GITHUB_ACTIONS_TOKEN`, `WORKER_JOB_KEY`.
-- **비공개** `kysg1233-design/AI-FairyTale-Worker` 저장소 생성 후 이 저장소의 `renderer/render.yml`을 `.github/workflows/render.yml`로, `renderer/scripts/render.py`를 `scripts/render.py`로 복사. Worker가 가리키는 저장소 이름과 일치해야 합니다.
-- 비공개 저장소 Actions secrets: `WORKER_URL`, `WORKER_JOB_KEY`, `GEMINI_API_KEY`. `GITHUB_ACTIONS_TOKEN`은 해당 비공개 저장소 workflow dispatch 권한이 있어야 합니다.
-- `worker/wrangler.toml`의 계정 ID와 R2 버킷 바인딩 설정 후 Worker 배포.
-- Worker `/health`에서 `ready:true`가 확인되기 전에는 서버 합성을 사용하지 마세요.
+**한계:** GitHub는 영상 저장 서비스가 아닙니다. 컷당 50MiB 제한, 저장소 용량·Actions 사용량 한도, 저장소 히스토리의 영상 잔존이 있습니다. 완성 후 작업 브랜치를 삭제해도 Git 객체의 즉각적인 완전 삭제가 보장되지 않습니다. 무료 사용 한도는 GitHub 계정 정책에 따릅니다. 20컷 장편·대용량 원본은 이 방식의 GitHub 용량 제한을 초과할 수 있습니다. 자막은 현재 문장 길이 비례 타이밍이며 실제 음성 단어별 정렬은 아직 구현되지 않았습니다.
 
-**보안:** 비밀값을 GitHub Pages `config.js`, 공개 저장소, 채팅에 붙여넣지 마세요. Worker에 넣은 스튜디오 접근키는 브라우저 세션에서만 입력합니다.
-
-현재 소스 코드 변경만으로 외부 계정의 R2/Worker/비공개 저장소가 자동으로 생성되거나 설정되지는 않습니다. 브라우저의 서버 합성 버튼은 연결이 준비되지 않았으면 명확한 오류를 표시하고 기존 MP4를 재제작하지 않습니다.
+**실제 동작 검증 기준:** 비공개 저장소 생성, 업로드, workflow_dispatch, Actions 실행, Artifact 다운로드를 본인 계정에서 끝까지 확인해야 운영 완료라고 말할 수 있습니다.
