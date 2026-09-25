@@ -8,7 +8,7 @@ from pathlib import Path
 
 os.environ.update(WORKER_URL="https://example.invalid", WORKER_JOB_KEY="test-only",
                   GEMINI_API_KEY="test-only", JOB_ID="123e4567-e89b-12d3-a456-426614174000")
-spec=importlib.util.spec_from_file_location("renderer", Path("renderer/scripts/render.py"))
+spec=importlib.util.spec_from_file_location("renderer", Path("renderer/scripts/github_render.py"))
 renderer=importlib.util.module_from_spec(spec)
 spec.loader.exec_module(renderer)
 
