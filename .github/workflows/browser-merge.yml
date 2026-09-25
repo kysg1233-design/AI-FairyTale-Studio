@@ -1,47 +1,38 @@
-name: Browser MP4 merge smoke test
+name: GitHub-only studio browser smoke test
 on:
   push:
     branches: [main]
     paths:
-      - 'app.js'
       - 'app-studio-v6.js'
-      - 'narration.js'
+      - 'server-render.js'
       - 'index.html'
       - 'studio-v6.html'
-      - 'tests/browser-merge.cjs'
       - 'tests/ui-smoke.cjs'
-      - 'tests/narration-merge.cjs'
-      - '.github/workflows/pages.yml'
       - '.github/workflows/browser-merge.yml'
   workflow_dispatch:
 permissions:
   contents: read
 jobs:
-  merge-in-chromium:
+  mobile-ui:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - name: Install pinned video engine and browser
+      - name: Install browser
         run: |
-          npm install --no-save --no-audit --no-fund @ffmpeg/ffmpeg@0.12.10 @ffmpeg/core@0.12.10 playwright@1.55.1
+          npm install --no-save --no-audit --no-fund playwright@1.55.1
           npx playwright install --with-deps chromium
-      - name: Serve actual published file layout
+      - name: Serve actual public website files
         run: |
-          mkdir -p /tmp/fairytale-site/ffmpeg
-          cp index.html studio-v6.html style.css app.js app-studio-v6.js narration.js config.js /tmp/fairytale-site/
-          cp node_modules/@ffmpeg/ffmpeg/dist/esm/*.js /tmp/fairytale-site/ffmpeg/
-          cp node_modules/@ffmpeg/core/dist/esm/ffmpeg-core.js node_modules/@ffmpeg/core/dist/esm/ffmpeg-core.wasm /tmp/fairytale-site/ffmpeg/
+          mkdir -p /tmp/fairytale-site
+          cp index.html studio-v6.html style.css app.js app-studio-v6.js narration.js server-render.js config.js /tmp/fairytale-site/
           cd /tmp/fairytale-site
           python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/fairytale-http.log 2>&1 &
-      - name: Verify mobile cut selector and API key dialog
+      - name: Test mobile story and GitHub-only interface
         run: node tests/ui-smoke.cjs
-      - name: Generate two tiny MP4 clips
+      - name: Ensure server render has no Cloudflare dependency
         run: |
-          sudo apt-get install -y -qq ffmpeg
-          ffmpeg -hide_banner -loglevel error -f lavfi -i testsrc2=s=160x288:r=10 -f lavfi -i sine=frequency=220:sample_rate=24000 -t 2 -c:v libx264 -pix_fmt yuv420p -c:a aac -shortest -y /tmp/fairytale-clip-1.mp4
-          ffmpeg -hide_banner -loglevel error -f lavfi -i testsrc2=s=160x288:r=10 -f lavfi -i sine=frequency=330:sample_rate=24000 -t 2 -c:v libx264 -pix_fmt yuv420p -c:a aac -shortest -y /tmp/fairytale-clip-2.mp4
-      - name: Merge both MP4 clips in real Chromium
-        run: node tests/browser-merge.cjs
-      - name: Generate mandatory narration and subtitles in real Chromium
-        run: node tests/narration-merge.cjs
+          node --check server-render.js
+          node --check app-studio-v6.js
+          ! grep -Ei 'cloudflare|r2.cloudflarestorage|workers.dev' server-render.js
+          grep -q 'actions/workflows/render.yml/dispatches' server-render.js
