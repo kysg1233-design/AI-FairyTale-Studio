@@ -43,7 +43,7 @@ const StudioServer=(()=>{
    if(!put.ok)throw Error('컷 '+(i+1)+' 업로드 실패 HTTP '+put.status+' · 업로드 파일은 유지됩니다.');
    await request('/api/projects/'+id+'/cuts/'+i+'/complete','POST',{});
   }
-  const voices={dad:'Charon',grandma:'Kore',grandpa:'Iapetus'};
+  const voices={dad:'Charon',calmMale:'Charon',warmFemale:'Kore',storyteller:'Puck',grandma:'Kore',grandpa:'Iapetus'};
   const j=await request('/api/projects/'+id+'/render','POST',{voice:voices[voice]||voice||'Charon',backgroundVolume:Number(bgVolume),narrationVolume:Number(narrationVolume),quality});
   localStorage.setItem(key(project.id),JSON.stringify({serverId:id,jobId:j.jobId}));
   onProgress({percent:25,phase:'GitHub Actions 합성 요청 완료',detail:'이제 크롬을 닫아도 서버에서 작업합니다.'});
