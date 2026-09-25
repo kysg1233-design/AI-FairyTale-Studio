@@ -14,9 +14,9 @@ const speechCache=new Map();
 const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 async function speech(key,text,voice,pace,onRetry){
  const [name]=VOICES[voice]||VOICES.warmFemale;
- const cacheKey=JSON.stringify([key,text,name,pace]);
+ const cacheKey=JSON.stringify(['gemini-3.8-flash-lite-tts',key,text,name,pace]);
  if(speechCache.has(cacheKey))return speechCache.get(cacheKey);
- const url='https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-tts-preview:generateContent';
+ const url='https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash-lite-tts:generateContent';
  const body=JSON.stringify({contents:[{parts:[{text}]}],generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:name}}}}});
  for(let attempt=1;attempt<=4;attempt++){
   let response,data;
@@ -24,7 +24,7 @@ async function speech(key,text,voice,pace,onRetry){
    response=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body});
    data=await response.json().catch(()=>({}));
   }catch(error){
-   if(attempt===4)throw Error('Gemini TTS 연결 실패: 4회 시도했지만 Google 서버에 연결하지 못했습니다. 네트워크·브라우저 차단·Google API 연결 상태를 확인하세요. ('+(error?.message||String(error))+')');
+   if(attempt===4)throw Error('Gemini 3.8 Flash-Lite TTS 연결 실패: 4회 시도했지만 응답을 받지 못했습니다. 네트워크·브라우저 차단·Google API 연결 상태를 확인하세요. ('+(error?.message||String(error))+')');
    const wait=attempt*1500;
    onRetry?.(attempt,wait,'네트워크 연결 실패');
    await pause(wait);
@@ -42,7 +42,7 @@ async function speech(key,text,voice,pace,onRetry){
   const part=data.candidates?.flatMap(candidate=>candidate.content?.parts||[]).find(item=>item.inlineData?.data);
   if(!part)throw Error('Gemini가 음성 데이터를 반환하지 않았습니다. TTS 모델 사용 권한이나 사용량을 확인하세요.');
   const pcm=decode64(part.inlineData.data);
-  const rate=Number(part.inlineData.mimeType?.match(/rate=(\\d+)/)?.[1])||24000;
+  const rate=Number(part.inlineData.mimeType?.match(/rate=(\d+)/)?.[1])||24000;
   const audio={data:wav(pcm,rate),duration:pcm.length/(rate*2)};
   speechCache.set(cacheKey,audio);
   return audio;
