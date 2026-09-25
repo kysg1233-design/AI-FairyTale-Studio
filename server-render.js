@@ -2,7 +2,7 @@
 // Server renderer: browser uploads original files directly to private R2 using
 // short-lived signed URLs; the private GitHub Actions runner performs the render.
 const StudioServer=(()=>{
- const base=()=>String(window.FAIRYTALE_CONFIG?.apiBase||'').replace(/\\/$/,'');
+ const base=()=>String(window.FAIRYTALE_CONFIG?.apiBase||'').replace(/\/$/,'');
  const token=()=>sessionStorage.getItem('fairytale-worker-token')||'';
  async function request(path,method='GET',data){
   const r=await fetch(base()+path,{method,headers:{'X-Studio-Token':token(),...(data?{'Content-Type':'application/json'}:{})},body:data?JSON.stringify(data):undefined});
