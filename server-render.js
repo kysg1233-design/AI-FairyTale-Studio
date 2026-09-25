@@ -23,10 +23,25 @@ const StudioServer=(()=>{
    if(!t)throw Error('GitHub 토큰이 필요합니다.');
    sessionStorage.setItem('fairytale-github-token',t.trim());
   }
-  const r=await call(path);
+  let r;
+  try{r=await call(path);}catch(e){
+   if(!e.message.includes('404'))throw e;
+   if(!confirm('비공개 영상 저장소 '+REPO+'를 GitHub에 자동 생성할까요?'))throw Error('비공개 저장소가 필요합니다.');
+   r=await call('/user/repos','POST',{name:REPO,private:true,auto_init:true,description:'Private AI fairy tale video render jobs'});
+  }
   if(!r.private)throw Error('영상 저장소가 공개 상태입니다. 비공개 저장소만 허용합니다.');
-  const w=await call(path+'/contents/.github/workflows/render.yml');
-  if(!w.path)throw Error('비공개 저장소에 render.yml을 먼저 설치해야 합니다.');
+  let installed=false;
+  try{installed=!!(await call(path+'/contents/.github/workflows/render.yml')).path;}catch(e){if(!e.message.includes('404'))throw e;}
+  if(!installed){
+   if(!confirm('GitHub Actions 합성 코드를 비공개 저장소에 자동 설치할까요?'))throw Error('서버 합성 코드 설치가 필요합니다.');
+   for(const [from,to] of [['renderer/github-render.yml','.github/workflows/render.yml'],['renderer/scripts/github_render.py','scripts/github_render.py']]){
+    const source=await fetch('https://raw.githubusercontent.com/'+OWNER+'/AI-FairyTale-Studio/main/'+from);
+    if(!source.ok)throw Error('합성 코드 다운로드 실패: '+from);
+    const bytes=new Uint8Array(await source.arrayBuffer());let binary='';
+    for(let i=0;i<bytes.length;i+=16384)binary+=String.fromCharCode(...bytes.subarray(i,i+16384));
+    await call(path+'/contents/'+to,'PUT',{message:'Install private GitHub-only renderer',content:btoa(binary)});
+   }
+  }
  }
  async function blob(file){
   if(file.size>50*1024*1024)throw Error(file.name+' 용량이 50MiB를 초과합니다. GitHub Git 저장 제한으로 이 파일은 업로드할 수 없습니다.');
