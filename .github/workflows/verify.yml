@@ -11,7 +11,6 @@ on:
       - 'server-render.js'
       - 'config.js'
       - 'style.css'
-      - 'worker/**'
       - 'renderer/**'
       - 'tests/**'
       - '.github/workflows/verify.yml'
@@ -32,9 +31,8 @@ jobs:
           node --check narration.js
           node --check server-render.js
           node --check config.js
-          node --check worker/src/index.js
       - name: Validate Python syntax
-        run: python3 -m py_compile renderer/scripts/render.py
+        run: python3 -m py_compile renderer/scripts/github_render.py
       - name: Validate local-only studio flow
         run: |
           node --check app.js
