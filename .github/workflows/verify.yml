@@ -8,10 +8,8 @@ on:
       - 'app.js'
       - 'app-studio-v6.js'
       - 'narration.js'
-      - 'server-render.js'
       - 'config.js'
       - 'style.css'
-      - 'renderer/**'
       - 'tests/**'
       - '.github/workflows/verify.yml'
   workflow_dispatch:
@@ -29,27 +27,19 @@ jobs:
           node --check app.js
           node --check app-studio-v6.js
           node --check narration.js
-          node --check server-render.js
           node --check config.js
-      - name: Validate Python syntax
-        run: python3 -m py_compile renderer/scripts/github_render.py
-      - name: Validate GitHub-only server render wiring
+      - name: Validate browser-only rendering and cut-edge audio safeguards
         run: |
           node - <<'JS'
           const fs=require('fs');
-          const client=fs.readFileSync('server-render.js','utf8');
           const app=fs.readFileSync('app-studio-v6.js','utf8');
-          for(const token of ['/git/blobs','/git/trees','/actions/workflows/render.yml/dispatches','/artifacts'])
-            if(!client.includes(token))throw Error('Missing GitHub-only render feature: '+token);
-          if(!app.includes('StudioServer.render('))throw Error('Render button does not use GitHub server');
-          if(/cloudflare|workers\\.dev|r2\\.cloudflarestorage/i.test(client))throw Error('External upload dependency remains');
+          const audio=fs.readFileSync('narration.js','utf8');
+          const page=fs.readFileSync('index.html','utf8');
+          if(!app.includes('FairyNarration.render('))throw Error('Browser renderer not connected');
+          if(!audio.includes("joinPcm(voices)")||!audio.includes("'-c:a','aac'"))throw Error('Continuous audio track missing');
+          if(!audio.includes('softenPcm(')||!audio.includes('afade=t=out:'))throw Error('Audio edge fades missing');
+          if(page.includes('server-render.js')||page.includes('GitHub 토큰'))throw Error('Old GitHub render instructions remain');
           JS
-      - name: Install FFmpeg + Hangul fonts for two-cut smoke test
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq ffmpeg fonts-noto-cjk
-      - name: Run two-cut MP4 + subtitle smoke test
-        run: python3 tests/smoke_renderer.py
       - name: Validate three-step interface and no bundled secrets
         run: |
           python3 - <<'PY'
