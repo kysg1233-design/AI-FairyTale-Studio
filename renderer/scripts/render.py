@@ -154,9 +154,9 @@ def render_cut(index, input_path, voice_path, ass_path, output, bg, narration, q
     # Extend final video frame; preserve original sound without repeating it.
     width,height,fps=(480,854,20) if quality=="fast" else ((720,1280,24) if quality=="high" else (540,960,24))
     video=f"[0:v]fps={fps},scale={width}:{height}:force_original_aspect_ratio=decrease,pad={width}:{height}:(ow-iw)/2:(oh-ih)/2:black,setsar=1,tpad=stop_mode=clone:stop_duration={target:.3f},trim=duration={target:.3f},setpts=PTS-STARTPTS,ass={ass_path}[v]"
-    audio_bg=f"[{audio}]volume={bg:.3f},apad,atrim=duration={target:.3f},asetpts=PTS-STARTPTS[bg]"
-    audio_voice=f"[1:a:0]volume={narration:.3f},apad,atrim=duration={target:.3f},asetpts=PTS-STARTPTS[vo]"
-    args+=["-filter_complex",";".join([video,audio_bg,audio_voice,"[bg][vo]amix=inputs=2:duration=longest:normalize=0[a]"]),
+    audio_bg=f"[{audio}]aresample=48000,volume={bg:.3f},afade=t=in:st=0:d=0.12,afade=t=out:st={max(0,d-0.15):.3f}:d=0.15,apad,atrim=duration={target:.3f},asetpts=PTS-STARTPTS[bg]"
+    audio_voice=f"[1:a:0]aresample=48000,volume={narration:.3f},afade=t=in:st=0:d=0.035,afade=t=out:st={max(0,voiced-0.05):.3f}:d=0.05,apad,atrim=duration={target:.3f},asetpts=PTS-STARTPTS[vo]"
+    args+=["-filter_complex",";".join([video,audio_bg,audio_voice,"[bg][vo]amix=inputs=2:duration=longest:normalize=0,alimiter=limit=0.90:attack=5:release=80[a]"]),
            "-map","[v]","-map","[a]","-c:v","libx264","-preset","veryfast","-crf","24",
            "-pix_fmt","yuv420p","-c:a","aac","-b:a","160k","-ar","48000",
            "-ac","2","-movflags","+faststart","-t",f"{target:.3f}",output]
