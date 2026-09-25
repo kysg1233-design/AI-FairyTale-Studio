@@ -8,6 +8,7 @@ on:
       - 'app.js'
       - 'app-studio-v6.js'
       - 'narration.js'
+      - 'server-render.js'
       - 'config.js'
       - 'style.css'
       - 'worker/**'
@@ -29,6 +30,7 @@ jobs:
           node --check app.js
           node --check app-studio-v6.js
           node --check narration.js
+          node --check server-render.js
           node --check config.js
           node --check worker/src/index.js
       - name: Validate Python syntax
