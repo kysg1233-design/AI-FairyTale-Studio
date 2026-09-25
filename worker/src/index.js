@@ -150,6 +150,13 @@ async function route(request,env,url) {
   await set(env,p);
   return okay(p,201);
  }
+ if(parts[1]==='projects'&&parts.length===2&&method==='POST'){
+  const d=await body(request),cuts=Number(d.cuts);
+  if(![9,12,15,18,20].includes(cuts)||typeof d.title!=='string'||!d.title.trim()||typeof d.story!=='string'||!d.story.trim()||d.story.length>30000)return fail('프로젝트 형식 오류');
+  validateScenes(d.characters,d.scenes,cuts);
+  const id=crypto.randomUUID(),p={id,title:d.title.slice(0,120),story:d.story,cuts,characters:d.characters,scenes:d.scenes,videos:{},jobIds:[],createdAt:iso(),updatedAt:iso(),completed:false,jobId:null};
+  await set(env,p);return okay({id},201);
+ }
  if(parts[1]==='projects'&&parts.length===2&&method==='GET'){
   const ids=await getIndex(env),ps=await Promise.all(ids.map(id=>get(env,id)));
   return okay({projects:ps.filter(Boolean).sort((a,b)=>b.createdAt.localeCompare(a.createdAt)).map(p=>({id:p.id,title:p.title,cuts:p.cuts,completed:p.completed,createdAt:p.createdAt}))});
