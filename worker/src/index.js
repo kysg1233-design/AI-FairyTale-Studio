@@ -66,7 +66,7 @@ async function signed(env,method,key,contentType) {
 }
 async function body(request) {try{return await request.json();}catch{throw Error('요청 내용을 읽을 수 없습니다.');}}
 function validateScenes(chars,scenes,cuts) {
- if(!Array.isArray(chars)||!Array.isArray(scenes)||scenes.length!==cuts||cuts<1||cuts>10)throw Error('AI가 선택한 컷수의 결과를 반환하지 않았습니다.');
+ if(!Array.isArray(chars)||!Array.isArray(scenes)||scenes.length!==cuts||![9,12,15,18,20].includes(cuts))throw Error('AI가 선택한 컷수의 결과를 반환하지 않았습니다.');
  if(chars.length>30)throw Error('캐릭터 수가 너무 많습니다.');
  for(const c of chars)if(typeof c.name!=='string'||typeof c.prompt!=='string'||!c.prompt.trim())throw Error('캐릭터 프롬프트가 비어 있습니다.');
  for(const s of scenes){
@@ -120,7 +120,7 @@ async function route(request,env,url) {
     videos.push({index:i,sourceUrl:await signed(env,'GET',v.key),narration:p.scenes[i].narration});
    }
    return okay({jobId:id,projectId:p.id,cuts:p.cuts,voice:j.voice,narrationVolume:j.narrationVolume,
-    backgroundVolume:j.backgroundVolume,videos,
+    backgroundVolume:j.backgroundVolume,quality:j.quality||'balanced',videos,
     outputUrl:await signed(env,'PUT',j.outputKey,'video/mp4'),outputKey:j.outputKey});
   }
   if(method==='POST'&&parts[3]==='status'){
@@ -132,7 +132,7 @@ async function route(request,env,url) {
     if(!x||x.size<10000)return fail('최종 MP4가 R2에 실제로 존재하지 않습니다.',409);
     p.completed=true;await set(env,p);
    }
-   j.status=d.status;j.stage=d.stage.slice(0,150);j.detail=String(d.detail||'').slice(0,300);
+   j.status=d.status;j.percent=Math.max(j.percent||0,Math.min(100,Number(d.percent)||0));j.stage=d.stage.slice(0,150);j.detail=String(d.detail||'').slice(0,300);
    await putJob(env,j);return okay({ok:true});
   }
   return fail('지원하지 않는 내부 요청',404);
@@ -143,7 +143,7 @@ async function route(request,env,url) {
   const d=await body(request),cuts=Number(d.cuts);
   if(typeof d.title!=='string'||!d.title.trim()||d.title.length>120||
     typeof d.story!=='string'||!d.story.trim()||d.story.length>30000||
-    !Number.isInteger(cuts)||cuts<1||cuts>10)return fail('동화 입력 또는 컷수 형식이 올바르지 않습니다.');
+    !Number.isInteger(cuts)||![9,12,15,18,20].includes(cuts))return fail('동화 입력 또는 컷수 형식이 올바르지 않습니다.');
   const v=await gemini(env,d.title.trim(),d.story.trim(),cuts),id=crypto.randomUUID();
   const p={id,title:d.title.trim(),story:d.story.trim(),cuts,characters:v.characters,scenes:v.scenes,videos:{},jobIds:[],
    createdAt:iso(),updatedAt:iso(),completed:false,jobId:null};
@@ -211,9 +211,9 @@ async function route(request,env,url) {
    const d=await body(request),voice=String(d.voice||'Charon');
    if(!['Charon','Iapetus','Puck','Kore'].includes(voice))return fail('지원하지 않는 목소리');
    const nv=Number(d.narrationVolume),bv=Number(d.backgroundVolume);
-   if(!Number.isFinite(nv)||nv<0.3||nv>1.5||!Number.isFinite(bv)||bv<0||bv>1)return fail('음량 설정이 올바르지 않습니다.');
-   const idJob=crypto.randomUUID(),j={id:idJob,projectId:id,status:'queued',stage:'GitHub Actions 실행 요청 중',
-    voice,narrationVolume:nv,backgroundVolume:bv,outputKey:`projects/${id}/outputs/${idJob}.mp4`,createdAt:iso()};
+   if(!Number.isFinite(nv)||nv<0||nv>2||!Number.isFinite(bv)||bv<0||bv>1)return fail('음량 설정이 올바르지 않습니다.');
+   const quality=String(d.quality||'balanced');if(!['fast','balanced','high'].includes(quality))return fail('화질 설정이 올바르지 않습니다.');const idJob=crypto.randomUUID(),j={id:idJob,projectId:id,status:'queued',stage:'GitHub Actions 실행 요청 중',
+    voice,narrationVolume:nv,backgroundVolume:bv,quality,outputKey:`projects/${id}/outputs/${idJob}.mp4`,createdAt:iso()};
    await putJob(env,j);p.jobId=idJob;p.jobIds=[...(p.jobIds||[]),idJob];p.completed=false;await set(env,p);
    try{await runDispatch(env,j);}catch(e){j.status='failed';j.stage='작업 시작 실패';j.detail=e.message;await putJob(env,j);throw e;}
    return okay({jobId:idJob},202);
@@ -227,7 +227,7 @@ async function route(request,env,url) {
  }
  if(parts[1]==='jobs'&&safeId(parts[2])&&method==='GET'){
   const j=await job(env,parts[2]);if(!j)return fail('작업 정보가 없습니다.',404);
-  return okay({status:j.status,stage:j.stage,detail:j.detail||''});
+  return okay({status:j.status,stage:j.stage,detail:j.detail||'',percent:j.percent||0});
  }
  return fail('해당 기능을 찾을 수 없습니다.',404);
 }
