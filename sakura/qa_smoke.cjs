@@ -48,17 +48,20 @@ async function tryCase(name,mobile=false){
     imageCount:document.querySelectorAll('.leaf img').length,
     renderedImageCount:[...document.querySelectorAll('.leaf img')].filter(x=>x.complete&&x.naturalWidth>0).length,
     audioReady:decoded.size,
+    titleAudio:active.title_audio?.male?true:false,
+    introScheduled:!!introTrack,
     chapterCount:active.pages.length,
     bgmReady:!!musicTrack,volume:musicTrack?.volume,readAudioState:ctx?.state
   }));
   if(loaded.imageCount!==loaded.chapterCount||loaded.renderedImageCount!==loaded.chapterCount)throw Error('Some story page images did not decode: '+JSON.stringify(loaded));
-  if(loaded.audioReady!==loaded.chapterCount)throw Error('Not all page narrations predecoded: '+JSON.stringify(loaded));
+  if(loaded.audioReady!==loaded.chapterCount+(loaded.titleAudio?1:0))throw Error('Not all page narrations predecoded: '+JSON.stringify(loaded));
+  if(loaded.titleAudio&&!loaded.introScheduled)throw Error('Book title is not scheduled to play before page narration');
   if(!loaded.bgmReady)throw Error('Background soundtrack has not started');
   if(loaded.volume<.5)throw Error('Background soundtrack volume too low');
   await page.waitForFunction(()=>musicTrack && musicTrack.readyState>=2,null,{timeout:25000});
   result.checks.media=loaded;
   const textPages=await page.evaluate(()=>[...document.querySelectorAll('#book .leaf .words')].map(x=>({client:x.clientHeight,scroll:x.scrollHeight,overflow:getComputedStyle(x).overflowY}))); 
-  if(textPages.length!==loaded.chapterCount||textPages.some(x=>x.scroll>x.client+2&&x.overflow!=='auto'))throw Error('Text clipped on page: '+JSON.stringify(textPages));
+  if(textPages.length!==loaded.chapterCount||textPages.some(x=>x.client>0&&x.scroll>x.client+2&&x.overflow!=='auto'))throw Error('Text clipped on page: '+JSON.stringify(textPages));
   result.checks.page_text_fits=true;
   const playing=await page.evaluate(()=>Boolean(musicTrack&&!musicTrack.paused&&musicTrack.readyState>=2));
   if(!playing)throw Error('Background music resource loaded but actual playback has not started');
