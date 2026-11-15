@@ -91,6 +91,40 @@ async function tryCase(name,mobile=false){
   await page.waitForFunction(target=>musicTheme===target&&musicTrack&&!musicTrack.paused&&musicTrack.readyState>=2,change.other,{timeout:16000});
   await page.evaluate(()=>{playMusic(sceneMood(active.pages[currentPage]))});
   result.checks.mood_music={tracks:responds.map(x=>x.file),switch:change,per_scene:music.selected};
+  // Sound must go absolutely silent on OFF, even during a track crossfade.
+  await page.evaluate(()=>playMusic('mystery'));
+  await page.waitForTimeout(130);
+  await page.locator('#music').click();
+  const offState=await page.evaluate(()=>({
+    enabled:musicOn,activeTrack:musicTrack===null,
+    all:Array.from(musicCache.entries()).map(([theme,a])=>({theme,paused:a.paused,volume:a.volume}))
+  }));
+  await page.waitForTimeout(1500);
+  const afterOff=await page.evaluate(()=>({
+    enabled:musicOn,activeTrack:musicTrack===null,
+    all:Array.from(musicCache.entries()).map(([theme,a])=>({theme,paused:a.paused,volume:a.volume}))
+  }));
+  for(const state of [offState,afterOff]){
+   if(state.enabled||!state.activeTrack||state.all.some(a=>!a.paused||a.volume!==0))
+    throw Error('BGM OFF must silence every cached player immediately, including fades: '+JSON.stringify(state));
+  }
+  result.checks.bgm_off_all_tracks_paused={immediate:offState,after_1500ms:afterOff};
+  await page.evaluate(()=>playPage(1));
+  const offAfterFlip=await page.evaluate(()=>({
+   enabled:musicOn,playing:Array.from(musicCache.values()).filter(a=>!a.paused).length
+  }));
+  if(offAfterFlip.enabled||offAfterFlip.playing)throw Error('Page flip restarted background music with OFF');
+  await page.locator('#quickMusic').click();
+  await page.waitForFunction(()=>musicOn&&musicTrack&&!musicTrack.paused&&musicTrack.volume>=.2,null,{timeout:12000});
+  await page.locator('#quickMusic').click();
+  const quickOff=await page.evaluate(()=>({off:!musicOn,playing:Array.from(musicCache.values()).filter(a=>!a.paused||a.volume!==0).length}));
+  if(!quickOff.off||quickOff.playing)throw Error('Quick OFF must silence music too: '+JSON.stringify(quickOff));
+  result.checks.quick_music_off=true;
+  await page.locator('#music').click();
+  await page.waitForFunction(()=>musicOn&&musicTrack&&!musicTrack.paused,null,{timeout:10000});
+  // Restore page zero for the single-gesture flip test.
+  await page.evaluate(()=>{flip.turnToPage(0);playPage(0)});
+
   await page.locator('#voice').selectOption('female');
   await page.waitForFunction(()=>decoded.size>=active.pages.length*2,null,{timeout:45000});
   if(await page.locator('#loading').isVisible())await page.locator('#loading').waitFor({state:'hidden',timeout:10000});
@@ -163,6 +197,8 @@ async function tryCase(name,mobile=false){
   if(!await page.locator('#scrollDown').isVisible()||!await page.locator('#scrollUp').isVisible())
     throw Error('Floating reader scroll controls missing');
   const beforeScroll=await page.evaluate(()=>({y:window.scrollY,index:flip.getCurrentPageIndex()}));
+  const scrollTarget=await page.locator('#scrollDown').boundingBox();
+  if(!scrollTarget||scrollTarget.width<54||scrollTarget.height<60)throw Error('Scroll button mobile touch target too small: '+JSON.stringify(scrollTarget));
   await page.locator('#scrollDown').click();
   await page.waitForTimeout(850);
   const afterScroll=await page.evaluate(()=>({y:window.scrollY,index:flip.getCurrentPageIndex()}));
