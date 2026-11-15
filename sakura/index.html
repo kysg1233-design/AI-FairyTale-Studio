@@ -41,7 +41,7 @@ h2{font:700 25px 'Gowun Batang',serif}.intro{display:flex;align-items:end;justif
 'use strict';
 const $=id=>document.getElementById(id);
 let catalog=[],active=null,flip=null,currentPage=0,narrationOn=true,musicOn=true,loading=false,track=null,trackUrl=null,unlocked=false,ctx=null,musicOsc=[],musicGain=null;
-const cache=new Map(); const loaded=new Map();
+const cache=new Map(); const loaded=new Map(); const decoded=new Map();
 function safePath(x){if(typeof x!=='string'||!/^books\/[a-z0-9-]+\/[a-zA-Z0-9_.-]+$/.test(x))throw Error('잘못된 파일 경로');return x}
 function filesOf(b,voice){return [b.cover,...b.pages.map(p=>p.image),...b.pages.map(p=>p.audio[voice])]}
 function isComplete(b){return !!b&&b.status==='ready'&&Array.isArray(b.pages)&&b.pages.length>=3&&b.pages.every(p=>p.image&&p.audio?.male&&p.audio?.female&&p.text)&&!!b.cover}
@@ -57,7 +57,7 @@ function paintLibrary(){const shelf=$('library');shelf.replaceChildren();$('book
 async function loadCandidates(){
  try{const r=await fetch('./books/candidates.json');const list=await r.json();const host=$('candidates');host.replaceChildren();list.forEach(x=>{const tag=document.createElement('span');tag.className='chip';tag.textContent=(x.region||'세계')+' · '+x.title;host.append(tag)})}catch(e){console.warn(e)}
 }
-function audioOff(){if(track){track.pause();track.src='';track=null}if(trackUrl){URL.revokeObjectURL(trackUrl);trackUrl=null}}
+function audioOff(){if(track){try{track.stop()}catch(e){}track.disconnect();track=null}if(trackUrl){URL.revokeObjectURL(trackUrl);trackUrl=null}}
 function stopMusic(){musicOsc.forEach(o=>{try{o.stop()}catch(e){}});musicOsc=[];if(musicGain){musicGain.disconnect();musicGain=null}}
 function playMusic(){if(!musicOn)return;try{ctx=ctx||new(window.AudioContext||window.webkitAudioContext)();ctx.resume();stopMusic();musicGain=ctx.createGain();musicGain.gain.value=.012;musicGain.connect(ctx.destination);const tune=[261.63,329.63,392,349.23,293.66,261.63,293.66,329.63,392,440,392,329.63];const now=ctx.currentTime+.1;for(let k=0;k<9;k++){tune.forEach((f,j)=>{const o=ctx.createOscillator(),g=ctx.createGain(),t=now+(k*tune.length+j)*.75;o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.001,t);g.gain.linearRampToValueAtTime(.33,t+.09);g.gain.exponentialRampToValueAtTime(.001,t+.7);o.connect(g);g.connect(musicGain);o.start(t);o.stop(t+.71);musicOsc.push(o)})}}catch(e){setStatus('배경음을 재생하지 못했습니다.');musicOn=false}}
 async function prefetchBook(b,voice){
@@ -66,12 +66,14 @@ async function prefetchBook(b,voice){
   if(!blob){const resp=await fetch('./'+p);if(!resp.ok)throw Error('사전 제작 파일 누락: '+p);blob=await resp.blob();if(blob.size<800)throw Error('파일 크기가 비정상적으로 작습니다: '+p);loaded.set(p,blob)}
   result.set(p,blob);count++;$('loading').textContent='책의 모든 이미지·나레이션 준비 '+count+' / '+list.length;
  }
- // Decode all illustrations before enabling the book.
+ // Decode all illustrations and selected voice audio before enabling the book.
  await Promise.all(b.pages.map(p=>new Promise((resolve,reject)=>{const img=new Image(),url=URL.createObjectURL(result.get(p.image));img.onload=()=>{URL.revokeObjectURL(url);resolve()};img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('삽화 파일이 손상됐습니다'))};img.src=url})));
+ if(!ctx)ctx=new(window.AudioContext||window.webkitAudioContext)();
+ await Promise.all(b.pages.map(async p=>{const path=p.audio[voice];if(decoded.has(path))return;const bytes=await result.get(path).arrayBuffer();const sound=await ctx.decodeAudioData(bytes);if(sound.duration<2)throw Error('음성 파일이 손상됐습니다');decoded.set(path,sound)}));
  return result;
 }
 async function openBook(b){
- if(loading)return;loading=true;unlocked=true;active=b;audioOff();stopMusic();if(musicOn)playMusic();
+ if(loading)return;loading=true;unlocked=true;active=b;audioOff();stopMusic();try{ctx=ctx||new(window.AudioContext||window.webkitAudioContext)();ctx.resume()}catch(e){}if(musicOn)playMusic();
  $('home').style.display='none';$('reader').style.display='block';$('bookTitle').textContent=b.title;
  const source=$('source');source.replaceChildren();source.append('원전 출처: ');const a=document.createElement('a');a.href=b.source_url||'#';a.target='_blank';a.rel='noopener noreferrer';a.textContent=b.source_title||'원전 보기';source.append(a);
  $('loading').style.display='block';$('book').style.display='none';$('pageNumber').textContent='모든 페이지를 먼저 준비하고 있습니다.';
@@ -95,14 +97,14 @@ function mount(b,assets){
  flip.loadFromHTML(pages);
 }
 function playPage(n){if(!active)return;currentPage=n;$('pageNumber').textContent=(n+1)+' / '+active.pages.length+' · 종이 모서리를 손가락으로 잡아 끌어보세요';audioOff();if(!narrationOn)return;
- const p=active.pages[n].audio[$('voice').value],blob=loaded.get(p);if(!blob){setStatus('해당 음성 파일을 먼저 준비해야 합니다');return}
- trackUrl=URL.createObjectURL(blob);track=new Audio(trackUrl);track.volume=.9;track.play().catch(e=>setStatus('음성 자동 재생이 제한됐습니다. 나레이션 버튼을 눌러주세요: '+e.message));
+ const p=active.pages[n].audio[$('voice').value],sound=decoded.get(p);if(!sound){setStatus('해당 음성 파일은 준비되지 않았습니다');return}
+ try{if(ctx.state==='suspended')ctx.resume();const source=ctx.createBufferSource();const volume=ctx.createGain();volume.gain.value=.9;source.buffer=sound;source.connect(volume);volume.connect(ctx.destination);track=source;source.start(0)}catch(e){setStatus('나레이션을 재생할 수 없습니다: '+e.message)}
 }
 function closeBook(){active=null;audioOff();stopMusic();$('reader').style.display='none';$('home').style.display='block';}
 $('homeNav').onclick=closeBook;$('back').onclick=closeBook;
 $('narration').onclick=()=>{narrationOn=!narrationOn;$('narration').classList.toggle('on',narrationOn);$('narration').setAttribute('aria-pressed',String(narrationOn));$('narration').textContent=narrationOn?'🔊 나레이션 ON':'🔈 나레이션 OFF';if(active)playPage(currentPage)};
 $('music').onclick=()=>{musicOn=!musicOn;$('music').classList.toggle('on',musicOn);$('music').setAttribute('aria-pressed',String(musicOn));$('music').textContent=musicOn?'♫ 배경음 ON':'♫ 배경음 OFF';if(musicOn&&active)playMusic();else stopMusic()};
 $('voice').onchange=async()=>{if(!active)return;audioOff();const b=active;$('loading').style.display='block';$('loading').textContent='선택한 목소리 음성을 준비 중…';try{await prefetchBook(b,$('voice').value);if(active===b)playPage(currentPage)}catch(e){setStatus(e.message)}finally{$('loading').style.display='none'}};
-window.addEventListener('pagehide',()=>{audioOff();stopMusic();loaded.clear()});
+window.addEventListener('pagehide',()=>{audioOff();stopMusic();loaded.clear();decoded.clear()});
 fetchCatalog();loadCandidates();
 </script></body></html>
