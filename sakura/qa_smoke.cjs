@@ -120,6 +120,25 @@ async function tryCase(name,mobile=false){
   const quickOff=await page.evaluate(()=>({off:!musicOn,playing:Array.from(musicCache.values()).filter(a=>!a.paused||a.volume!==0).length}));
   if(!quickOff.off||quickOff.playing)throw Error('Quick OFF must silence music too: '+JSON.stringify(quickOff));
   result.checks.quick_music_off=true;
+  // Exactly one HTMLAudioElement is used, even after changing moods repeatedly.
+  await page.locator('#music').click();
+  await page.waitForFunction(()=>musicOn&&musicTrack&&!musicTrack.paused,null,{timeout:12000});
+  const singleBgm=await page.evaluate(async()=>{
+    for(const mood of ['calm','joyful','mystery','tender','adventure']){
+      playMusic(mood);await new Promise(r=>setTimeout(r,150));
+    }
+    await new Promise(r=>setTimeout(r,450));
+    return {players:musicCache.size,playing:[...musicCache.values()].filter(a=>!a.paused&&a.volume>0).length,
+      current:musicTheme};
+  });
+  if(singleBgm.players!==1||singleBgm.playing!==1)throw Error('Two background tracks are playing: '+JSON.stringify(singleBgm));
+  result.checks.one_music_player_only=singleBgm;
+  await page.locator('#music').click();
+  await page.waitForTimeout(600);
+  const allOff=await page.evaluate(()=>({on:musicOn,players:musicCache.size,
+    playing:[...musicCache.values()].filter(a=>!a.paused||a.volume!==0).length}));
+  if(allOff.on||allOff.playing!==0)throw Error('BGM off after repeated track changes failed: '+JSON.stringify(allOff));
+
   await page.locator('#music').click();
   await page.waitForFunction(()=>musicOn&&musicTrack&&!musicTrack.paused,null,{timeout:10000});
   // Restore page zero for the single-gesture flip test.
@@ -192,6 +211,22 @@ async function tryCase(name,mobile=false){
      ||lesson.moral!==moral.text||!lesson.narrationStopped)
     throw Error('Parent lesson must be final page with no autoplay TTS: '+JSON.stringify(lesson));
   result.checks.parent_moral_last_page=lesson;
+  // Test guaranteed NEXT and PREVIOUS controls all the way from scene 1 to the moral.
+  await page.evaluate(()=>{flip.turnToPage(0);playPage(0)});
+  for(let n=1;n<=moral.last;n++){
+    await page.locator('#pageNext').click();
+    const position=await page.evaluate(()=>flip.getCurrentPageIndex());
+    if(position!==n)throw Error('NEXT button failed at '+n+': '+position);
+  }
+  if(await page.locator('#pageNext').isEnabled())throw Error('Next remains enabled past parent moral');
+  for(let n=moral.last-1;n>=0;n--){
+    await page.locator('#pagePrev').click();
+    const position=await page.evaluate(()=>flip.getCurrentPageIndex());
+    if(position!==n)throw Error('PREVIOUS button failed at '+n+': '+position);
+  }
+  if(await page.locator('#pagePrev').isEnabled())throw Error('Previous remains enabled before scene 1');
+  result.checks.complete_page_navigation={forward:moral.last,backward:moral.last};
+
   // Floating scroll buttons must move the viewport, never the book pages.
   await page.evaluate(()=>{window.scrollTo(0,0)});
   await page.waitForTimeout(200);
@@ -203,7 +238,7 @@ async function tryCase(name,mobile=false){
   await page.locator('#scrollDown').click();
   await page.waitForTimeout(850);
   const afterScroll=await page.evaluate(()=>({y:window.scrollY,index:flip.getCurrentPageIndex()}));
-  if(afterScroll.y<=beforeScroll.y+60||afterScroll.index!==beforeScroll.index)
+  if(afterScroll.y<beforeScroll.y+60||afterScroll.y>beforeScroll.y+125||afterScroll.index!==beforeScroll.index)
     throw Error('Down scroll control did not scroll independently of the book: '+JSON.stringify({beforeScroll,afterScroll}));
   await page.locator('#scrollUp').click();
   await page.waitForTimeout(850);
