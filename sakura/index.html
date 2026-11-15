@@ -150,7 +150,7 @@ function decodeAudioData(base64,mime){
  for(let i=0;i<binary.length;i++)pcm[i]=binary.charCodeAt(i);
  if(mime.includes('wav'))return new Blob([pcm],{type:'audio/wav'});
  if(mime.includes('mpeg')||mime.includes('mp3'))return new Blob([pcm],{type:'audio/mpeg'});
- const sampleRate=Number(mime.match(/rate=(\\d+)/)?.[1])||24000;
+ const sampleRate=Number(mime.match(/rate=(\d+)/)?.[1])||24000;
  return wavFromPCM(pcm,sampleRate);
 }
 function gentleInstruction(voice,pace){
