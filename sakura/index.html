@@ -831,7 +831,7 @@ function mount(b,assets){
  moralBlock.append(blossom,moralTitle,moralLead,moralText,moralHeart);moralPage.append(moralBlock);
  pages.push(moralPage);
  pages.forEach(p=>host.append(p));
- flip=new St.PageFlip(host,{width:350,height:455,size:'stretch',minWidth:260,maxWidth:550,minHeight:338,maxHeight:720,showCover:false,drawShadow:true,maxShadowOpacity:.65,flippingTime:950,usePortrait:true,mobileScrollSupport:false,swipeDistance:25,useMouseEvents:false,disableFlipByClick:false,showPageCorners:true});
+ flip=new St.PageFlip(host,{width:350,height:455,size:'stretch',minWidth:260,maxWidth:550,minHeight:338,maxHeight:720,showCover:false,drawShadow:true,maxShadowOpacity:.65,flippingTime:950,usePortrait:true,mobileScrollSupport:false,swipeDistance:25,useMouseEvents:true,disableFlipByClick:false,showPageCorners:true});
  flip.on('flip',e=>{nativeTouchTurn=true;const n=Math.min(b.pages.length,e.data);if(n!==currentPage)playPage(n);updatePageTurnControls();scheduleTextFit()});
  flip.loadFromHTML(pages);
  scheduleTextFit();
@@ -951,7 +951,13 @@ function gestureEnd(x,y){
  bookGesture.lastTurn=now;
  // flipNext and flipPrev both render a real physical page-curl animation.
  // Never jump with turnToPage; the flip event updates narration/page count.
- if(next)flip.flipNext('bottom');else flip.flipPrev('bottom');
+ // Let the native PageFlip animation finish first. Recover only missed turns.
+ const originalFlip=flip, originalBook=active;
+ setTimeout(()=>{
+  if(flip!==originalFlip||active!==originalBook)return;
+  if(flip.getCurrentPageIndex()!==index)return;
+  if(next)flip.flipNext('bottom');else flip.flipPrev('bottom');
+ },1030);
 }
 const gestureSurface=document.querySelector('#reader .shelf');
 gestureSurface.addEventListener('touchstart',e=>{
