@@ -58,10 +58,27 @@ footer{color:#9e7191}
 @media(max-width:880px){.stageShell{grid-template-columns:170px minmax(0,1fr)}.sidebar{padding:12px 7px}.sideFilter{font-size:12px}.hero{min-height:260px}.featureCover{height:240px}.featureCopy span{font-size:10px}}
 @media(max-width:640px){header{padding:10px}.brand{font-size:24px}.brand small{font-size:8px}.nav{width:100%;overflow-x:auto;flex-wrap:nowrap}.tab{flex:0 0 auto;padding:9px 12px;font-size:11px}header{flex-wrap:wrap}.hero{grid-template-columns:1fr;min-height:auto;margin-top:11px;border-width:4px}.heroCopy{padding:22px 20px 8px}.heroCopy h1{font-size:31px;margin:7px 0}.heroCopy p{font-size:12px;line-height:1.6}.hero .art{max-height:190px;min-height:170px}.featureCover{height:157px;width:min(94%,320px);border-width:4px;box-shadow:8px 9px 8px #7b4b5890}.featureCopy strong{font-size:17px}.featureCopy button{font-size:10px;padding:6px}.stageShell{display:block}.sidebar{display:flex;overflow-x:auto;border-radius:15px;padding:9px;gap:7px;margin-bottom:15px;box-shadow:0 7px 15px #74464a36}.sidebarTitle,.sideNote{display:none}.sideFilter{width:auto;white-space:nowrap;border:1px solid #e6b4a363;border-radius:99px;padding:9px 10px;gap:10px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.tile strong{font-size:15px}.tile small{font-size:11px}.tile p{font-size:10px}.readingStage{padding:8px;border-width:5px}.shelf{min-height:345px}.filmstrip .tile{flex-basis:140px}.readerTitle h2{font-size:22px}.btn{font-size:11px}}
 
+
+/* Reading clarity: no text is intentionally clipped; dynamically fit long pages. */
+.leaf .words{box-sizing:border-box;width:100%;height:100%;overflow:hidden;display:flex;flex-direction:column;align-items:stretch;justify-content:center;padding:6% 7%;font-family:'Gowun Batang',serif;gap:0}
+.leaf .words h3{font-size:clamp(17px,2.15vw,27px);line-height:1.38;margin:0 0 .65em;overflow-wrap:anywhere;flex:0 0 auto}
+.leaf .words p{font-size:clamp(14px,1.48vw,19px);line-height:1.66;margin:0;overflow-wrap:anywhere;word-break:keep-all;flex:0 1 auto}
+.leaf .words.text-tight{padding:4% 5%}
+.leaf .words.text-tight h3{margin-bottom:.3em}
+.leaf .words p,.leaf .words h3{text-wrap:pretty}
+.readerMeta{color:#ffedf6;font-size:14px;font-weight:800}
+.source a{font-size:13px;font-weight:700;text-decoration:underline}
+.tile small{font-size:13px}
+@media(max-width:720px){
+ .leaf .words{padding:5% 6%}
+ .leaf .words h3{font-size:clamp(13px,4.1vw,18px);line-height:1.32;margin-bottom:.35em}
+ .leaf .words p{font-size:clamp(11px,3.1vw,14px);line-height:1.5}
+ .readerMeta{font-size:13px}
+}
 </style><script src="./vendor/page-flip.browser.js"></script>
 </head><body><div class="wrap">
 <header>
- <div class="brand">📖 벚꽃 동화극장<small>AI로 만나는 전래동화 그림책</small></div>
+ <div class="brand">📖 벚꽃 동화극장</div>
  <nav class="nav" aria-label="주 메뉴">
  <button class="tab active" data-mode="all" id="homeNav">🏠 홈</button>
  <button class="tab" data-mode="library">📖 동화책장</button>
@@ -71,7 +88,7 @@ footer{color:#9e7191}
  </nav>
 </header>
 <main id="home">
-<section class="hero"><div class="heroCopy"><small>✦ ONCE UPON A TIME ✦</small><h1>동화 속 세상이<br><span>눈앞에 펼쳐져요</span></h1><p>아름다운 그림과 따뜻한 목소리로 만나는<br>한국과 세계의 전래동화, 벚꽃 동화극장.</p><button class="btn" id="heroBrowse">🌸 동화책 골라보기</button></div>
+<section class="hero"><div class="heroCopy"><h1>동화 속 세상이<br><span>눈앞에 펼쳐져요</span></h1><p>아름다운 그림과 따뜻한 목소리로 만나는<br>한국과 세계의 전래동화, 벚꽃 동화극장.</p><button class="btn" id="heroBrowse">🌸 동화책 골라보기</button></div>
  <div class="art"><div class="featureCover"><img id="featuredImage" alt="오늘의 추천 그림책 표지" src="" style="display:none"><div class="featureCopy" id="featuredCopy"><strong id="featuredTitle">동화가 피어나는 곳</strong><span id="featuredDesc">완성된 그림책을 펼쳐 보세요</span><button id="featuredRead" type="button">📖 책 펼치기</button></div></div></div></section>
 <div class="stageShell">
 <aside class="sidebar" aria-label="동화 카테고리">
@@ -84,21 +101,20 @@ footer{color:#9e7191}
 <button class="sideFilter" data-cat="일본"><span>⛩️ 일본 설화</span><small id="count-japan">0권</small></button>
 <button class="sideFilter" data-cat="안데르센"><span>🏰 안데르센 동화</span><small id="count-andersen">0권</small></button>
 <button class="sideFilter" data-cat="아라비아"><span>🕌 아라비안나이트</span><small id="count-arabia">0권</small></button>
-<div class="sideNote">🌷 완성된 그림책만 책장에 전시합니다.<br>작품을 공개하기 전에 그림과 남녀 나레이션을 미리 준비해요.</div>
+
 </aside>
 <div class="contentArea"><label class="searchBar">🔎 <input id="search" autocomplete="off" type="search" placeholder="찾고 싶은 동화 제목을 입력하세요" aria-label="동화 검색"></label>
-<div class="intro"><div><h2 id="libraryHeading">📚 반짝반짝 동화책장</h2><p id="libraryInfo">동화책을 골라 손으로 페이지를 넘겨보세요.</p></div><span id="bookCount">0권</span></div>
+<div class="intro"><div><h2 id="libraryHeading">📚 반짝반짝 동화책장</h2></div><span id="bookCount">0권</span></div>
 <div id="library" class="grid"></div>
-<div id="empty" class="empty" style="display:none"><strong>🌷 준비된 책을 찾을 수 없어요</strong><p>새로운 그림책은 삽화와 남녀 목소리를 모두 준비한 뒤 게시됩니다.</p></div>
-<div class="intro"><div><h2>✨ 지금 읽기 좋은 동화</h2><p>검증을 마친 책에서 추천합니다.</p></div></div><div class="filmstrip" id="recommendations"></div>
-<div class="intro"><div><h2>🌍 앞으로 만날 전래동화</h2><p>원전이 확보된 제작 후보입니다. 실제 출간된 책과 구분합니다.</p></div></div>
-<div id="candidates" class="candidate"></div>
+<div id="empty" class="empty" style="display:none"><strong>🌷 책을 준비하고 있어요</strong></div>
+<div class="intro"><div><h2>✨ 추천 동화</h2></div></div><div class="filmstrip" id="recommendations"></div>
+
 </div></div></main>
 <section id="reader"><div class="readerTitle"><div><h2 id="bookTitle"></h2><p id="source" class="source"></p></div><button class="btn" id="back">← 책장으로</button></div>
 <div class="controls"><button class="btn on" id="narration" aria-pressed="true">🔊 나레이션 ON</button><label class="btn">목소리 <select id="voice"><option value="male">남자 · 기본</option><option value="female">여자 · 젊고 부드럽게</option></select></label><button class="btn on" id="music" aria-pressed="true">♫ 배경음 ON</button></div>
 <div id="loading" class="loading" role="status">책의 모든 그림과 나레이션을 다운로드하고 있어요…</div>
 <div class="shelf"><div id="book"></div></div><p class="readerMeta" id="pageNumber">책 가장자리를 손으로 잡아 넘겨보세요.</p><p class="status" id="status"></p></section>
-<footer>🌸 벚꽃 동화극장 · 사전 제작된 완성 그림책만 공개 · 원전과 새 각색의 출처 표시</footer>
+<footer>🌸 벚꽃 동화극장</footer>
 </div><script>
 'use strict';
 const $=id=>document.getElementById(id);
@@ -136,9 +152,9 @@ function makeTile(b){
  const card=document.createElement('article');card.className='tile';
  const open=document.createElement('button');open.type='button';open.style.cssText='background:none;border:0;padding:0;width:100%;text-align:left;color:inherit';open.setAttribute('aria-label',b.title+' 읽기');
  const img=new Image();img.alt=b.title+' 표지';img.loading='lazy';img.src=safePath(b.cover);
- const desc=document.createElement('div'),title=document.createElement('strong'),sub=document.createElement('small'),note=document.createElement('p');
- title.textContent=b.title;sub.textContent=(b.region||'세계')+' · '+b.pages.length+'장면';note.textContent='🎧 남녀 나레이션 · 준비 완료';
- desc.append(title,sub,note);open.append(img,desc);open.onclick=()=>openBook(b);
+ const desc=document.createElement('div'),title=document.createElement('strong'),sub=document.createElement('small');
+ title.textContent=b.title;sub.textContent=(b.region||'세계')+' · '+b.pages.length+'장면';
+ desc.append(title,sub);open.append(img,desc);open.onclick=()=>openBook(b);
  const fav=document.createElement('button');fav.type='button';fav.className='faveBtn';fav.textContent=isFave(b)?'♥':'♡';fav.setAttribute('aria-pressed',String(isFave(b)));fav.setAttribute('aria-label',b.title+' 찜하기');fav.onclick=()=>toggleFave(b);
  card.append(open,fav);return card
 }
@@ -150,11 +166,11 @@ function paintLibrary(){
  const counts={'count-all':'all','count-korea':'한국','count-world':'세계','count-aesop':'이솝','count-grimm':'그림','count-japan':'일본','count-andersen':'안데르센','count-arabia':'아라비아'};
  for(const [id,key]of Object.entries(counts))$(id).textContent=catalog.filter(b=>countCategory(b,key)).length+'권';
  const titles={all:'📚 반짝반짝 동화책장',library:'📖 전체 동화책장',popular:'👑 인기 동화',new:'🗓️ 새로 나온 동화',favs:'♡ 내가 찜한 동화'};
- $('libraryHeading').textContent=titles[viewMode];$('libraryInfo').textContent=viewMode==='popular'?'이 기기에서 많이 읽은 순서로 정렬했어요':('그림과 남녀 음성을 모두 갖춘 실제 완성 도서 '+catalog.length+'권');
+ $('libraryHeading').textContent=titles[viewMode];
  const picks=$('recommendations');picks.replaceChildren();catalog.slice(-12).reverse().forEach(b=>picks.append(makeTile(b)));
  const chosen=catalog[0]||null;featured=chosen;
  $('featuredTitle').textContent=chosen?chosen.title:'곧 만나게 될 새로운 이야기';
- $('featuredDesc').textContent=chosen?(chosen.region||'세계')+' · 완성된 그림책':'그림·음성 제작이 끝나면 책장에 공개돼요';
+ $('featuredDesc').textContent=chosen?(chosen.region||'세계'):'새로운 동화를 기다려 주세요';
  $('featuredImage').style.display=chosen?'block':'none';if(chosen)$('featuredImage').src=safePath(chosen.cover);
  $('featuredRead').disabled=!chosen;
  document.querySelectorAll('[data-mode]').forEach(btn=>btn.classList.toggle('active',btn.dataset.mode===viewMode||(viewMode==='all'&&btn.dataset.mode==='all')));
@@ -167,7 +183,7 @@ $('search').oninput=()=>{searchText=$('search').value.trim().toLocaleLowerCase()
 $('heroBrowse').onclick=()=>document.querySelector('.stageShell').scrollIntoView({behavior:'smooth',block:'start'});
 $('featuredRead').onclick=()=>{if(featured)openBook(featured)};
 async function loadCandidates(){
- try{const r=await fetch('./books/candidates.json');const list=await r.json();const host=$('candidates');host.replaceChildren();list.forEach(x=>{const tag=document.createElement('span');tag.className='chip';tag.textContent=(x.region||'세계')+' · '+x.title;host.append(tag)})}catch(e){console.warn(e)}
+ // The production queue stays private to the publishing flow; do not clutter the reading UI.
 }
 function audioOff(){if(track){try{track.stop()}catch(e){}track.disconnect();track=null}if(trackUrl){URL.revokeObjectURL(trackUrl);trackUrl=null}}
 function stopMusic(){if(musicTrack){musicTrack.pause();musicTrack.currentTime=0;musicTrack=null}}
@@ -199,6 +215,34 @@ async function openBook(b){
  catch(e){setStatus('준비 실패: '+e.message);$('loading').textContent='그림책을 열지 않았습니다: '+e.message;$('book').style.display='none'}
  finally{loading=false}
 }
+function fitStoryText(){
+ const words=[...document.querySelectorAll('#book .leaf .words')];
+ for(const inner of words){
+  const title=inner.querySelector('h3'),para=inner.querySelector('p');if(!title||!para)continue;
+  inner.classList.remove('text-tight');title.style.fontSize='';para.style.fontSize='';
+  const fits=()=>inner.scrollHeight<=inner.clientHeight+1&&title.scrollWidth<=title.clientWidth+1&&para.scrollWidth<=para.clientWidth+1;
+  if(fits())continue;
+  inner.classList.add('text-tight');
+  const height=inner.clientHeight;
+  // Determine a comfortable font size for the exact rendered book page.
+  let normal=parseFloat(getComputedStyle(para).fontSize)||13;
+  let head=parseFloat(getComputedStyle(title).fontSize)||16;
+  for(let n=0;n<23&&!fits();n++){
+   normal=Math.max(9,normal-.4);head=Math.max(11,head-.25);
+   para.style.fontSize=normal+'px';title.style.fontSize=head+'px';
+  }
+  if(!fits()){
+   inner.style.justifyContent='flex-start';
+   inner.style.padding='2.5%';
+   para.style.lineHeight='1.32';title.style.lineHeight='1.2';
+  }
+  // Keep the entire story visible; on an extreme device permit in-page scrolling.
+  if(!fits())inner.style.overflowY='auto';
+ }
+}
+let fitTimer=null;
+function scheduleTextFit(){clearTimeout(fitTimer);fitTimer=setTimeout(()=>requestAnimationFrame(fitStoryText),120)}
+window.addEventListener('resize',scheduleTextFit);
 function mount(b,assets){
  if(flip){try{flip.destroy()}catch(e){}flip=null}
  const host=$('book');host.replaceChildren();
@@ -206,14 +250,15 @@ function mount(b,assets){
  const pages=[];
  b.pages.forEach((p,i)=>{
   const a=document.createElement('div');a.className='leaf';const image=new Image();image.alt=p.heading+' 장면';image.src=URL.createObjectURL(assets.get(p.image));a.append(image);pages.push(a);
-  const t=document.createElement('div');t.className='leaf';const inner=document.createElement('div');inner.className='words';const index=document.createElement('small');index.textContent='SAKURA STORY · '+String(i+1).padStart(2,'0');const h=document.createElement('h3');h.textContent=p.heading;const text=document.createElement('p');text.textContent=p.text;inner.append(index,h,text);t.append(inner);pages.push(t);
+  const t=document.createElement('div');t.className='leaf';const inner=document.createElement('div');inner.className='words';const h=document.createElement('h3');h.textContent=p.heading;const text=document.createElement('p');text.textContent=p.text;inner.append(h,text);t.append(inner);pages.push(t);
  });
  pages.forEach(p=>host.append(p));
  flip=new St.PageFlip(host,{width:350,height:455,size:'stretch',minWidth:155,maxWidth:550,minHeight:205,maxHeight:720,showCover:false,drawShadow:true,maxShadowOpacity:.65,flippingTime:950,usePortrait:false,mobileScrollSupport:false,useMouseEvents:true,disableFlipByClick:true,showPageCorners:true});
  flip.on('flip',e=>{const n=Math.min(b.pages.length-1,Math.floor(e.data/2));playPage(n)});
  flip.loadFromHTML(pages);
+ scheduleTextFit();
 }
-function playPage(n){if(!active)return;currentPage=n;$('pageNumber').textContent=(n+1)+' / '+active.pages.length+' · 종이 모서리를 손가락으로 잡아 끌어보세요';audioOff();if(!narrationOn)return;
+function playPage(n){if(!active)return;currentPage=n;$('pageNumber').textContent=(n+1)+' / '+active.pages.length;audioOff();if(!narrationOn)return;
  const p=active.pages[n].audio[$('voice').value],sound=decoded.get(p);if(!sound){setStatus('해당 음성 파일은 준비되지 않았습니다');return}
  try{if(ctx.state==='suspended')ctx.resume();const source=ctx.createBufferSource();const volume=ctx.createGain();volume.gain.value=.9;source.buffer=sound;source.connect(volume);volume.connect(ctx.destination);track=source;source.start(0)}catch(e){setStatus('나레이션을 재생할 수 없습니다: '+e.message)}
 }
