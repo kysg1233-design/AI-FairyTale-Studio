@@ -22,8 +22,9 @@ async function tryCase(name,mobile=false){
   const reported=Number((await page.locator('#bookCount').textContent()).replace(/\D/g,'')),cards=await page.locator('#library .tile').count();
   if(cards!==expected||reported!==expected)throw Error('Book count mismatch: actual='+cards+', UI='+reported+', catalog='+expected);
   result.checks.book_count=cards;
-  await page.waitForFunction(()=>document.querySelectorAll('#candidates .chip').length>=100,null,{timeout:20000});
-  result.checks.source_backed_candidates=await page.locator('#candidates .chip').count();
+  const sourceCount=await page.evaluate(async()=>{const r=await fetch('./books/candidates.json');if(!r.ok)throw Error('Story queue unavailable');return (await r.json()).length});
+  if(sourceCount<100)throw Error('Production queue has fewer than 100 sourced candidates');
+  result.checks.source_backed_candidates=sourceCount;
   if(expected<1)throw Error('No complete books in release catalog');
   const cover=page.locator('#library .tile img').first();
   await cover.evaluate(img=>img.decode());result.checks.cover_decoded=true;
@@ -56,6 +57,9 @@ async function tryCase(name,mobile=false){
   if(loaded.volume<.5)throw Error('Background soundtrack volume too low');
   await page.waitForFunction(()=>musicTrack && musicTrack.readyState>=2,null,{timeout:25000});
   result.checks.media=loaded;
+  const textPages=await page.evaluate(()=>[...document.querySelectorAll('#book .leaf .words')].map(x=>({client:x.clientHeight,scroll:x.scrollHeight,overflow:getComputedStyle(x).overflowY}))); 
+  if(textPages.length!==loaded.chapterCount||textPages.some(x=>x.scroll>x.client+2&&x.overflow!=='auto'))throw Error('Text clipped on page: '+JSON.stringify(textPages));
+  result.checks.page_text_fits=true;
   const playing=await page.evaluate(()=>Boolean(musicTrack&&!musicTrack.paused&&musicTrack.readyState>=2));
   if(!playing)throw Error('Background music resource loaded but actual playback has not started');
   result.checks.bgm_playing=true;
