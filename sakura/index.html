@@ -821,7 +821,7 @@ function mount(b,assets){
  moralBlock.append(blossom,moralTitle,moralLead,moralText,moralHeart);moralPage.append(moralBlock);
  pages.push(moralPage);
  pages.forEach(p=>host.append(p));
- flip=new St.PageFlip(host,{width:350,height:455,size:'stretch',minWidth:260,maxWidth:550,minHeight:338,maxHeight:720,showCover:false,drawShadow:true,maxShadowOpacity:.65,flippingTime:950,usePortrait:true,mobileScrollSupport:false,swipeDistance:25,useMouseEvents:true,disableFlipByClick:false,showPageCorners:true});
+ flip=new St.PageFlip(host,{width:350,height:455,size:'stretch',minWidth:260,maxWidth:550,minHeight:338,maxHeight:720,showCover:false,drawShadow:true,maxShadowOpacity:.65,flippingTime:950,usePortrait:true,mobileScrollSupport:false,swipeDistance:25,useMouseEvents:false,disableFlipByClick:false,showPageCorners:true});
  flip.on('flip',e=>{nativeTouchTurn=true;const n=Math.min(b.pages.length,e.data);if(n!==currentPage)playPage(n);updatePageTurnControls();scheduleTextFit()});
  flip.loadFromHTML(pages);
  scheduleTextFit();
@@ -900,40 +900,82 @@ for(const [id,dir] of [['scrollUp',-1],['scrollDown',1]]){
   if(active)scrollReadingPage(dir); // keyboard and accessibility activation
  });
 }
-let mouseDragStart=null;
-document.querySelector('#reader .shelf').addEventListener('pointerdown',e=>{
- if(e.pointerType==='touch'||!flip)return;
- mouseDragStart={x:e.clientX,y:e.clientY,index:flip.getCurrentPageIndex()};
+// Own the reader gesture instead of depending on PageFlip's portrait touch
+// direction detection. Exactly one turn is requested per completed gesture.
+const bookGesture={start:null,dragging:false,lastTurn:0};
+function gestureBookPoint(e){
+ const el=document.querySelector('#reader .shelf .stf__parent')||$('book');
+ if(!el)return null;
+ const r=el.getBoundingClientRect();
+ return {x:e.clientX-r.left,y:e.clientY-r.top};
+}
+function gestureBegin(x,y,id){
+ if(!flip||!active||loading||bookGesture.start)return;
+ bookGesture.start={x,y,id,page:flip.getCurrentPageIndex()};
+ bookGesture.dragging=false;
+}
+function gestureMove(x,y,e){
+ const from=bookGesture.start;
+ if(!from||!flip)return;
+ const dx=x-from.x,dy=y-from.y;
+ if(Math.abs(dx)>12&&Math.abs(dx)>Math.abs(dy)*1.15){
+  bookGesture.dragging=true;
+  if(e.cancelable)e.preventDefault();
+ }
+}
+function gestureEnd(x,y){
+ const from=bookGesture.start;
+ bookGesture.start=null;
+ if(!from||!flip||!active)return;
+ const dx=x-from.x,dy=y-from.y;
+ const horizontal=Math.abs(dx)>36&&Math.abs(dx)>Math.abs(dy)*1.1;
+ if(!horizontal)return;
+ const index=flip.getCurrentPageIndex();
+ if(index!==from.page)return;
+ const now=performance.now();
+ if(now-bookGesture.lastTurn<420)return;
+ const next=dx<0;
+ const last=active.pages.length;
+ if(next&&index>=last)return;
+ if(!next&&index<=0)return;
+ bookGesture.lastTurn=now;
+ // flipNext and flipPrev both render a real physical page-curl animation.
+ // Never jump with turnToPage; the flip event updates narration/page count.
+ if(next)flip.flipNext('bottom');else flip.flipPrev('bottom');
+}
+const gestureSurface=document.querySelector('#reader .shelf');
+gestureSurface.addEventListener('touchstart',e=>{
+ if(e.touches.length!==1)return;
+ const t=e.touches[0];gestureBegin(t.clientX,t.clientY,t.identifier);
+},{passive:true,capture:true});
+gestureSurface.addEventListener('touchmove',e=>{
+ const t=[...e.touches].find(t=>t.identifier===bookGesture.start?.id);
+ if(t)gestureMove(t.clientX,t.clientY,e);
+},{passive:false,capture:true});
+gestureSurface.addEventListener('touchend',e=>{
+ const t=[...e.changedTouches].find(t=>t.identifier===bookGesture.start?.id);
+ if(t)gestureEnd(t.clientX,t.clientY);
+},{passive:true,capture:true});
+gestureSurface.addEventListener('touchcancel',()=>{bookGesture.start=null},{passive:true,capture:true});
+gestureSurface.addEventListener('pointerdown',e=>{
+ if(e.pointerType==='mouse'&&e.button===0)gestureBegin(e.clientX,e.clientY,'mouse');
 },{capture:true});
-document.addEventListener('pointerup',e=>{
- if(!mouseDragStart||e.pointerType==='touch'||!flip)return;
- const from=mouseDragStart;mouseDragStart=null;
- const dx=e.clientX-from.x,dy=e.clientY-from.y;
- if(Math.abs(dx)<45||Math.abs(dx)<Math.abs(dy)*1.15)return;
- setTimeout(()=>{
-  // Only recover a missed desktop mouse drag. Never generate a second turn.
-  if(!flip||flip.getCurrentPageIndex()!==from.index)return;
-  if(dx<0)flip.flipNext();else flip.flipPrev();
- },1130);
-},{capture:true});
-let touchStart=null, nativeTouchTurn=false;
-document.querySelector('#reader .shelf').addEventListener('touchstart',e=>{
- const t=e.touches[0];if(!t||!flip)return;
- nativeTouchTurn=false;touchStart={x:t.clientX,y:t.clientY,index:flip.getCurrentPageIndex()};
-},{capture:true,passive:true});
-document.querySelector('#reader .shelf').addEventListener('touchend',e=>{
- if(!touchStart||!flip)return;
- const t=e.changedTouches[0];if(!t)return;
- const from=touchStart;touchStart=null;
- const dx=t.clientX-from.x,dy=t.clientY-from.y;
- if(Math.abs(dx)<48||Math.abs(dx)<Math.abs(dy)*1.15)return;
- setTimeout(()=>{
-  // Wait until native animation has completed before considering a fallback.
-  // Otherwise the same finger swipe triggers TWO independent page flips.
-  if(!flip||nativeTouchTurn||flip.getCurrentPageIndex()!==from.index)return;
-  if(dx<0)flip.flipNext();else flip.flipPrev();
- },1150);
-},{capture:true,passive:true});
+window.addEventListener('pointermove',e=>{
+ if(e.pointerType==='mouse'&&bookGesture.start?.id==='mouse')gestureMove(e.clientX,e.clientY,e);
+},{passive:false});
+window.addEventListener('pointerup',e=>{
+ if(e.pointerType==='mouse'&&bookGesture.start?.id==='mouse')gestureEnd(e.clientX,e.clientY);
+});
+gestureSurface.addEventListener('click',e=>{
+ // A short tap on the right half advances, left half goes back.
+ // Don't accidentally turn again after a drag or while clicking controls.
+ if(!flip||!active||e.target.closest('button,a'))return;
+ if(bookGesture.dragging){bookGesture.dragging=false;return}
+ const r=$('book').getBoundingClientRect();
+ const x=e.clientX-r.left;if(x<0||x>r.width)return;
+ if(performance.now()-bookGesture.lastTurn<420)return;
+ turnOnePage(x>=r.width*.5?1:-1);
+},true);
 
 $('voice').onchange=async()=>{if(!active)return;audioOff();const b=active;$('loading').style.display='block';$('loading').textContent='선택한 목소리 음성을 준비 중…';try{await prefetchBook(b,$('voice').value);if(active===b)playPage(currentPage)}catch(e){setStatus(e.message)}finally{$('loading').style.display='none'}};
 window.addEventListener('pagehide',()=>{audioOff();stopMusic();loaded.clear();decoded.clear()});
