@@ -182,8 +182,8 @@ def publish_one():
     if not KEY: fail("Missing secret GEMINI_API_KEY. Add it under repository Settings → Secrets and variables → Actions.")
     candidates=json.loads(QUEUE.read_text("utf-8"))
     existing=json.loads(INDEX.read_text("utf-8")) if INDEX.exists() else {"books":[]}
-    published={b["source_title"] for b in existing.get("books",[]) if b.get("status")=="ready"}
-    unpublished=[c for c in candidates if c["heading"] not in published]
+    published={(b["source_url"],b["source_title"]) for b in existing.get("books",[]) if b.get("status")=="ready"}
+    unpublished=[c for c in candidates if (c["source_url"],c["heading"]) not in published]
     if not unpublished:print("All candidates published");return
     # A failed candidate aborts the run. No incomplete or guessed books are published.
     counts={r:0 for r in dict.fromkeys(x['region'] for x in candidates)}
