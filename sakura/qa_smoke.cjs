@@ -124,6 +124,7 @@ async function tryCase(name,mobile=false){
   await page.waitForFunction(()=>musicOn&&musicTrack&&!musicTrack.paused,null,{timeout:10000});
   // Restore page zero for the single-gesture flip test.
   await page.evaluate(()=>{flip.turnToPage(0);playPage(0)});
+  await page.waitForTimeout(1000); // Let the page-flip engine finish and re-arm touch handling.
 
   await page.locator('#voice').selectOption('female');
   await page.waitForFunction(()=>decoded.size>=active.pages.length*2,null,{timeout:45000});
