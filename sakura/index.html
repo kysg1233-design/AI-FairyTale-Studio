@@ -537,7 +537,21 @@ footer{text-align:center;color:#775466;font-size:12px;padding:24px 0 8px}
  border-radius:13px;font-size:20px}
 #reader .pageTurnControls{display:none!important}
 #reader .shelf{position:relative;z-index:2}
-</style><script src="./vendor/page-flip.browser.js"></script>
+
+/* Independently tested two-way touch book. */
+#reader .shelf{width:min(100%,390px);max-width:390px;min-height:0;padding:9px 0;overflow:visible}
+#reader #book.sakura-book{position:relative!important;display:block!important;width:min(100%,350px)!important;
+ height:auto!important;aspect-ratio:350/455;perspective:1450px;overflow:visible!important;
+ touch-action:pan-y!important;user-select:none;-webkit-user-select:none;isolation:isolate}
+#reader .sakura-page{position:absolute!important;inset:0!important;box-sizing:border-box!important;
+ width:100%!important;height:100%!important;overflow:hidden;background:#fff9ee;
+ border:1px solid #efdfd9;backface-visibility:hidden;transform-origin:left center}
+#reader .sakura-page.storyLeaf{display:flex;flex-direction:column}
+#reader .sakura-turn-sheet{position:absolute!important;inset:0!important;z-index:7!important;
+ width:100%!important;height:100%!important;transform-style:preserve-3d;
+ backface-visibility:visible;transform-origin:left center;pointer-events:none!important}
+#reader .sakura-book img,#reader .sakura-book .words,#reader .sakura-book .moralContent{pointer-events:none}
+</style><script src="./book-turn.js?v=2"></script>
 </head><body><div class="wrap">
 <header>
  <div class="brand"><span class="brandSymbol" aria-hidden="true">📖</span><span>벚꽃 동화극장<small>AI로 만나는 전래동화 그림책</small></span></div>
@@ -811,7 +825,7 @@ function ensureBookHost(){
 function mount(b,assets){
  if(flip){try{flip.destroy()}catch(e){console.warn('Old page engine cleanup:',e.message)}flip=null}
  const host=ensureBookHost();host.replaceChildren();host.style.display='block';
- if(!window.St||!St.PageFlip)throw Error('책장 넘김 엔진 로딩 실패. 네트워크를 확인하세요.');
+ if(!window.SakuraBookFlip)throw Error('책장 넘김 엔진을 불러오지 못했습니다. 새로고침해 주세요.');
  const pages=[];
  b.pages.forEach((p,i)=>{
   // One scene = one physical leaf, with picture and text together.
@@ -831,7 +845,7 @@ function mount(b,assets){
  moralBlock.append(blossom,moralTitle,moralLead,moralText,moralHeart);moralPage.append(moralBlock);
  pages.push(moralPage);
  pages.forEach(p=>host.append(p));
- flip=new St.PageFlip(host,{width:350,height:455,size:'stretch',minWidth:260,maxWidth:550,minHeight:338,maxHeight:720,showCover:false,drawShadow:true,maxShadowOpacity:.65,flippingTime:950,usePortrait:true,mobileScrollSupport:false,swipeDistance:25,useMouseEvents:true,disableFlipByClick:false,showPageCorners:true});
+ flip=new SakuraBookFlip(host,{flippingTime:530});
  flip.on('flip',e=>{const n=Math.min(b.pages.length,e.data);if(n!==currentPage)playPage(n);updatePageTurnControls();scheduleTextFit()});
  flip.loadFromHTML(pages);
  scheduleTextFit();
@@ -910,89 +924,7 @@ for(const [id,dir] of [['scrollUp',-1],['scrollDown',1]]){
   if(active)scrollReadingPage(dir); // keyboard and accessibility activation
  });
 }
-// Own the reader gesture instead of depending on PageFlip's portrait touch
-// direction detection. Exactly one turn is requested per completed gesture.
-const bookGesture={start:null,dragging:false,lastTurn:-Infinity};
-function gestureBookPoint(e){
- const el=document.querySelector('#reader .shelf .stf__parent')||$('book');
- if(!el)return null;
- const r=el.getBoundingClientRect();
- return {x:e.clientX-r.left,y:e.clientY-r.top};
-}
-function gestureBegin(x,y,id){
- if(!flip||!active||loading||bookGesture.start)return;
- bookGesture.start={x,y,id,page:flip.getCurrentPageIndex()};
- bookGesture.dragging=false;
-}
-function gestureMove(x,y,e){
- const from=bookGesture.start;
- if(!from||!flip)return;
- const dx=x-from.x,dy=y-from.y;
- if(Math.abs(dx)>12&&Math.abs(dx)>Math.abs(dy)*1.15){
-  bookGesture.dragging=true;
-  if(e.cancelable)e.preventDefault();
- }
-}
-function gestureEnd(x,y){
- const from=bookGesture.start;
- bookGesture.start=null;
- if(!from||!flip||!active)return;
- const dx=x-from.x,dy=y-from.y;
- const horizontal=Math.abs(dx)>36&&Math.abs(dx)>Math.abs(dy)*1.1;
- if(!horizontal)return;
- const index=flip.getCurrentPageIndex();
- if(index!==from.page)return;
- const now=performance.now();
- if(now-bookGesture.lastTurn<420)return;
- const next=dx<0;
- const last=active.pages.length;
- if(next&&index>=last)return;
- if(!next&&index<=0)return;
- bookGesture.lastTurn=now;
- // flipNext and flipPrev both render a real physical page-curl animation.
- // Never jump with turnToPage; the flip event updates narration/page count.
- // Let the native PageFlip animation finish first. Recover only missed turns.
- const originalFlip=flip, originalBook=active;
- setTimeout(()=>{
-  if(flip!==originalFlip||active!==originalBook)return;
-  if(flip.getCurrentPageIndex()!==index)return;
-  if(next)flip.flipNext('bottom');else flip.flipPrev('bottom');
- },1030);
-}
-const gestureSurface=document.querySelector('#reader .shelf');
-gestureSurface.addEventListener('touchstart',e=>{
- if(e.touches.length!==1)return;
- const t=e.touches[0];gestureBegin(t.clientX,t.clientY,t.identifier);
-},{passive:true,capture:true});
-gestureSurface.addEventListener('touchmove',e=>{
- const t=[...e.touches].find(t=>t.identifier===bookGesture.start?.id);
- if(t)gestureMove(t.clientX,t.clientY,e);
-},{passive:false,capture:true});
-gestureSurface.addEventListener('touchend',e=>{
- const t=[...e.changedTouches].find(t=>t.identifier===bookGesture.start?.id);
- if(t)gestureEnd(t.clientX,t.clientY);
-},{passive:true,capture:true});
-gestureSurface.addEventListener('touchcancel',()=>{bookGesture.start=null},{passive:true,capture:true});
-gestureSurface.addEventListener('pointerdown',e=>{
- if(e.pointerType==='mouse'&&e.button===0)gestureBegin(e.clientX,e.clientY,'mouse');
-},{capture:true});
-window.addEventListener('pointermove',e=>{
- if(e.pointerType==='mouse'&&bookGesture.start?.id==='mouse')gestureMove(e.clientX,e.clientY,e);
-},{passive:false});
-window.addEventListener('pointerup',e=>{
- if(e.pointerType==='mouse'&&bookGesture.start?.id==='mouse')gestureEnd(e.clientX,e.clientY);
-});
-gestureSurface.addEventListener('click',e=>{
- // A short tap on the right half advances, left half goes back.
- // Don't accidentally turn again after a drag or while clicking controls.
- if(!flip||!active||e.target.closest('button,a'))return;
- if(bookGesture.dragging){bookGesture.dragging=false;return}
- const r=$('book').getBoundingClientRect();
- const x=e.clientX-r.left;if(x<0||x>r.width)return;
- if(performance.now()-bookGesture.lastTurn<420)return;
- turnOnePage(x>=r.width*.5?1:-1);
-},true);
-
+// Single pointer driver lives in book-turn.js, preventing duplicate turns.
 $('voice').onchange=async()=>{if(!active)return;audioOff();const b=active;$('loading').style.display='block';$('loading').textContent='선택한 목소리 음성을 준비 중…';try{await prefetchBook(b,$('voice').value);if(active===b)playPage(currentPage)}catch(e){setStatus(e.message)}finally{$('loading').style.display='none'}};
 window.addEventListener('pagehide',()=>{audioOff();stopMusic();loaded.clear();decoded.clear()});
 fetchCatalog();
