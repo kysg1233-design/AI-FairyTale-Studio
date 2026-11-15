@@ -73,6 +73,29 @@ jobs:
       - id: validate
         name: Verify reader and all published books
         run: python sakura/check_site.py
+      - name: Compose original prebuilt lullaby soundtrack
+        run: python sakura/create_bgm.py
+      - name: Bundle PageFlip for publishing
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p sakura/vendor
+          npm pack page-flip@2.0.7 --pack-destination /tmp --silent
+          tar -xOf /tmp/page-flip-2.0.7.tgz package/dist/js/page-flip.browser.js > sakura/vendor/page-flip.browser.js
+          test -s sakura/vendor/page-flip.browser.js
+      - name: Install Chromium browser QA environment
+        shell: bash
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - id: browserqa
+        name: Exercise desktop and Galaxy touch-page flip with real audio
+        shell: bash
+        run: |
+          python -m http.server 8777 --bind 127.0.0.1 > /tmp/sakura-http.log 2>&1 &
+          echo $! > /tmp/sakura-http.pid
+          sleep 2
+          SAKURA_URL=http://127.0.0.1:8777/sakura/ node sakura/qa_smoke.cjs
       - id: commitbook
         name: Commit verified and fully complete book only
         shell: bash
@@ -87,16 +110,6 @@ jobs:
           git config user.email "sakura-story-bot@users.noreply.github.com"
           git commit -m "Publish complete weekly storybook (illustrations and both voices)"
           git push origin HEAD:main
-      - name: Compose original prebuilt lullaby soundtrack
-        run: python sakura/create_bgm.py
-      - name: Bundle PageFlip for publishing
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p sakura/vendor
-          npm pack page-flip@2.0.7 --pack-destination /tmp --silent
-          tar -xOf /tmp/page-flip-2.0.7.tgz package/dist/js/page-flip.browser.js > sakura/vendor/page-flip.browser.js
-          test -s sakura/vendor/page-flip.browser.js
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:
@@ -108,6 +121,24 @@ jobs:
       - id: deployment
         name: Publish completed books to GitHub Pages
         uses: actions/deploy-pages@v4
+      - id: liveqa
+        name: Verify the public GitHub Pages site in desktop and mobile Chrome
+        shell: bash
+        env:
+          SAKURA_URL: ${{ steps.deployment.outputs.page_url }}sakura/
+        run: |
+          echo "Testing deployed site in Chrome"
+          node sakura/qa_smoke.cjs
+      - name: Keep browser QA evidence in GitHub Actions artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sakura-browser-qa
+          path: |
+            sakura/qa-result.json
+            sakura/qa-desktop.png
+            sakura/qa-galaxy-mobile.png
+          if-no-files-found: ignore
       - name: Save build status for automatic troubleshooting
         if: always()
         shell: bash
@@ -118,10 +149,12 @@ jobs:
           STEP_VALIDATE: ${{ steps.validate.outcome }}
           STEP_COMMIT: ${{ steps.commitbook.outcome }}
           STEP_PAGES: ${{ steps.deployment.outcome }}
+          STEP_BROWSER: ${{ steps.browserqa.outcome }}
+          STEP_PUBLIC: ${{ steps.liveqa.outcome }}
         run: |
           python - <<'PY'
           import json, os, pathlib, datetime
-          stage = {k:os.getenv("STEP_"+k,"unknown") for k in ("SECRET","MODELS","GENERATE","VALIDATE","COMMIT","PAGES")}
+          stage = {k:os.getenv("STEP_"+k,"unknown") for k in ("SECRET","MODELS","GENERATE","VALIDATE","COMMIT","PAGES","BROWSER","PUBLIC")}
           books = json.loads(pathlib.Path("sakura/books/index.json").read_text("utf-8")).get("books",[])
           outcome = "success" if all(stage[k]=="success" for k in stage) else "failure"
           result = {"status":outcome,"workflow":"weekly","run_id":os.getenv("GITHUB_RUN_ID"),
