@@ -92,9 +92,9 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px;ma
 <button class="book" id="bookSecond"><div class="cover" style="background:#deecdf"><svg viewBox="0 0 720 480"><use href="#landscape"/><use href="#rabbit" x="260" y="190" width="190" height="245"/><circle cx="550" cy="330" r="53" fill="#dfaf84"/><circle cx="540" cy="322" r="8" fill="#65565b"/><circle cx="580" cy="322" r="8" fill="#65565b"/></svg></div><div class="bookinfo"><small>🌼 창작 동화 · 약 2분</small><strong>봄바람의 비밀</strong><p>잃어버린 꽃씨를 찾아 떠나는 작은 여행</p></div></button>
 <button class="book" id="bookThird"><div class="cover" style="background:#e1e8f2"><svg viewBox="0 0 720 480"><use href="#landscape"/><circle cx="550" cy="120" r="71" fill="#fff5dc" opacity=".8"/><use href="#bird" x="320" y="235" width="195" height="175"/></svg></div><div class="bookinfo"><small>🌙 창작 동화 · 약 2분</small><strong>달빛을 품은 새</strong><p>용기를 찾아 떠나는 밤하늘 이야기</p></div></button>
 </section></main>
-<section id="reader" aria-label="동화 읽기"><div class="readerhead"><div><span class="eyebrow">SAKURA STORYBOOK</span><h2 id="readingTitle">벚꽃 숲의 작은 토끼</h2></div><div class="readerctrl"><button class="smallbtn" id="apiBtn" title="기존 동화 스튜디오의 Google API 키 연결">🔑 Gemini 연결</button><button class="smallbtn" id="musicBtn" aria-pressed="false">♫ 배경음 OFF</button><button class="smallbtn" id="voiceBtn" aria-pressed="false">🔈 나레이션 OFF</button><label class="voicechoose" for="voiceSelect">목소리 <select id="voiceSelect" aria-label="한국어 목소리 선택"><option value="Kore">🌸 다정한 여성</option><option value="Aoede">👵 포근한 할머니</option><option value="Puck">✨ 밝은 이야기꾼</option><option value="Charon">🌙 차분한 남성</option></select></label><label class="voicechoose" for="speedSelect">속도 <select id="speedSelect" aria-label="나레이션 읽기 속도"><option value="slow" selected>차분히</option><option value="normal">보통</option><option value="fast">경쾌하게</option></select></label><button class="smallbtn" id="backBtn">⌂ 책장</button></div></div>
+<section id="reader" aria-label="동화 읽기"><div class="readerhead"><div><span class="eyebrow">SAKURA STORYBOOK</span><h2 id="readingTitle">벚꽃 숲의 작은 토끼</h2></div><div class="readerctrl"><button class="smallbtn" id="apiBtn" title="기존 동화 스튜디오의 Google API 키 연결">🔑 Gemini 연결</button><button class="smallbtn" id="musicBtn" aria-pressed="false">♫ 배경음 OFF</button><button class="smallbtn" id="voiceBtn" aria-pressed="false">🔈 나레이션 OFF</button><label class="voicechoose" for="voiceSelect">목소리 <select id="voiceSelect" aria-label="한국어 목소리 선택"><option value="Kore">🌸 여성 · 포근한 엄마</option><option value="Charon">🌙 남성 · 다정한 아빠</option></select></label><label class="voicechoose" for="speedSelect">속도 <select id="speedSelect" aria-label="나레이션 읽기 속도"><option value="slow" selected>차분히</option><option value="normal">보통</option><option value="fast">경쾌하게</option></select></label><button class="smallbtn" id="backBtn">⌂ 책장</button></div></div>
 <div class="flipwrap"><div id="flipbook" aria-label="손가락으로 책장을 끌어 넘기는 동화책"></div></div>
-<div class="pagefoot"><button id="prev" aria-label="이전 페이지">‹</button><span class="progress" id="counter">1 / 6</span><button id="next" aria-label="다음 페이지">›</button></div><p class="tip">📖 책장을 넘기듯 좌우로 밀거나 페이지를 탭하세요. 음성 품질은 기기에 설치된 한국어 음성에 따라 달라집니다.</p></section>
+<div class="pagefoot"><button id="prev" aria-label="이전 페이지">‹</button><span class="progress" id="counter">1 / 6</span><button id="next" aria-label="다음 페이지">›</button></div><p class="tip">📖 책장을 넘기듯 좌우로 밀거나 페이지를 탭하세요. 음성은 Gemini AI가 생성합니다. 브라우저 기계음으로 대체하지 않습니다.</p></section>
 <footer class="footer">🌸 벚꽃 동화극장 · 모든 아이의 하루에 작은 꽃 한 송이</footer></div>
 <script>
 const stories=[
@@ -154,9 +154,9 @@ function decodeAudioData(base64,mime){
  return wavFromPCM(pcm,sampleRate);
 }
 function gentleInstruction(voice,pace){
- const style=voice==='Aoede'?'kind grandmother with a mature, affectionate tone':voice==='Puck'?'bright but soft, friendly storyteller':voice==='Charon'?'calm comforting fatherly storyteller':'gentle and affectionate Korean female bedtime storyteller';
- const tempo=pace==='slow'?'slow, with comfortable breathing pauses':pace==='fast'?'natural and lightly lively':'unhurried and natural';
- return 'Read the following Korean fairy tale aloud exactly as written in a '+style+' voice, '+tempo+'. Warm, tender, reassuring, expressive but never shrill, harsh, overly high-pitched or robotic. Do not speak these instructions.\\n\\n';
+ const style=voice==='Charon'?'a soft-spoken and caring Korean father with warm natural baritone, gently smiling, expressive and never announcer-like':'a gentle Korean mother with a mellow, soft, natural feminine speaking voice, reassuring and kind, never squeaky, shrill or overly high-pitched';
+ const tempo=pace==='slow'?'slow with natural restful pauses':pace==='fast'?'slightly lively and conversational':'unhurried and natural';
+ return 'Read this Korean bedtime picture book passage exactly as written, in the voice of '+style+', '+tempo+'. Use fluent natural Korean, compassionate human phrasing and subtle emotion. Never sound robotic, clipped, sharp, theatrical or like an advertisement. Do not read these instructions aloud.\\n\\n';
 }
 async function generateGeminiAudio(text,voice,pace,key){
  const cacheKey=JSON.stringify([text,voice,pace]);
@@ -186,7 +186,7 @@ async function read(){
   if(!configureKey()){voice=false;setVoice(false);return}
   key=getGeminiKey();
  }
- const ticket=narrationSerial, p=stories[book].pages[page],v=el('voiceSelect').value||'Kore',pace=el('speedSelect').value||'slow';
+ const ticket=narrationSerial, p=stories[book].pages[page],v=el('voiceSelect').value==='Charon'?'Charon':'Kore',pace=el('speedSelect').value||'slow';
  el('voiceBtn').textContent='⏳ AI 나레이션 준비 중';
  try{
   const blob=await generateGeminiAudio(p[0]+'. '+p[1],v,pace,key);
@@ -209,8 +209,9 @@ function setVoice(on){
  if(voice)read();else stopSpeech();
 }
 el('apiBtn').addEventListener('click',()=>{configureKey();if(voice)read()});
-el('voiceSelect').addEventListener('change',()=>{if(voice)read()});
+el('voiceSelect').addEventListener('change',()=>{localStorage.setItem('sakura-narrator',el('voiceSelect').value);if(voice)read()});
 el('speedSelect').addEventListener('change',()=>{if(voice)read()});
+const savedNarrator=localStorage.getItem('sakura-narrator');if(savedNarrator==='Kore'||savedNarrator==='Charon')el('voiceSelect').value=savedNarrator;
 updateKeyButton();
 function setMusic(on){music=on;el('musicBtn').textContent=music?'♫ 배경음 ON':'♫ 배경음 OFF';el('musicBtn').classList.toggle('on',music);el('musicBtn').setAttribute('aria-pressed',music);if(music)playMusic();else stopMusic()}
 function stopMusic(){if(audio){try{musicNodes.forEach(n=>n.stop());audio.close()}catch(e){} audio=null;musicNodes=[]}}
