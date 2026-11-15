@@ -27,6 +27,7 @@ finally: os.unlink(source)
 published=json.loads((root/"books/index.json").read_text("utf8")).get("books",[])
 for b in published:
     assert b["status"]=="ready" and len(b["pages"])>=3 and b["source_url"].startswith("https://")
+    assert isinstance(b.get("parent_moral"),str) and 25<=len(b["parent_moral"])<=170 and len(re.findall(r"[가-힣]",b["parent_moral"]))>=20, "Missing child-friendly parent moral: "+b["title"]
     assets=[b["cover"]]+[x for p in b["pages"] for x in (p["image"],p["audio"]["male"],p["audio"]["female"])]
     assert len(set(assets))==len(assets)-1 or len(set(assets))==len(assets) # cover may be first frame duplicated logically
     for rel in assets:
