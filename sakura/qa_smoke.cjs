@@ -57,7 +57,8 @@ async function tryCase(name,mobile=false){
   if(loaded.audioReady!==loaded.chapterCount+(loaded.titleAudio?1:0))throw Error('Not all page narrations predecoded: '+JSON.stringify(loaded));
   if(loaded.titleAudio&&!loaded.introScheduled)throw Error('Book title is not scheduled to play before page narration');
   if(!loaded.bgmReady)throw Error('Background soundtrack has not started');
-  if(loaded.volume<.5)throw Error('Background soundtrack volume too low');
+  await page.waitForFunction(()=>musicTrack&&musicTrack.volume>=.20,null,{timeout:8000});
+  if(loaded.volume>.55)throw Error('Background soundtrack is too loud for narration');
   await page.waitForFunction(()=>musicTrack && musicTrack.readyState>=2,null,{timeout:25000});
   result.checks.media=loaded;
   const textPages=await page.evaluate(()=>[...document.querySelectorAll('#book .leaf .words')].map(x=>({client:x.clientHeight,scroll:x.scrollHeight,overflow:getComputedStyle(x).overflowY}))); 
@@ -66,6 +67,25 @@ async function tryCase(name,mobile=false){
   const playing=await page.evaluate(()=>Boolean(musicTrack&&!musicTrack.paused&&musicTrack.readyState>=2));
   if(!playing)throw Error('Background music resource loaded but actual playback has not started');
   result.checks.bgm_playing=true;
+  const music=await page.evaluate(()=>({
+   themes:Object.keys(musicNames),
+   current:musicTheme,
+   playing:!!musicTrack&&!musicTrack.paused,
+   volume:musicTrack?.volume,
+   selected:active.pages.map(p=>sceneMood(p))
+  }));
+  if(music.themes.length!==5)throw Error('Expected five pre-rendered mood soundtracks: '+JSON.stringify(music));
+  const responds=await page.evaluate(async()=>Promise.all(Object.values(musicNames).map(async file=>{
+   const r=await fetch('./assets/'+file);return {file,status:r.status,size:(await r.blob()).size}
+  })));
+  if(responds.some(x=>x.status!==200||x.size<80000))throw Error('A pre-made mood track missing: '+JSON.stringify(responds));
+  const change=await page.evaluate(()=>{
+   const prev=musicTheme,other=prev==='adventure'?'joyful':'adventure';
+   playMusic(other);return {prev,other}
+  });
+  await page.waitForFunction(target=>musicTheme===target&&musicTrack&&!musicTrack.paused&&musicTrack.readyState>=2,change.other,{timeout:16000});
+  await page.evaluate(()=>{playMusic(sceneMood(active.pages[currentPage]))});
+  result.checks.mood_music={tracks:responds.map(x=>x.file),switch:change,per_scene:music.selected};
   await page.locator('#voice').selectOption('female');
   await page.waitForFunction(()=>decoded.size>=active.pages.length*2,null,{timeout:45000});
   if(await page.locator('#loading').isVisible())await page.locator('#loading').waitFor({state:'hidden',timeout:10000});
