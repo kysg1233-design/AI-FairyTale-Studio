@@ -1,17 +1,19 @@
 {
-  "status": "failure",
+  "status": "success",
   "workflow": "weekly",
-  "run_id": "43680657900",
-  "commit": "7a6d3fe4c3d84053981c1774b47cb93c264c63fb",
-  "time_utc": "2026-11-15T05:20:40.730582+00:00",
+  "run_id": "43680731473",
+  "commit": "ed674f5eeec1c2351ea9ddf9a57670dd999345e4",
+  "time_utc": "2026-11-15T05:24:00.418229+00:00",
   "stage": {
-    "SECRET": "failure",
-    "MODELS": "skipped",
-    "GENERATE": "skipped",
-    "VALIDATE": "skipped",
-    "COMMIT": "skipped",
-    "PAGES": "skipped"
+    "SECRET": "success",
+    "MODELS": "success",
+    "GENERATE": "success",
+    "VALIDATE": "success",
+    "COMMIT": "success",
+    "PAGES": "success"
   },
-  "completed_books": 0,
-  "titles": []
+  "completed_books": 1,
+  "titles": [
+    "여우와 포도"
+  ]
 }
