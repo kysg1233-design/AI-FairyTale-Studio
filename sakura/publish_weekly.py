@@ -189,7 +189,10 @@ def publish_one():
     counts={r:0 for r in dict.fromkeys(x['region'] for x in candidates)}
     for b in existing.get('books',[]):
         if b.get('status')=='ready':counts[b.get('region')]=counts.get(b.get('region'),0)+1
-    c=min(unpublished,key=lambda x:(counts.get(x['region'],0),candidates.index(x)))
+    # Begin with the Gutenberg Aesop chapter whose source heading has been independently verified.
+    # Thereafter balance the catalogue across Korean, Japanese, European and Aesop stories.
+    first=next((x for x in unpublished if x['heading']=='THE FOX AND THE GRAPES'),None)
+    c=first if not existing.get('books') and first else min(unpublished,key=lambda x:(counts.get(x['region'],0),candidates.index(x)))
     slug="story-"+hashlib.sha256((c["source_url"]+"#"+c["heading"]).encode("utf-8")).hexdigest()[:12]
     destination=BOOK_DIR/slug
     if destination.exists():fail("Destination already exists; manual recovery required")
