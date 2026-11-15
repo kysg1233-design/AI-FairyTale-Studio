@@ -190,7 +190,7 @@ def publish_one():
     for b in existing.get('books',[]):
         if b.get('status')=='ready':counts[b.get('region')]=counts.get(b.get('region'),0)+1
     c=min(unpublished,key=lambda x:(counts.get(x['region'],0),candidates.index(x)))
-    slug="story-"+str(candidates.index(c)+1).zfill(3)
+    slug="story-"+hashlib.sha256((c["source_url"]+"#"+c["heading"]).encode("utf-8")).hexdigest()[:12]
     destination=BOOK_DIR/slug
     if destination.exists():fail("Destination already exists; manual recovery required")
     print("Producing:",c["region"],c["title"],c["heading"])
