@@ -83,9 +83,11 @@ def textual_prompt(item,excerpt):
       "각 장면마다 그림용 scene_prompt를 영어로 자세하게 작성하고, character_bible은 등장인물의 "
       "얼굴/의상/체형/털색 등의 공통 고정값을 자세히 정의하세요. "
       "각 장면은 반드시 이전 장면과 시각적 구도, 장소 또는 행동이 달라야 합니다. "
+      "각 장면에 mood를 반드시 하나 선택하세요: calm(평온), joyful(기쁨), adventure(모험), mystery(긴장·신비), tender(슬픔·따뜻한 위로). "
+      "어린이에게 과도하게 무서운 음악은 사용하지 않으므로 사건의 감정을 과장하지 마세요. "
       "아래 JSON 스키마 형태의 JSON 객체만 출력하세요. "
       '{"character_bible":"...","pages":[{"heading":"한국어 장면 제목","text":"동화 본문",'
-      '"scene_prompt":"English image direction"}]}. '
+      '"mood":"calm","scene_prompt":"English image direction"}]}. '
       f"\n제목: {item['title']}\n원전 제목: {item['heading']}\n원전 내용:\n{excerpt}"
     )
 def story_plan(item,excerpt):
@@ -104,7 +106,11 @@ def story_plan(item,excerpt):
         if len(re.findall("[가-힣]",t))<25 or re.search("[A-Za-z]{3,}",t): fail("Non-Korean narration detected")
         if t in prior: fail("Duplicate narration page")
         prior.add(t)
-        p.update(heading=h,text=t,scene_prompt=art)
+        mood=p.get("mood","calm")
+        if mood not in ("calm","joyful","adventure","mystery","tender"):
+            # Future model variants may omit mood: the browser has conservative text heuristics.
+            mood="calm"
+        p.update(heading=h,text=t,scene_prompt=art,mood=mood)
     return data
 def save_image(data,output):
     raw=base64.b64decode(data)
@@ -243,7 +249,7 @@ def publish_one():
             if not audio.is_file() or audio.stat().st_size<4000:
                 create_audio(c["title"]+". 오늘의 이야기를 시작할게요.",person,audio)
         shutil.copyfile(tmp/"page-01.webp",tmp/"cover.webp")
-        pages=[{"heading":p["heading"],"text":p["text"],"image":f"books/{slug}/page-{i+1:02d}.webp",
+        pages=[{"heading":p["heading"],"text":p["text"],"mood":p.get("mood","calm"),"image":f"books/{slug}/page-{i+1:02d}.webp",
                 "audio":{"male":f"books/{slug}/male-{i+1:02d}.mp3","female":f"books/{slug}/female-{i+1:02d}.mp3"}}
                for i,p in enumerate(plan["pages"])]
         meta={"title":c["title"],"title_audio":{"male":f"books/{slug}/male-title.mp3","female":f"books/{slug}/female-title.mp3"},"region":c["region"],"source_title":c["heading"],"source_url":c["source_url"],
