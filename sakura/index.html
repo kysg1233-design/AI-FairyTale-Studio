@@ -498,6 +498,22 @@ footer{text-align:center;color:#775466;font-size:12px;padding:24px 0 8px}
  .moralContent p{font-size:clamp(13px,3.4vw,16px);line-height:1.7}
  .readerScrollNav{right:max(6px,env(safe-area-inset-right));gap:9px}
  .readerScrollNav button{width:38px;height:49px;border-radius:14px;font-size:22px;background:rgba(92,53,81,.44)}}
+
+/* Bigger edge-mounted targets: easy one-thumb operation, outside the page area. */
+.readerScrollNav{right:max(9px,env(safe-area-inset-right));top:50%;z-index:2147483000;
+ gap:15px;padding:8px 4px;border-radius:22px;
+ background:rgba(255,249,252,.14);pointer-events:auto;isolation:isolate}
+.readerScrollNav button{width:64px;height:74px;min-width:64px;min-height:74px;
+ border-radius:20px;border:2px solid #ffffffdf;background:rgba(93,51,77,.69);
+ color:#fff;font-size:32px;touch-action:none;user-select:none;-webkit-user-select:none;
+ -webkit-tap-highlight-color:transparent;cursor:pointer;pointer-events:auto;
+ box-shadow:0 9px 20px #25102d63}
+.readerScrollNav button:hover,.readerScrollNav button:focus-visible{background:rgba(137,58,104,.91)}
+@media(max-width:720px){
+ .readerScrollNav{right:max(5px,env(safe-area-inset-right));gap:12px;padding:7px 2px}
+ .readerScrollNav button{width:56px;height:66px;min-width:56px;min-height:66px;
+  border-radius:18px;font-size:28px;background:rgba(88,42,73,.72)}
+}
 </style><script src="./vendor/page-flip.browser.js"></script>
 </head><body><div class="wrap">
 <header>
@@ -657,48 +673,74 @@ function sceneMood(p){
  return 'calm';
 }
 function musicVolume(){return narrationOn?musicGain:.52}
+// Hard stop ALL cached players, including the outgoing soundtrack of a crossfade.
+// Each pending play() promise and fade timer also checks the generation token.
+function cancelMusicFade(){
+ if(musicFadeTimer){clearInterval(musicFadeTimer);musicFadeTimer=null}
+}
+function pauseEveryMusicTrack(){
+ for(const player of musicCache.values()){
+  try{player.pause();player.volume=0;player.currentTime=0}catch(e){console.warn('Music pause:',e.message)}
+ }
+ if(musicTrack&&!Array.from(musicCache.values()).includes(musicTrack)){
+  try{musicTrack.pause();musicTrack.volume=0;musicTrack.currentTime=0}catch(e){}
+ }
+}
 function stopMusic(){
  musicSwitchId++;
- if(musicFadeTimer){clearInterval(musicFadeTimer);musicFadeTimer=null}
- if(musicTrack){musicTrack.pause();musicTrack.currentTime=0;musicTrack=null}
- musicTheme=null;
+ cancelMusicFade();
+ pauseEveryMusicTrack();
+ musicTrack=null;musicTheme=null;
 }
 function preloadMusic(){
  for(const [theme,file] of Object.entries(musicNames)){
   if(musicCache.has(theme))continue;
-  const item=new Audio('./assets/'+file);item.loop=true;item.preload='auto';musicCache.set(theme,item);
+  const item=new Audio('./assets/'+file);item.loop=true;item.preload='auto';item.volume=0;
+  musicCache.set(theme,item);
  }
 }
 function playMusic(mood){
- if(!musicOn||!active)return;
+ if(!musicOn||!active){stopMusic();return}
  const desired=Object.hasOwn(musicNames,mood)?mood:sceneMood(active.pages[currentPage]);
- if(musicTrack&&musicTheme===desired){musicTrack.volume=musicVolume();return}
  preloadMusic();
- const old=musicTrack;
  const next=musicCache.get(desired);
- if(!next)return;
- if(musicFadeTimer){clearInterval(musicFadeTimer);musicFadeTimer=null}
- // Reuse the cached players so switching scenes does not redownload a soundtrack.
- if(next!==old){next.currentTime=0;next.volume=0}
+ if(musicTrack===next&&musicTheme===desired&&!next.paused){next.volume=musicVolume();return}
+ const previous=musicTrack;
+ cancelMusicFade();
  const serial=++musicSwitchId;
+ // Only the active track and, briefly, the one being faded out are ever audible.
+ for(const item of musicCache.values()){
+  if(item!==next&&item!==previous){item.pause();item.volume=0;item.currentTime=0}
+ }
  musicTrack=next;musicTheme=desired;
- next.play().then(()=>{
-  let elapsed=0;const frames=12,target=musicVolume();
+ if(next!==previous){next.currentTime=0;next.volume=0}
+ const start=next.play();
+ Promise.resolve(start).then(()=>{
+  if(serial!==musicSwitchId||!musicOn||!active){
+   // A delayed play() completion must not restart music after OFF/back.
+   next.pause();next.volume=0;return;
+  }
+  const frames=10,target=musicVolume();let frame=0;
   musicFadeTimer=setInterval(()=>{
-   if(serial!==musicSwitchId){clearInterval(musicFadeTimer);musicFadeTimer=null;return}
-   elapsed++;
-   next.volume=Math.min(target,target*elapsed/frames);
-   if(old&&old!==next)old.volume=Math.max(0,target*(1-elapsed/frames));
-   if(elapsed>=frames){
-    clearInterval(musicFadeTimer);musicFadeTimer=null;
-    if(old&&old!==next){old.pause();old.currentTime=0}
+   if(serial!==musicSwitchId||!musicOn||!active){
+    cancelMusicFade();next.pause();next.volume=0;
+    if(previous&&previous!==next){previous.pause();previous.volume=0}
+    return;
    }
-  },115);
+   frame++;
+   next.volume=Math.min(target,target*frame/frames);
+   if(previous&&previous!==next)previous.volume=Math.max(0,Math.min(previous.volume,target*(1-frame/frames)));
+   if(frame>=frames){
+    cancelMusicFade();
+    if(previous&&previous!==next){previous.pause();previous.volume=0;previous.currentTime=0}
+   }
+  },90);
  }).catch(e=>{
   if(serial!==musicSwitchId)return;
+  next.pause();next.volume=0;
+  if(previous&&previous!==next){previous.pause();previous.volume=0}
   musicTrack=null;musicTheme=null;
-  if(old&&old!==next)old.pause();
-  console.warn('Music could not start:',e.message);
+  console.warn('Music playback:',e.message);
  });
 }
 async function prefetchBook(b,voice){
@@ -831,12 +873,25 @@ document.querySelector('#reader .shelf').addEventListener('pointerdown',()=>{if(
 // Keep real drag turning; only fall back to animated flip if the touch gesture made no turn.
 // Fixed, translucent page-scroll controls live outside the touch-sensitive book.
 const scrollSteps=Math.max(250,Math.round(window.innerHeight*.72));
-function scrollReadingPage(direction){window.scrollBy({top:direction*Math.max(260,Math.round(window.innerHeight*.72)),behavior:'smooth'})}
+function scrollReadingPage(direction){
+ const step=Math.max(340,Math.round(window.innerHeight*.84));
+ window.scrollBy({top:direction*step,behavior:'smooth'});
+}
 for(const [id,dir] of [['scrollUp',-1],['scrollDown',1]]){
- const button=$(id);
- button.addEventListener('pointerdown',e=>e.stopPropagation());
+ const button=$(id);let pointerHandled=false;
+ // Trigger on touch down, not delayed click (mobile page-flip can swallow click events).
+ button.addEventListener('pointerdown',e=>{
+  if(!active)return;
+  e.preventDefault();e.stopPropagation();
+  pointerHandled=true;scrollReadingPage(dir);
+ });
+ button.addEventListener('pointerup',e=>e.stopPropagation());
  button.addEventListener('touchstart',e=>e.stopPropagation(),{passive:true});
- button.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();scrollReadingPage(dir)});
+ button.addEventListener('click',e=>{
+  e.preventDefault();e.stopPropagation();
+  if(pointerHandled){pointerHandled=false;return}
+  if(active)scrollReadingPage(dir); // keyboard and accessibility activation
+ });
 }
 let mouseDragStart=null;
 document.querySelector('#reader .shelf').addEventListener('pointerdown',e=>{
