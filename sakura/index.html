@@ -52,7 +52,8 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px;ma
 .voicechoose select{border:0;max-width:135px;background:transparent;color:#7a5265;padding:4px;font:inherit;font-size:12px}
 @media(max-width:730px){.book-stage{perspective:1000px}.spread{grid-template-columns:1fr 1fr;min-height:295px;max-height:390px;border-width:5px}.spread .scene{height:100%;min-height:295px}.spread .storytext{min-height:295px;padding:12px 10px}.storytext h2{font-size:clamp(13px,3.7vw,21px);line-height:1.55}.storytext p{font-size:clamp(11px,3.2vw,17px);line-height:1.65}.storytext .chapter{font-size:8px;letter-spacing:1px}.turn-leaf{top:5px;bottom:5px;width:calc(50% - 5px)}.turn-leaf.next{right:5px}.turn-leaf.prev{left:5px}.turn-leaf .storytext{padding:12px 10px}.readerctrl{gap:5px}.smallbtn{padding:8px 10px;font-size:11px}.voicechoose{padding:4px 5px;font-size:10px}.voicechoose select{font-size:10px;max-width:110px}.book-spine{width:13px}}
 @media(prefers-reduced-motion:reduce){.turn-leaf.next,.turn-leaf.prev{animation-duration:.05s}}
-</style></head><body>
+</style><script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.min.js"></script>
+<style>.flipwrap{display:flex;justify-content:center;min-height:480px;padding:12px 0 25px;filter:drop-shadow(0 16px 18px #65445955)}#flipbook{margin:auto;touch-action:pan-y}.paper{background:#fffcf5;overflow:hidden;border:1px solid #ecdcd2;box-shadow:inset 0 0 18px #ac8f8a22}.paper-art{height:100%;background:linear-gradient(#ffe3ec,#fff0da,#c8e4c2)}.paper-art svg{width:100%;height:100%}.paper-words{height:100%;display:flex;flex-direction:column;justify-content:center;padding:10%;background:radial-gradient(circle at 100% 0%,#ffe8f0,#fffcf5 65%);font-family:'Gowun Batang',serif}.paper-words small{color:#bc8298;font:800 11px 'Nunito',sans-serif;letter-spacing:2px}.paper-words h3{font-size:clamp(17px,2.5vw,29px);line-height:1.45}.paper-words p{font-size:clamp(15px,1.7vw,21px);line-height:1.9;word-break:keep-all}@media(max-width:730px){.flipwrap{min-height:350px}.paper-words{padding:8%}.paper-words h3{font-size:17px}.paper-words p{font-size:13px;line-height:1.65}}</style></head><body>
 <!-- Original vector illustrations, not reproductions of third-party character designs -->
 <svg aria-hidden="true" width="0" height="0" style="position:absolute"><defs>
 <symbol id="landscape" viewBox="0 0 720 480">
@@ -91,9 +92,8 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px;ma
 <button class="book" id="bookSecond"><div class="cover" style="background:#deecdf"><svg viewBox="0 0 720 480"><use href="#landscape"/><use href="#rabbit" x="260" y="190" width="190" height="245"/><circle cx="550" cy="330" r="53" fill="#dfaf84"/><circle cx="540" cy="322" r="8" fill="#65565b"/><circle cx="580" cy="322" r="8" fill="#65565b"/></svg></div><div class="bookinfo"><small>🌼 창작 동화 · 약 2분</small><strong>봄바람의 비밀</strong><p>잃어버린 꽃씨를 찾아 떠나는 작은 여행</p></div></button>
 <button class="book" id="bookThird"><div class="cover" style="background:#e1e8f2"><svg viewBox="0 0 720 480"><use href="#landscape"/><circle cx="550" cy="120" r="71" fill="#fff5dc" opacity=".8"/><use href="#bird" x="320" y="235" width="195" height="175"/></svg></div><div class="bookinfo"><small>🌙 창작 동화 · 약 2분</small><strong>달빛을 품은 새</strong><p>용기를 찾아 떠나는 밤하늘 이야기</p></div></button>
 </section></main>
-<section id="reader" aria-label="동화 읽기"><div class="readerhead"><div><span class="eyebrow">SAKURA STORYBOOK</span><h2 id="readingTitle">벚꽃 숲의 작은 토끼</h2></div><div class="readerctrl"><button class="smallbtn" id="musicBtn" aria-pressed="false">♫ 배경음 OFF</button><button class="smallbtn" id="voiceBtn" aria-pressed="false">🔈 나레이션 OFF</button><label class="voicechoose" for="voiceSelect">목소리 <select id="voiceSelect" aria-label="한국어 목소리 선택"><option value="">기본 한국어</option></select></label><label class="voicechoose" for="speedSelect">속도 <select id="speedSelect" aria-label="나레이션 읽기 속도"><option value="0.78">느리게</option><option value="0.88" selected>보통</option><option value="1">빠르게</option></select></label><button class="smallbtn" id="backBtn">⌂ 책장</button></div></div>
-<div class="book-stage"><div class="book-spine" aria-hidden="true"></div><div class="spread" id="spread"><div class="scene"><svg id="pageArt" viewBox="0 0 720 480" role="img" aria-label="동화 삽화"><use href="#landscape"/><use href="#rabbit" x="325" y="185" width="195" height="245"/><use href="#bird" x="480" y="205" width="150" height="135"/></svg></div>
-<div class="storytext"><span class="chapter" id="chapter">PAGE 01 · 봄날의 약속</span><h2 id="pageHeading">벚꽃이 피었어요</h2><p id="pageText">따스한 봄날, 작은 토끼 모모는 벚꽃 숲으로 산책을 나왔어요.</p></div></div></div>
+<section id="reader" aria-label="동화 읽기"><div class="readerhead"><div><span class="eyebrow">SAKURA STORYBOOK</span><h2 id="readingTitle">벚꽃 숲의 작은 토끼</h2></div><div class="readerctrl"><button class="smallbtn" id="musicBtn" aria-pressed="false">♫ 배경음 OFF</button><button class="smallbtn" id="voiceBtn" aria-pressed="false">🔈 나레이션 OFF</button><label class="voicechoose" for="voiceSelect">목소리 <select id="voiceSelect" aria-label="한국어 목소리 선택"><option value="">기본 한국어</option></select></label><label class="voicechoose" for="speedSelect">속도 <select id="speedSelect" aria-label="나레이션 읽기 속도"><option value="0.68">매우 차분하게</option><option value="0.78" selected>다정하게</option><option value="0.9">보통</option></select></label><button class="smallbtn" id="backBtn">⌂ 책장</button></div></div>
+<div class="flipwrap"><div id="flipbook" aria-label="손가락으로 책장을 끌어 넘기는 동화책"></div></div>
 <div class="pagefoot"><button id="prev" aria-label="이전 페이지">‹</button><span class="progress" id="counter">1 / 6</span><button id="next" aria-label="다음 페이지">›</button></div><p class="tip">📖 책장을 넘기듯 좌우로 밀거나 페이지를 탭하세요. 음성 품질은 기기에 설치된 한국어 음성에 따라 달라집니다.</p></section>
 <footer class="footer">🌸 벚꽃 동화극장 · 모든 아이의 하루에 작은 꽃 한 송이</footer></div>
 <script>
@@ -118,53 +118,21 @@ const stories=[
 ["숲을 밝힌 마음","노리의 노래를 듣고 잠들지 못하던 아기 토끼가 웃었어요. 그 웃음은 달빛보다 따뜻했답니다.",5],
 ["나만의 빛","노리는 알게 되었어요. 진짜 빛은 멀리 있는 달이 아니라 친구를 행복하게 하는 마음에 있다는 걸요.",6]]}
 ];
-let book=0,page=0,voice=false,music=false,audio=null,musicNodes=[],startTouch=null;
+let book=0,page=0,voice=false,music=false,audio=null,musicNodes=[],pageFlip=null;
 const el=id=>document.getElementById(id);
-function openBook(n){turning=false;document.querySelectorAll('.turn-leaf').forEach(n=>n.remove());book=n;page=Number(localStorage.getItem('sakura-page-'+n)||0);if(page>=stories[n].pages.length)page=0;el('home').style.display='none';el('reader').style.display='block';el('readingTitle').textContent=stories[n].title;el('homeTop').classList.remove('active');el('readerTop').classList.add('active');render();window.scrollTo({top:0,behavior:'smooth'})}
+function sceneSVG(variant){const rabbit=variant===2?'<use href="#rabbit" x="160" y="200" width="190" height="240"/>':'<use href="#rabbit" x="320" y="190" width="190" height="245"/>';return '<use href="#landscape"/>'+rabbit+(variant===1?'':'<use href="#bird" x="480" y="210" width="150" height="140"/>')}
+function createPaper(kind,p,n){const d=document.createElement('div');d.className='paper';if(kind==='picture'){d.innerHTML='<div class="paper-art"><svg viewBox="0 0 720 480">'+sceneSVG(p[2])+'</svg></div>'}else{const w=document.createElement('div');w.className='paper-words';const small=document.createElement('small');small.textContent='SAKURA STORY · '+(n+1);const title=document.createElement('h3');title.textContent=p[0];const txt=document.createElement('p');txt.textContent=p[1];w.append(small,title,txt);d.append(w)}return d}
+function updateReading(){if(!pageFlip)return;const index=pageFlip.getCurrentPageIndex();page=Math.min(stories[book].pages.length-1,Math.floor(index/2));el('counter').textContent=(page+1)+' / '+stories[book].pages.length;el('prev').disabled=index===0;el('next').disabled=index>=stories[book].pages.length*2-2;localStorage.setItem('sakura-page-'+book,page);if(voice)read()}
+function openBook(n){book=n;el('home').style.display='none';el('reader').style.display='block';el('readingTitle').textContent=stories[n].title;el('homeTop').classList.remove('active');el('readerTop').classList.add('active');if(pageFlip){try{pageFlip.destroy()}catch(e){}pageFlip=null}const root=el('flipbook');root.innerHTML='';const pages=[];stories[n].pages.forEach((p,i)=>{pages.push(createPaper('picture',p,i),createPaper('text',p,i))});pages.forEach(p=>root.append(p));if(!window.St||!window.St.PageFlip){root.textContent='종이책 엔진을 불러오지 못했습니다. 네트워크를 확인하고 새로고침해 주세요.';return}const saved=Math.min(stories[n].pages.length-1,Number(localStorage.getItem('sakura-page-'+n)||0));pageFlip=new St.PageFlip(root,{width:350,height:450,size:'stretch',minWidth:150,maxWidth:550,minHeight:210,maxHeight:700,drawShadow:true,maxShadowOpacity:.55,flippingTime:1000,showCover:false,usePortrait:false,mobileScrollSupport:false,useMouseEvents:true,disableFlipByClick:true,showPageCorners:true,startPage:saved*2});pageFlip.on('flip',updateReading);pageFlip.loadFromHTML(pages);updateReading();window.scrollTo({top:0,behavior:'smooth'})}
 function goHome(){stopSpeech();el('home').style.display='block';el('reader').style.display='none';el('readerTop').classList.remove('active');el('homeTop').classList.add('active');window.scrollTo({top:0,behavior:'smooth'})}
-function sceneSVG(variant){const rabbit=variant===2?'<use href="#rabbit" x="155" y="195" width="195" height="245"/>':'<use href="#rabbit" x="316" y="197" width="188" height="237"/>';const bird= variant===1?'': '<use href="#bird" x="'+(variant===3?470:480)+'" y="'+(variant===3?150:220)+'" width="140" height="130"/>';const flowers=variant>=4?'<g fill="#ffefd6"><circle cx="555" cy="360" r="11"/><circle cx="599" cy="395" r="9"/><circle cx="492" cy="397" r="8"/></g>':'';return '<use href="#landscape"/>'+rabbit+bird+flowers}
-function render(){const p=stories[book].pages[page];el('chapter').textContent='PAGE '+String(page+1).padStart(2,'0')+' · SAKURA STORY';el('pageHeading').textContent=p[0];el('pageText').textContent=p[1];el('counter').textContent=(page+1)+' / '+stories[book].pages.length;el('pageArt').innerHTML=sceneSVG(p[2]);el('prev').disabled=page===0;el('next').disabled=page===stories[book].pages.length-1;localStorage.setItem('sakura-page-'+book,page);if(voice)read()}
-let turning=false;
-function turn(delta){
- const to=Math.max(0,Math.min(stories[book].pages.length-1,page+delta));
- if(to===page||turning)return;
- turning=true;
- const stage=document.querySelector('.book-stage'),spread=el('spread');
- const oldScene=spread.querySelector('.scene').cloneNode(true),oldText=spread.querySelector('.storytext').cloneNode(true);
- stopSpeech();page=to;render();
- const newScene=spread.querySelector('.scene').cloneNode(true),newText=spread.querySelector('.storytext').cloneNode(true);
- const leaf=document.createElement('div');leaf.className='turn-leaf '+(delta>0?'next':'prev');
- const front=document.createElement('div');front.className='leaf-face front';
- const back=document.createElement('div');back.className='leaf-face back';
- // Forward: the right paper page turns onto the left, revealing the next illustration.
- // Backward: the left paper page turns onto the right, revealing the preceding text.
- front.append(delta>0?oldText:oldScene);
- back.append(delta>0?newScene:newText);
- leaf.append(front,back);stage.append(leaf);
- const finish=()=>{leaf.remove();turning=false;if(voice)read()};
- leaf.addEventListener('animationend',finish,{once:true});
- setTimeout(()=>{if(leaf.isConnected)finish()},1200);
-}
+function turn(delta){if(pageFlip){if(delta>0)pageFlip.flipNext('bottom');else pageFlip.flipPrev('bottom')}}
 function stopSpeech(){if('speechSynthesis'in window)window.speechSynthesis.cancel()}
 function availableKoreanVoices(){return 'speechSynthesis'in window?speechSynthesis.getVoices().filter(v=>v.lang.toLowerCase().startsWith('ko')):[]}
-function refreshVoices(){
- const select=el('voiceSelect'),voices=availableKoreanVoices(),previous=select.value||localStorage.getItem('sakura-voice')||'';
- select.innerHTML='<option value="">자동 선택</option>';
- voices.forEach((v,i)=>{const option=document.createElement('option');option.value=v.voiceURI;option.textContent=v.name+(v.localService?' · 기기':' · 온라인');select.append(option)});
- if(voices.some(v=>v.voiceURI===previous))select.value=previous;
-}
-function read(){
- stopSpeech();if(!voice||!('speechSynthesis'in window)||turning)return;
- const p=stories[book].pages[page],utter=new SpeechSynthesisUtterance(p[0]+'. '+p[1]);utter.lang='ko-KR';
- utter.rate=Number(el('speedSelect').value||.88);utter.pitch=1;utter.volume=1;
- const voices=availableKoreanVoices(),id=el('voiceSelect').value;
- const selected=voices.find(v=>v.voiceURI===id)||voices.find(v=>/google|natural|neural|samsung/i.test(v.name))||voices[0];
- if(selected)utter.voice=selected;
- speechSynthesis.speak(utter);
-}
+function femaleScore(v){const a=v.name.toLowerCase();return (/sunhi|sun-hi|seoyeon|seo-yeon|yuna|yu-na|heami|hye-mi|jimin|ji-min|female|여성|여자|소연|서연|유나|선희|혜미|지민|sora|so-ra|nari/.test(a)?12:0)+(/natural|neural|premium|online|google|microsoft/.test(a)?3:0)-(/male|남성|남자|injoon|hyunsu|junwoo/.test(a)?20:0)}
+function refreshVoices(){const select=el('voiceSelect'),voices=availableKoreanVoices(),saved=select.value||localStorage.getItem('sakura-voice')||'';select.innerHTML='<option value="">🌷 다정한 여성 음성 우선</option>';voices.sort((a,b)=>femaleScore(b)-femaleScore(a)).forEach(v=>{let o=document.createElement('option');o.value=v.voiceURI;o.textContent=v.name+(femaleScore(v)>=12?' ♀':'');select.append(o)});if(voices.some(v=>v.voiceURI===saved))select.value=saved}
+function read(){stopSpeech();if(!voice||!('speechSynthesis'in window))return;const p=stories[book].pages[page],u=new SpeechSynthesisUtterance(p[0]+'. '+p[1]);u.lang='ko-KR';u.rate=Number(el('speedSelect').value||.78);u.pitch=.92;u.volume=.9;const voices=availableKoreanVoices().sort((a,b)=>femaleScore(b)-femaleScore(a));u.voice=voices.find(v=>v.voiceURI===el('voiceSelect').value)||voices[0]||null;speechSynthesis.speak(u)}
 if('speechSynthesis'in window){speechSynthesis.addEventListener('voiceschanged',refreshVoices);setTimeout(refreshVoices,100);setTimeout(refreshVoices,1000)}
-el('voiceSelect').addEventListener('change',()=>{localStorage.setItem('sakura-voice',el('voiceSelect').value);if(voice)read()});
-el('speedSelect').addEventListener('change',()=>{if(voice)read()});
+el('voiceSelect').addEventListener('change',()=>{localStorage.setItem('sakura-voice',el('voiceSelect').value);if(voice)read()});el('speedSelect').addEventListener('change',()=>{if(voice)read()});
 function setVoice(on){voice=on;if(!('speechSynthesis'in window)){voice=false;alert('이 브라우저에서는 음성 읽기를 지원하지 않아요.');}el('voiceBtn').textContent=voice?'🔊 나레이션 ON':'🔈 나레이션 OFF';el('voiceBtn').classList.toggle('on',voice);el('voiceBtn').setAttribute('aria-pressed',voice);if(voice)read();else stopSpeech()}
 function setMusic(on){music=on;el('musicBtn').textContent=music?'♫ 배경음 ON':'♫ 배경음 OFF';el('musicBtn').classList.toggle('on',music);el('musicBtn').setAttribute('aria-pressed',music);if(music)playMusic();else stopMusic()}
 function stopMusic(){if(audio){try{musicNodes.forEach(n=>n.stop());audio.close()}catch(e){} audio=null;musicNodes=[]}}
@@ -172,8 +140,6 @@ function playMusic(){stopMusic();try{audio=new(window.AudioContext||window.webki
 el('startHero').onclick=()=>openBook(0);el('bookFirst').onclick=()=>openBook(0);el('bookSecond').onclick=()=>openBook(1);el('bookThird').onclick=()=>openBook(2);
 el('homeTop').onclick=goHome;el('readerTop').onclick=()=>openBook(book);el('backBtn').onclick=goHome;
 el('prev').onclick=()=>turn(-1);el('next').onclick=()=>turn(1);el('voiceBtn').onclick=()=>setVoice(!voice);el('musicBtn').onclick=()=>setMusic(!music);
-el('spread').addEventListener('click',e=>{if(turning)return;const r=el('spread').getBoundingClientRect();turn(e.clientX-r.left>r.width/2?1:-1)});
-el('spread').addEventListener('touchstart',e=>{startTouch=e.changedTouches[0].screenX},{passive:true});el('spread').addEventListener('touchend',e=>{if(startTouch!==null){const d=e.changedTouches[0].screenX-startTouch;if(Math.abs(d)>45)turn(d<0?1:-1);startTouch=null}},{passive:true});
 document.addEventListener('keydown',e=>{if(el('reader').style.display==='block'){if(e.key==='ArrowRight')turn(1);if(e.key==='ArrowLeft')turn(-1);if(e.key==='Escape')goHome()}});
 for(let i=0;i<12;i++){let a=document.createElement('span');a.className='petal';a.textContent='✿';a.style.left=(i*97%100)+'%';a.style.fontSize=(9+i%4*3)+'px';a.style.animationDelay=(-i*.8)+'s';a.style.animationDuration=(13+i%4*4)+'s';document.body.appendChild(a)}
 window.addEventListener('pagehide',()=>{stopSpeech();stopMusic()});
