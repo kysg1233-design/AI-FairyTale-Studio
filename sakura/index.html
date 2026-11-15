@@ -1,351 +1,108 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#fff4ed"><meta name="description" content="벚꽃 동화극장 — 아이와 함께 넘기는 따뜻한 그림책">
-<title>벚꽃 동화극장 🌸 | Sakura Story Theater</title>
+<title>벚꽃 동화극장 · 완성된 그림책</title><meta name="theme-color" content="#fff0f3">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Nunito:wght@400;600;700;800&display=swap');
-:root{--ink:#593f50;--pink:#eb91a9;--deep:#c46f8e;--cream:#fff8ef;--mint:#a5cdb0}*{box-sizing:border-box}
-html,body{margin:0;min-height:100%;background:#fff5ed;color:var(--ink);font-family:'Nunito',system-ui,sans-serif}
-body:before{content:"";position:fixed;inset:0;pointer-events:none;background:radial-gradient(ellipse at 10% 10%,#ffe0e9 0,transparent 42%),radial-gradient(ellipse at 90% 85%,#def5e8 0,transparent 46%);opacity:.75}
-button{font:inherit;cursor:pointer}button:focus-visible{outline:3px solid #af657f;outline-offset:3px}
-button:disabled{opacity:.4;cursor:default}
-.shell{position:relative;max-width:1180px;margin:auto;padding:24px clamp(16px,3.5vw,44px) 45px}
-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:30px}
-.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}.logo{display:grid;place-items:center;width:52px;height:52px;border-radius:18px;background:#ffe2e9;box-shadow:0 5px 18px #cf8f9b3a;font-size:29px}
-.brand strong{display:block;font-family:'Gowun Batang',serif;font-size:23px;letter-spacing:-1px}.brand small{display:block;color:#af8290;font-size:10px;letter-spacing:2.2px;margin-top:2px}
-.nav{display:flex;gap:10px;align-items:center}.pill{border:1px solid #f0d6d9;background:#ffffffcc;padding:12px 17px;border-radius:40px;color:#815f6e;font-weight:800}.pill.active{background:#bd788e;color:white;border-color:#bd788e}
-.hero{border-radius:32px;background:linear-gradient(120deg,#fff9f3d9,#ffe9eedb);padding:26px clamp(20px,4vw,45px);display:grid;grid-template-columns:.85fr 1.15fr;gap:12px;min-height:340px;align-items:center;border:1px solid #ffffff;box-shadow:0 18px 55px #dba0a635;overflow:hidden}
-.eyebrow{font-size:12px;letter-spacing:3px;color:#b0798d;font-weight:800}.hero h1{font-size:clamp(34px,4.4vw,64px);font-family:'Gowun Batang',serif;line-height:1.25;letter-spacing:-2px;margin:18px 0}.hero h1 em{font-style:normal;color:#d7849b}.hero p{font-size:15px;line-height:1.85;color:#937684;margin-bottom:25px}
-.primary{border:0;background:#bd788e;color:white;border-radius:40px;padding:15px 25px;font-weight:800;box-shadow:0 9px 20px #ad6e8760}.primary:hover{background:#a85f7a}
-.heroart{height:315px;display:grid;place-items:center;position:relative}.heroart svg{width:100%;height:100%;filter:drop-shadow(0 15px 13px #c89b9a4d)}
-.subhead{display:flex;align-items:end;justify-content:space-between;margin:36px 2px 18px}.subhead h2{margin:0;font-family:'Gowun Batang',serif;font-size:27px}.subhead p{margin:5px 0;color:#a18a90;font-size:13px}
-.library{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.book{border:1px solid #fff;border-radius:22px;overflow:hidden;background:#fffcf9;box-shadow:0 12px 30px #dba7a638;text-align:left;padding:0;transition:transform .2s}.book:hover{transform:translateY(-4px)}
-.cover{display:grid;place-items:center;height:188px;background:#fbe6eb}.cover svg{width:100%;height:100%}.bookinfo{padding:15px 18px 17px}.bookinfo small{font-size:11px;color:#ae8b98;font-weight:700}.bookinfo strong{display:block;font-family:'Gowun Batang',serif;font-size:20px;margin-top:6px}.bookinfo p{font-size:12px;color:#9c8491;line-height:1.5;margin-bottom:0}.book.muted{opacity:.65}
-.footer{text-align:center;padding:34px;color:#b294a0;font-size:12px}
-#reader{display:none;max-width:1160px;margin:0 auto}.readerhead{display:flex;align-items:center;justify-content:space-between;margin-bottom:15px;gap:10px}.readerhead h2{margin:0;font-family:'Gowun Batang',serif;font-size:23px}.readerctrl{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.smallbtn{border:1px solid #eecfd9;background:#fff9fa;color:#92677a;border-radius:30px;padding:10px 13px;font-weight:800;font-size:13px}.smallbtn.on{background:#d889a0;border-color:#d889a0;color:white}
-.spread{display:grid;grid-template-columns:1fr 1fr;min-height:min(58vw,535px);border-radius:27px;overflow:hidden;background:#fffdf7;border:10px solid #fffdf7;box-shadow:0 20px 55px #ba879049}.scene{display:grid;place-items:center;position:relative;overflow:hidden;background:linear-gradient(#fce0e7,#fff2e0 70%,#e0edce)}.scene svg{width:100%;height:100%;max-height:530px}
-.storytext{display:flex;flex-direction:column;justify-content:center;padding:clamp(22px,4.8vw,58px);background:radial-gradient(circle at 90% 0%,#ffeaf0,transparent 55%),#fff9f1}
-.storytext .chapter{letter-spacing:3px;font-size:11px;font-weight:800;color:#c28a9f}.storytext h2{font-family:'Gowun Batang',serif;font-size:clamp(21px,3vw,39px);line-height:1.42;word-break:keep-all}.storytext p{font-family:'Gowun Batang',serif;font-size:clamp(17px,1.8vw,23px);line-height:2.05;word-break:keep-all;color:#775e68}.pagefoot{display:flex;align-items:center;justify-content:center;gap:20px;margin-top:17px}.pagefoot button{border:0;background:white;color:#9c637c;font-size:22px;border-radius:50%;width:47px;height:47px;box-shadow:0 6px 18px #cfa3aa39}.progress{font-size:13px;color:#9d8390;min-width:90px;text-align:center}.tip{text-align:center;color:#aa9099;font-size:12px;margin:16px}
-.petal{position:fixed;top:-50px;z-index:4;pointer-events:none;animation:fall linear infinite;opacity:.55;color:#e6a0af}
-@keyframes fall{to{transform:translate(75px,110vh) rotate(400deg)}}
-@media(max-width:730px){.shell{padding-top:14px}.brand strong{font-size:18px}.brand small{font-size:8px}.logo{width:43px;height:43px}.nav .pill{padding:9px 12px;font-size:12px}.hero{grid-template-columns:1fr;gap:0;padding-bottom:4px}.hero h1{margin:10px 0;font-size:36px}.hero p{margin-bottom:14px}.heroart{height:240px}.library{grid-template-columns:repeat(2,1fr);gap:10px}.cover{height:140px}.bookinfo{padding:12px}.bookinfo strong{font-size:16px}.bookinfo p{display:none}.subhead h2{font-size:22px}.readerhead{align-items:start;flex-direction:column}.spread{grid-template-columns:1fr;border-width:6px;min-height:unset}.scene{height:min(63vw,340px)}.storytext{min-height:225px;padding:20px 24px}.storytext h2{font-size:23px;margin:10px 0 3px}.storytext p{font-size:17px;line-height:1.75;margin:5px 0}.tip{font-size:11px}}
-@media(prefers-reduced-motion:reduce){.petal{display:none}}
-/* Physical-book styling: 3D turning leaf, page spine, drop shadows and paper grain */
-.book-stage{position:relative;perspective:1700px;isolation:isolate}
-.book-stage:before{content:"";position:absolute;inset:9px -5px -12px;z-index:-1;border-radius:18px;background:repeating-linear-gradient(to bottom,#efe1d5 0px,#f9f2ea 2px,#e9d9c7 3px);box-shadow:0 19px 32px #72535a42}
-.book-spine{position:absolute;z-index:6;pointer-events:none;left:50%;top:9px;bottom:9px;width:22px;transform:translateX(-50%);background:linear-gradient(90deg,#75566a29,#ffffffab 35%,#835e6a40 55%,transparent);filter:blur(4px)}
-.spread{position:relative;border:8px solid #fffaf3;border-radius:12px 20px 20px 12px;box-shadow:0 14px 40px #85657458;overflow:hidden;transform-style:preserve-3d}
-.spread:after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,#b89a8620 0px,transparent 1px,transparent 5px);opacity:.15}
-.storytext{background:radial-gradient(circle at 95% 0%,#ffeaf0,transparent 60%),#fffaf3}
-.turn-leaf{position:absolute;top:8px;bottom:8px;width:calc(50% - 8px);z-index:9;transform-style:preserve-3d;pointer-events:none;will-change:transform}
-.turn-leaf.next{right:8px;transform-origin:left center;animation:flipNext 920ms cubic-bezier(.23,.67,.27,1) forwards}
-.turn-leaf.prev{left:8px;transform-origin:right center;animation:flipPrev 920ms cubic-bezier(.23,.67,.27,1) forwards}
-.leaf-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden;display:flex;align-items:stretch;box-shadow:inset 0 0 30px #9b7a7930;background:#fffaf3}
-.leaf-face.back{transform:rotateY(180deg)}
-.leaf-face .scene,.leaf-face .storytext{width:100%;height:100%;min-height:0;border:0}
-.leaf-face .storytext{padding:clamp(16px,3.3vw,45px)}
-.leaf-face .scene svg{width:100%;height:100%}
-.turn-leaf:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,#3d263d47,transparent 32%,#fff9ea52 76%,#33283d27);opacity:.65;backface-visibility:hidden}
-@keyframes flipNext{0%{transform:rotateY(0deg)}45%{filter:brightness(.85)}100%{transform:rotateY(-180deg)}}
-@keyframes flipPrev{0%{transform:rotateY(0deg)}45%{filter:brightness(.85)}100%{transform:rotateY(180deg)}}
-.voicechoose{display:inline-flex;gap:5px;align-items:center;font-size:12px;color:#946678;font-weight:800;background:#fff9fa;border:1px solid #eecfd9;padding:6px 9px;border-radius:25px}
-.voicechoose select{border:0;max-width:135px;background:transparent;color:#7a5265;padding:4px;font:inherit;font-size:12px}
-@media(max-width:730px){.book-stage{perspective:1000px}.spread{grid-template-columns:1fr 1fr;min-height:295px;max-height:390px;border-width:5px}.spread .scene{height:100%;min-height:295px}.spread .storytext{min-height:295px;padding:12px 10px}.storytext h2{font-size:clamp(13px,3.7vw,21px);line-height:1.55}.storytext p{font-size:clamp(11px,3.2vw,17px);line-height:1.65}.storytext .chapter{font-size:8px;letter-spacing:1px}.turn-leaf{top:5px;bottom:5px;width:calc(50% - 5px)}.turn-leaf.next{right:5px}.turn-leaf.prev{left:5px}.turn-leaf .storytext{padding:12px 10px}.readerctrl{gap:5px}.smallbtn{padding:8px 10px;font-size:11px}.voicechoose{padding:4px 5px;font-size:10px}.voicechoose select{font-size:10px;max-width:110px}.book-spine{width:13px}}
-@media(prefers-reduced-motion:reduce){.turn-leaf.next,.turn-leaf.prev{animation-duration:.05s}}
-.sourcecredit{margin:0 2px 8px;font-size:12px;color:#977c88}.sourcecredit a{color:#ab6e84;text-decoration:underline;text-underline-offset:3px}</style><script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.min.js"></script>
-<style>.flipwrap{display:flex;justify-content:center;min-height:480px;padding:12px 0 25px;filter:drop-shadow(0 16px 18px #65445955)}#flipbook{margin:auto;touch-action:pan-y}.paper{background:#fffcf5;overflow:hidden;border:1px solid #ecdcd2;box-shadow:inset 0 0 18px #ac8f8a22}.paper-art{height:100%;background:linear-gradient(#ffe3ec,#fff0da,#c8e4c2)}.paper-art svg{width:100%;height:100%}.paper-words{height:100%;display:flex;flex-direction:column;justify-content:center;padding:10%;background:radial-gradient(circle at 100% 0%,#ffe8f0,#fffcf5 65%);font-family:'Gowun Batang',serif}.paper-words small{color:#bc8298;font:800 11px 'Nunito',sans-serif;letter-spacing:2px}.paper-words h3{font-size:clamp(17px,2.5vw,29px);line-height:1.45}.paper-words p{font-size:clamp(15px,1.7vw,21px);line-height:1.9;word-break:keep-all}@media(max-width:730px){.flipwrap{min-height:350px}.paper-words{padding:8%}.paper-words h3{font-size:17px}.paper-words p{font-size:13px;line-height:1.65}}</style><style>
-.art-status{color:#8e6b7b;font-size:12px;padding:8px 4px 4px;min-height:23px}.art-actions{text-align:right;margin-top:-23px;margin-bottom:8px}.art-actions .smallbtn{font-size:11px;padding:6px 10px}
-.paper-art{position:relative}.generated-scene{display:block;width:100%;height:100%;object-fit:cover;object-position:center;animation:revealArt .5s ease-out}.paper-art svg{display:block}
-@keyframes revealArt{from{opacity:0;filter:blur(5px)}to{opacity:1;filter:blur(0)}}
-@media(max-width:730px){.art-actions{margin-top:4px;text-align:left;margin-bottom:8px}}
-</style></head><body>
-<!-- Original vector illustrations, not reproductions of third-party character designs -->
-<svg aria-hidden="true" width="0" height="0" style="position:absolute"><defs>
-<symbol id="landscape" viewBox="0 0 720 480">
-<defs><linearGradient id="sky" x2="0" y2="1"><stop stop-color="#f8c9db"/><stop offset=".72" stop-color="#ffe8d0"/><stop offset="1" stop-color="#fff5df"/></linearGradient></defs>
-<rect width="720" height="480" fill="url(#sky)"/><circle cx="565" cy="93" r="48" fill="#fffae1" opacity=".7"/>
-<path d="M0 310 Q130 230 300 318 T720 280 V480 H0Z" fill="#d1e6bd"/>
-<path d="M0 370 Q210 280 360 374 T720 344 V480 H0Z" fill="#a6d3ad"/>
-<path d="M0 435 Q180 348 365 426 T720 382 V480 H0Z" fill="#7dbca1"/>
-<path d="M116 298 Q86 174 125 26 M125 122 Q45 130 0 97 M120 166 Q194 131 227 55" stroke="#9d706d" stroke-width="21" fill="none" stroke-linecap="round"/>
-<g fill="#f6b2c9"><circle cx="116" cy="28" r="49"/><circle cx="66" cy="77" r="46"/><circle cx="174" cy="76" r="53"/><circle cx="5" cy="106" r="48"/><circle cx="205" cy="35" r="39"/><circle cx="120" cy="117" r="48"/><circle cx="229" cy="79" r="40"/></g>
-<g fill="#ffe7ed" opacity=".9"><circle cx="115" cy="30" r="25"/><circle cx="52" cy="61" r="24"/><circle cx="171" cy="92" r="27"/><circle cx="202" cy="18" r="22"/></g>
-<g fill="#ffd8e7"><ellipse cx="369" cy="392" rx="5" ry="9" transform="rotate(25 369 392)"/><ellipse cx="495" cy="345" rx="5" ry="9" transform="rotate(-20 495 345)"/><ellipse cx="651" cy="275" rx="5" ry="9" transform="rotate(48 651 275)"/></g>
-<g fill="#fff4be"><circle cx="73" cy="401" r="6"/><circle cx="272" cy="379" r="6"/><circle cx="600" cy="431" r="6"/></g>
-</symbol>
-<symbol id="rabbit" viewBox="0 0 190 240"><ellipse cx="95" cy="217" rx="51" ry="11" fill="#7e9f8e" opacity=".25"/>
-<ellipse cx="56" cy="67" rx="23" ry="69" fill="#fff8ee" stroke="#eddcd7" stroke-width="3" transform="rotate(-13 56 67)"/><ellipse cx="133" cy="64" rx="22" ry="65" fill="#fff8ee" stroke="#eddcd7" stroke-width="3" transform="rotate(14 133 64)"/>
-<ellipse cx="56" cy="64" rx="11" ry="46" fill="#f6bac6" transform="rotate(-13 56 64)"/><ellipse cx="133" cy="62" rx="10" ry="44" fill="#f6bac6" transform="rotate(14 133 62)"/>
-<ellipse cx="97" cy="177" rx="55" ry="56" fill="#fffaf4" stroke="#f1e3db" stroke-width="3"/><circle cx="95" cy="119" r="66" fill="#fffaf4" stroke="#f1e3db" stroke-width="3"/>
-<ellipse cx="65" cy="126" rx="9" ry="11" fill="#65565b"/><ellipse cx="122" cy="126" rx="9" ry="11" fill="#65565b"/><circle cx="68" cy="122" r="3" fill="white"/><circle cx="125" cy="122" r="3" fill="white"/>
-<circle cx="43" cy="146" r="12" fill="#facbd2" opacity=".6"/><circle cx="144" cy="146" r="12" fill="#facbd2" opacity=".6"/>
-<path d="M86 147 Q95 141 104 147 Q97 158 95 158Z" fill="#e69fa7"/><path d="M95 158 Q89 169 81 159 M95 158 Q103 169 111 159" stroke="#9c7a7d" fill="none" stroke-width="3" stroke-linecap="round"/>
-<path d="M58 166 Q95 184 131 166 L124 188 Q95 196 65 186Z" fill="#9db9db"/>
-<ellipse cx="65" cy="215" rx="28" ry="13" fill="#fffaf4" stroke="#f1e3db" stroke-width="3"/><ellipse cx="126" cy="215" rx="28" ry="13" fill="#fffaf4" stroke="#f1e3db" stroke-width="3"/>
-</symbol>
-<symbol id="bird" viewBox="0 0 180 160"><ellipse cx="90" cy="95" rx="66" ry="51" fill="#f9dca8"/><ellipse cx="68" cy="100" rx="34" ry="27" fill="#f4c788" transform="rotate(-23 68 100)"/><circle cx="122" cy="70" r="45" fill="#f9dca8"/><circle cx="134" cy="65" r="6" fill="#6d5c59"/><path d="M164 74 L181 83 L163 92Z" fill="#e99d7c"/><path d="M65 136 L59 157 M107 136 L111 157" stroke="#b98368" stroke-width="5"/><path d="M87 30 Q77 10 65 12 M97 30 Q97 8 89 4" stroke="#b98368" stroke-width="5" fill="none"/></symbol>
-</defs></svg>
-<div class="shell">
-<header><a class="brand" href="./" aria-label="홈으로"><span class="logo">🌸</span><span><strong>벚꽃 동화극장</strong><small>SAKURA STORY THEATER</small></span></a>
-<nav class="nav"><button class="pill active" id="homeTop">우리 책장</button><button class="pill" id="readerTop">동화 읽기</button></nav></header>
-<main id="home">
-<section class="hero"><div><span class="eyebrow">A LITTLE MAGIC, EVERY DAY ✦</span><h1>벚꽃처럼 피어나는<br><em>우리의 이야기</em></h1><p>하루의 끝, 아이와 함께 펼치는 따스한 동화 한 장.<br>조용한 음악과 부드러운 목소리로 이야기를 만나요.</p><button class="primary" id="startHero">🌸 첫 동화 읽기 &nbsp;→</button></div>
-<div class="heroart"><svg viewBox="0 0 720 480" role="img" aria-label="벚꽃 숲에서 토끼와 새가 만나는 그림"><use href="#landscape"/><use href="#rabbit" x="330" y="196" width="173" height="235"/><use href="#bird" x="485" y="199" width="130" height="121"/><g fill="#ffc9db"><ellipse cx="284" cy="192" rx="6" ry="11" transform="rotate(36 284 192)"/><ellipse cx="600" cy="166" rx="6" ry="11" transform="rotate(-30 600 166)"/></g></svg></div></section>
-<div class="subhead"><div><h2>📚 세계의 전래동화</h2><p>한 장씩 넘기며 마음을 키우는 시간</p></div><small style="color:#bb93a1">이솝 우화 · 공개 원전 각색</small></div>
-<section class="library">
-<button class="book" id="bookFirst"><div class="cover"><svg viewBox="0 0 720 480"><use href="#landscape"/><use href="#rabbit" x="325" y="188" width="190" height="245"/><use href="#bird" x="480" y="215" width="150" height="135"/></svg></div><div class="bookinfo"><small>📖 고전 우화</small><strong>벚꽃 숲의 작은 토끼</strong><p>새 친구와 나누는 다정한 봄날 이야기</p></div></button>
-<button class="book" id="bookSecond"><div class="cover" style="background:#deecdf"><svg viewBox="0 0 720 480"><use href="#landscape"/><use href="#rabbit" x="260" y="190" width="190" height="245"/><circle cx="550" cy="330" r="53" fill="#dfaf84"/><circle cx="540" cy="322" r="8" fill="#65565b"/><circle cx="580" cy="322" r="8" fill="#65565b"/></svg></div><div class="bookinfo"><small>📖 고전 우화</small><strong>봄바람의 비밀</strong><p>잃어버린 꽃씨를 찾아 떠나는 작은 여행</p></div></button>
-<button class="book" id="bookThird"><div class="cover" style="background:#e1e8f2"><svg viewBox="0 0 720 480"><use href="#landscape"/><circle cx="550" cy="120" r="71" fill="#fff5dc" opacity=".8"/><use href="#bird" x="320" y="235" width="195" height="175"/></svg></div><div class="bookinfo"><small>📖 고전 우화</small><strong>달빛을 품은 새</strong><p>용기를 찾아 떠나는 밤하늘 이야기</p></div></button>
-</section></main>
-<section id="reader" aria-label="동화 읽기"><div class="readerhead"><div><span class="eyebrow">SAKURA STORYBOOK</span><h2 id="readingTitle">벚꽃 숲의 작은 토끼</h2></div><div class="readerctrl"><button class="smallbtn" id="apiBtn" title="기존 동화 스튜디오의 Google API 키 연결">🔑 Gemini 연결</button><button class="smallbtn" id="musicBtn" aria-pressed="true">♫ 배경음 ON</button><button class="smallbtn" id="voiceBtn" aria-pressed="true">🔊 AI 나레이션 ON</button><label class="voicechoose" for="voiceSelect">목소리 <select id="voiceSelect" aria-label="한국어 목소리 선택"><option value="Leda">🌸 여성 · 젊고 부드러운 음색</option><option value="Charon">🌙 남성 · 다정한 아빠</option></select></label><label class="voicechoose" for="speedSelect">속도 <select id="speedSelect" aria-label="나레이션 읽기 속도"><option value="slow" selected>차분히</option><option value="normal">보통</option><option value="fast">경쾌하게</option></select></label><button class="smallbtn" id="backBtn">⌂ 책장</button></div></div>
-<p class="sourcecredit" id="storySource"></p><div class="art-status" id="artStatus" role="status">✨ AI 삽화: 책을 펼치면 장면별로 준비합니다.</div><div class="art-actions"><button type="button" class="smallbtn" id="regenerateArt">🎨 그림 다시 만들기</button></div>
-<div class="flipwrap"><div id="flipbook" aria-label="손가락으로 책장을 끌어 넘기는 동화책"></div></div>
-<div class="pagefoot"><button id="prev" aria-label="이전 페이지">‹</button><span class="progress" id="counter">1 / 6</span><button id="next" aria-label="다음 페이지">›</button></div><p class="tip">📖 책장 모서리를 손으로 끌어 넘겨보세요 · 첫 동화 선택 시 배경음과 AI 나레이션이 켜집니다.</p></section>
-<footer class="footer">🌸 벚꽃 동화극장 · 모든 아이의 하루에 작은 꽃 한 송이</footer></div>
-<script>
-const stories=[
- {title:"여우와 포도",source:"이솝 우화 · The Fox and the Grapes",url:"https://www.gutenberg.org/files/19994/19994-h/19994-h.htm",pages:[
- ["맛있는 포도 발견","따사로운 오후, 배가 고픈 여우가 포도밭을 지나가고 있었어요. 높은 덩굴에 보랏빛 포도가 주렁주렁 매달려 있었지요.",0],
- ["손이 닿지 않아요","여우는 발끝을 쭉 뻗었어요. 하지만 포도송이는 너무 높이 있었어요. 여우의 코끝에도 닿지 않았답니다.",1],
- ["폴짝, 다시 폴짝!","여우는 뒤로 물러서서 있는 힘껏 뛰었어요. 한 번, 두 번, 세 번! 그래도 포도는 여전히 높은 곳에서 흔들렸지요.",2],
- ["잠깐 쉬어 갈까?","숨이 찬 여우는 풀밭에 털썩 앉았어요. 바람에 흔들리는 포도를 올려다보며 한참 생각했답니다.",3],
- ["새콤할 거야!","여우는 괜히 코를 찡긋했어요. “흥! 저 포도는 분명 시어서 맛이 없을 거야.” 그렇게 중얼거리며 돌아섰지요.",4],
- ["솔직한 마음","하지만 여우는 알고 있었어요. 사실은 아주 먹고 싶었다는 걸요. 갖지 못했다고 해서 소중한 것을 깎아내릴 필요는 없답니다.",5]]},
- {title:"사자와 생쥐",source:"이솝 우화 · The Lion and the Mouse",url:"https://www.gutenberg.org/cache/epub/53103/pg53103-images.html",pages:[
- ["잠자는 사자","커다란 사자가 숲속 나무 그늘에서 쿨쿨 낮잠을 자고 있었어요. 그때 작은 생쥐 한 마리가 사자 곁을 달려갔지요.",0],
- ["작은 친구의 약속","깜짝 놀란 사자가 생쥐를 붙잡았어요. 생쥐가 말했어요. “저를 놓아주세요. 언젠가 꼭 도와드릴게요!”",1],
- ["사자의 웃음","사자는 피식 웃었어요. “이렇게 작은 네가 나를 돕는다고?” 그래도 생쥐를 다정하게 놓아주었답니다.",2],
- ["숲속의 그물","며칠 뒤 사자가 사냥꾼의 그물에 걸리고 말았어요. 아무리 힘을 써도 그물은 풀리지 않았지요.",3],
- ["작은 이빨의 힘","사자의 울음소리를 들은 생쥐가 달려왔어요. 생쥐는 작은 이빨로 그물의 밧줄을 갉기 시작했어요.",4],
- ["서로 돕는 친구","마침내 그물이 끊어졌어요! 사자는 생쥐에게 고맙다고 말했지요. 도움의 크기는 몸집의 크기와 다르답니다.",5]]},
- {title:"까마귀와 물병",source:"이솝 우화 · The Crow and the Pitcher",url:"https://www.gutenberg.org/cache/epub/53103/pg53103-images.html",pages:[
- ["목마른 까마귀","햇볕이 쨍쨍한 날, 까마귀가 물을 찾아 날아다녔어요. 그러다 오래된 마당에서 물병 하나를 발견했어요.",0],
- ["물이 너무 낮아요","까마귀가 물병을 들여다보았어요. 물이 조금 남아 있었지만 부리가 닿기엔 너무 깊었지요.",1],
- ["좋은 생각이 났어!","까마귀는 주위를 둘러보다 조그만 조약돌들을 발견했어요. “아하! 이 돌들을 이용해 보자.”",2],
- ["하나씩 퐁당","까마귀는 조약돌을 하나씩 물병 속에 넣었어요. 퐁당, 퐁당! 그때마다 물이 조금씩 높아졌지요.",3],
- ["드디어 닿았다!","마침내 물이 병 위쪽까지 올라왔어요. 까마귀는 시원한 물을 마시고 환하게 웃었어요.",4],
- ["지혜로운 해결","까마귀는 다시 하늘로 날아올랐어요. 힘으로 안 되는 일도 차분히 생각하면 방법을 찾을 수 있답니다.",5]]}
-];
-let book=0,page=0,voice=true,music=true,audio=null,musicNodes=[],pageFlip=null;
-const el=id=>document.getElementById(id);
-function sceneSVG(step,storyIndex=book){
- const sceneNum=Math.max(0,Math.min(5,Number(step)||0));
- const palettes=[
-  ['#d4ebf8','#f9e7c9','#badb98'],['#f6e7cd','#fbd5bd','#b6d2a3'],['#deeeec','#ffe6c6','#b3d8a0'],
-  ['#d4e5f7','#fce1c6','#a6cdad'],['#f6d7cf','#ffedc9','#9dca9c'],['#cfdfef','#fce8d0','#9bc998']
- ];
- const pal=palettes[sceneNum];
- const gradientID='sky-'+storyIndex+'-'+sceneNum; const sky='<defs><linearGradient id="'+gradientID+'" x2="0" y2="1"><stop stop-color="'+pal[0]+'"/><stop offset="1" stop-color="'+pal[1]+'"/></linearGradient></defs><rect width="720" height="480" fill="url(#'+gradientID+')"/><circle cx="'+(530-sceneNum*45)+'" cy="90" r="47" fill="#fff9db" opacity=".9"/><path d="M0 340 Q180 '+(290+sceneNum*5)+' 340 340 T720 316 V480 H0Z" fill="'+pal[2]+'"/><path d="M0 415 Q200 353 405 400 T720 381 V480 H0Z" fill="#7caf86" opacity=".55"/>';
- const flowers='<g fill="#f8bfd1"><circle cx="83" cy="405" r="8"/><circle cx="192" cy="383" r="6"/><circle cx="610" cy="410" r="8"/></g>';
- const tree='<path d="M115 370 Q103 206 145 65" stroke="#96735b" stroke-width="23" fill="none"/><g fill="#f3b8c3"><circle cx="145" cy="83" r="67"/><circle cx="92" cy="135" r="57"/><circle cx="218" cy="142" r="55"/></g>';
- const fox=(x,y,scale=1)=>'<g transform="translate('+x+' '+y+') scale('+scale+')"><path d="M40 155 Q-40 145 -31 90 Q4 100 40 101" fill="#d47b45"/><ellipse cx="101" cy="145" rx="85" ry="62" fill="#dc884f"/><path d="M55 64 L33 -18 L98 20 L157 -18 L167 64Z" fill="#db8a52"/><path d="M54 54 Q105 30 163 54 L145 101 Q100 135 60 100Z" fill="#ffefdb"/><ellipse cx="75" cy="78" rx="7" ry="10" fill="#483946"/><ellipse cx="133" cy="78" rx="7" ry="10" fill="#483946"/><circle cx="105" cy="103" r="10" fill="#65434a"/><ellipse cx="49" cy="188" rx="23" ry="14" fill="#ffeddb"/><ellipse cx="147" cy="188" rx="23" ry="14" fill="#ffeddb"/></g>';
- const vine='<path d="M550 10 Q585 62 530 145 M520 32 Q610 52 685 3 M556 89 Q650 103 698 70" stroke="#78925e" stroke-width="10" fill="none"/><g fill="#7b77af">'+Array.from({length:14},(_,i)=>'<circle cx="'+(538+(i%4)*23-(Math.floor(i/4)*8))+'" cy="'+(135+Math.floor(i/4)*24)+'" r="15"/>').join('')+'</g><g fill="#91a877"><ellipse cx="602" cy="53" rx="48" ry="18" transform="rotate(22 602 53)"/><ellipse cx="483" cy="49" rx="42" ry="15" transform="rotate(-25 483 49)"/></g>';
- const lion=(x,y,scale=1)=>'<g transform="translate('+x+' '+y+') scale('+scale+')"><ellipse cx="95" cy="170" rx="95" ry="67" fill="#d89d61"/><circle cx="117" cy="89" r="91" fill="#a86c42"/><circle cx="117" cy="93" r="66" fill="#f6d49a"/><circle cx="85" cy="84" r="7" fill="#59403b"/><circle cx="149" cy="84" r="7" fill="#59403b"/><ellipse cx="117" cy="116" rx="24" ry="20" fill="#fce7c0"/><path d="M109 111 L125 111 L117 124Z" fill="#6b443f"/><path d="M100 136 Q117 150 135 136" stroke="#765146" stroke-width="5" fill="none"/><ellipse cx="36" cy="215" rx="29" ry="17" fill="#e6b47a"/><ellipse cx="160" cy="215" rx="29" ry="17" fill="#e6b47a"/></g>';
- const mouse=(x,y,scale=1)=>'<g transform="translate('+x+' '+y+') scale('+scale+')"><path d="M22 97 Q-38 89 -20 34" stroke="#bd939b" stroke-width="9" fill="none"/><ellipse cx="70" cy="87" rx="63" ry="46" fill="#b7a3a4"/><circle cx="102" cy="56" r="44" fill="#cbbabc"/><circle cx="77" cy="19" r="25" fill="#cbbabc"/><circle cx="77" cy="19" r="13" fill="#e9b7bd"/><circle cx="110" cy="50" r="5" fill="#433c42"/><circle cx="143" cy="69" r="6" fill="#ec9eaa"/></g>';
- const crow=(x,y,scale=1)=>'<g transform="translate('+x+' '+y+') scale('+scale+')"><ellipse cx="90" cy="105" rx="72" ry="68" fill="#4c526c"/><circle cx="137" cy="61" r="49" fill="#505873"/><path d="M174 73 L220 88 L174 100Z" fill="#e2ad6a"/><ellipse cx="70" cy="104" rx="40" ry="56" fill="#626b89" transform="rotate(-20 70 104)"/><circle cx="153" cy="52" r="7" fill="#fffbf2"/><circle cx="154" cy="53" r="3" fill="#3b3540"/><path d="M79 168 L72 202 M115 168 L113 202" stroke="#a56c59" stroke-width="7"/></g>';
- const pitcher='<path d="M446 205 Q430 254 452 396 Q520 427 590 395 Q613 268 594 205Z" fill="#c77e62" stroke="#96604c" stroke-width="11"/><ellipse cx="520" cy="205" rx="75" ry="20" fill="#7e584e"/><ellipse cx="520" cy="207" rx="57" ry="12" fill="#75adc5"/><path d="M592 255 Q676 223 647 327 Q637 352 599 338" fill="none" stroke="#bb705a" stroke-width="16"/>';
- let figures='';
- if(storyIndex===0){
-  figures=vine+fox([100,160,250,320,300,400][sceneNum],[206,217,172,254,265,225][sceneNum],[1,1,1.03,.85,.9,.8][sceneNum]);
-  if(sceneNum===2)figures+='<path d="M350 280 Q400 190 448 115" stroke="#e8e5be" stroke-width="7" stroke-dasharray="14 16" fill="none"/>';
-  if(sceneNum===5)figures+='<g fill="#fff0bd"><circle cx="575" cy="349" r="25"/><circle cx="608" cy="378" r="18"/></g>';
- }else if(storyIndex===1){
-  figures=tree+lion([280,280,280,300,300,350][sceneNum],[215,230,230,215,207,210][sceneNum],[.95,.92,.95,.95,.9,.8][sceneNum]);
-  figures+=mouse([200,170,160,165,235,230][sceneNum],[360,330,350,346,360,340][sceneNum],sceneNum===4?1.05:.77);
-  if(sceneNum===3||sceneNum===4)figures+='<path d="M311 250 L520 405 M370 218 L557 380 M460 241 L337 430 M510 255 L378 426" stroke="#cdbb95" stroke-width="8" opacity=".75"/>';
- }else{
-  figures= '<path d="M436 250 L606 250" stroke="#b4937e" stroke-width="10"/>'+pitcher+crow([130,160,195,230,235,330][sceneNum],[175,165,160,160,180,110][sceneNum],[.88,.83,.85,.82,.8,.9][sceneNum]);
-  const stones=sceneNum>=2?Array.from({length:sceneNum===2?3:sceneNum===3?7:10},(_,i)=>'<ellipse cx="'+(335+(i%4)*26)+'" cy="'+(401-Math.floor(i/4)*16)+'" rx="14" ry="10" fill="#9e9c91"/>').join(''):'';
-  figures+=stones;
-  if(sceneNum>=4)figures+='<path d="M467 219 Q520 195 573 219" stroke="#7ec9de" stroke-width="8" fill="none"/>';
+@import url('https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Nunito:wght@400;600;800&display=swap');
+:root{--rose:#bd728d;--ink:#563d51;--cream:#fffaf3}*{box-sizing:border-box}
+body{margin:0;color:var(--ink);font-family:'Nunito',system-ui,sans-serif;background:radial-gradient(ellipse at 80% -12%,#ffd4e1,#fffaf3 47%,#f6f5ea);min-height:100vh}
+button,select{font:inherit;cursor:pointer}button:focus-visible,select:focus-visible{outline:3px solid #a75d84;outline-offset:2px}
+.wrap{max-width:1190px;padding:18px clamp(14px,4vw,48px) 44px;margin:0 auto}
+header{display:flex;gap:10px;justify-content:space-between;align-items:center}
+.brand{font-size:clamp(20px,3vw,31px);font-family:'Gowun Batang',serif;font-weight:700;letter-spacing:-1px}
+.brand small{display:block;font:800 9px 'Nunito',sans-serif;letter-spacing:3px;color:#ae8a9a}
+.nav{display:flex;align-items:center;gap:8px}.tab{border:1px solid #f1c7d6;background:#fff9f9;color:#895b72;border-radius:22px;padding:10px 16px;font-weight:800}
+.hero{margin-top:26px;display:grid;grid-template-columns:1fr 1fr;align-items:center;background:linear-gradient(120deg,#fff7ed,#ffe5ee);border:1px solid #fff;border-radius:28px;box-shadow:0 16px 40px #cc9eae38;min-height:295px;overflow:hidden}
+.heroCopy{padding:30px clamp(22px,4vw,55px)}
+.heroCopy small{color:#b07890;letter-spacing:3px;font-weight:800}.heroCopy h1{font:700 clamp(30px,4.1vw,50px)/1.4 'Gowun Batang',serif;margin:12px 0}.heroCopy h1 span{color:#cc7994}.heroCopy p{line-height:1.8;color:#8c7180}
+.art{height:100%;min-height:280px;background:radial-gradient(circle at 70% 50%,#fff3c8,#f6c7d7 58%,transparent)}
+.art svg{width:100%;height:100%;max-height:330px}
+h2{font:700 25px 'Gowun Batang',serif}.intro{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:26px 0 12px}.intro p{margin:0;color:#967b88;font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.tile{border:0;overflow:hidden;border-radius:21px;background:#fffefd;box-shadow:0 7px 27px #ba889c29;text-align:left;padding:0;color:inherit}.tile img{width:100%;aspect-ratio:4/3;object-fit:cover;display:block}.tile div{padding:14px 17px 18px}.tile strong{font:700 20px 'Gowun Batang',serif}.tile small{display:block;margin:6px 0;color:#a1788d}.tile p{font-size:12px;color:#947d86;line-height:1.6}.empty{border:2px dashed #e6b8c8;border-radius:24px;padding:36px 20px;text-align:center;background:#ffffffa6}.empty strong{font:700 23px 'Gowun Batang',serif}.empty p{line-height:1.8;color:#8b7681}
+.candidate{display:flex;flex-wrap:wrap;gap:8px}.chip{display:inline-flex;border-radius:99px;padding:8px 12px;background:#ffebf1;color:#97677b;font-size:12px}
+.controls{display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin:10px 0}.btn{padding:9px 13px;border:1px solid #dfb5c5;border-radius:28px;background:#fff9f9;color:#764b60;font-weight:800}.btn.on{background:var(--rose);border-color:var(--rose);color:white}
+#reader{display:none}.readerTitle{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.readerTitle h2{margin-bottom:3px}.source{font-size:11px;color:#967786}.source a{color:#96516f}
+.shelf{min-height:490px;display:flex;justify-content:center;align-items:center;filter:drop-shadow(0 17px 22px #8d6f7b62);padding:15px 4px}
+#book{touch-action:pan-y;max-width:100%}.leaf{background:#fffaf2;border:1px solid #efdfd9;overflow:hidden}.leaf img{width:100%;height:100%;object-fit:cover}.leaf .words{display:flex;flex-direction:column;justify-content:center;height:100%;padding:9%;background:#fffaf3;font-family:'Gowun Batang',serif}.words small{font:800 10px 'Nunito',sans-serif;color:#b8869e}.words h3{font-size:clamp(18px,2.2vw,29px);line-height:1.4}.words p{line-height:1.8;font-size:clamp(15px,1.55vw,20px);word-break:keep-all}.readerMeta{text-align:center;color:#a27e8e;font-size:12px}.status{font-size:12px;color:#8f7180;min-height:18px}.loading{background:#fff8f2;display:none;border-radius:19px;padding:14px 20px;color:#9a7282;margin:15px 0}footer{text-align:center;color:#a58b95;font-size:11px;padding:35px}
+@media(max-width:720px){.wrap{padding:12px 13px}.nav .tab{padding:8px 10px;font-size:12px}.hero{grid-template-columns:1fr}.heroCopy{padding:26px 20px 0}.art{min-height:170px;max-height:200px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.tile strong{font-size:16px}.tile div{padding:10px}.shelf{min-height:350px;padding:5px 0}.leaf .words{padding:7%}.leaf .words h3{font-size:16px}.leaf .words p{font-size:12px;line-height:1.65}.controls{gap:5px}.btn{font-size:11px;padding:8px 9px}}
+</style><script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.min.js"></script>
+</head><body><div class="wrap">
+<header><div class="brand">🌸 벚꽃 동화극장<small>SAKURA STORY THEATER</small></div><nav class="nav"><button class="tab" id="homeNav">📚 동화책장</button></nav></header>
+<main id="home"><section class="hero"><div class="heroCopy"><small>STORIES FROM AROUND THE WORLD</small><h1>벚꽃처럼 피어나는<br><span>우리의 이야기</span></h1><p>한국과 세계의 오랜 이야기를<br>그림과 따뜻한 목소리로 만나요.<br>모든 그림과 음성은 책을 공개하기 전에 준비합니다.</p></div><div class="art"><svg viewBox="0 0 500 350" aria-label="벚꽃 아래 열린 그림책"><defs><linearGradient id="bg" x2="0" y2="1"><stop stop-color="#ffe5ef"/><stop offset="1" stop-color="#ffeecf"/></linearGradient></defs><rect width="500" height="350" fill="url(#bg)"/><path d="M40 340 Q120 240 250 285 T500 278 V350H0Z" fill="#c5ddb2"/><path d="M80 310Q55 150 110 30" stroke="#ab8174" stroke-width="21" fill="none"/><g fill="#f4b3c8"><circle cx="99" cy="35" r="70"/><circle cx="45" cy="91" r="56"/><circle cx="160" cy="84" r="52"/></g><path d="M160 215 Q210 190 252 227 Q292 189 351 218V306Q285 279 252 311Q205 278 160 305Z" fill="#fff9eb" stroke="#bb8a98" stroke-width="7"/><path d="M252 226V310" stroke="#cb9eaa" stroke-width="5"/><g fill="#ed9ab2"><circle cx="190" cy="239" r="8"/><circle cx="321" cy="240" r="8"/></g></svg></div></section>
+<div class="intro"><div><h2>📖 지금 읽을 수 있는 완성 동화</h2><p>그림 전 페이지 + 남녀 음성 전 페이지 검증 완료된 책만 표시</p></div><span id="bookCount"></span></div>
+<div id="library" class="grid"></div><div id="empty" class="empty" style="display:none"><strong>새 그림책을 준비하고 있어요 🌷</strong><p>그림과 남녀 나레이션이 모두 제작·검증되면 책장에 자동으로 추가됩니다.<br>미완성 그림책은 독서 화면에 노출하지 않습니다.</p></div>
+<div class="intro"><div><h2>🌏 준비 중인 세계 전래동화</h2><p>원전 출처를 검토한 제작 후보입니다. 완성된 책으로 표시하지 않습니다.</p></div></div><div id="candidates" class="candidate"></div>
+</main>
+<section id="reader"><div class="readerTitle"><div><h2 id="bookTitle"></h2><p id="source" class="source"></p></div><button class="btn" id="back">← 책장으로</button></div>
+<div class="controls"><button class="btn on" id="narration" aria-pressed="true">🔊 나레이션 ON</button><label class="btn">목소리 <select id="voice"><option value="male">남자 · 기본</option><option value="female">여자 · 젊고 부드럽게</option></select></label><button class="btn on" id="music" aria-pressed="true">♫ 배경음 ON</button></div>
+<div id="loading" class="loading" role="status">책의 모든 그림과 나레이션을 다운로드하고 있어요…</div>
+<div class="shelf"><div id="book"></div></div><p class="readerMeta" id="pageNumber">책 가장자리를 손으로 잡아 넘겨보세요.</p><p class="status" id="status"></p></section>
+<footer>🌸 벚꽃 동화극장 · 사전 제작된 완성 그림책만 공개 · 원전과 새 각색의 출처 표시</footer>
+</div><script>
+'use strict';
+const $=id=>document.getElementById(id);
+let catalog=[],active=null,flip=null,currentPage=0,narrationOn=true,musicOn=true,loading=false,track=null,trackUrl=null,unlocked=false,ctx=null,musicOsc=[],musicGain=null;
+const cache=new Map(); const loaded=new Map();
+function safePath(x){if(typeof x!=='string'||!/^books\/[a-z0-9-]+\/[a-zA-Z0-9_.-]+$/.test(x))throw Error('잘못된 파일 경로');return x}
+function filesOf(b,voice){return [b.cover,...b.pages.map(p=>p.image),...b.pages.map(p=>p.audio[voice])]}
+function isComplete(b){return !!b&&b.status==='ready'&&Array.isArray(b.pages)&&b.pages.length>=3&&b.pages.every(p=>p.image&&p.audio?.male&&p.audio?.female&&p.text)&&!!b.cover}
+function setStatus(s){$('status').textContent=s}
+async function fetchCatalog(){
+ try{const r=await fetch('./books/index.json?v='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('catalogue unavailable');const j=await r.json();catalog=(j.books||[]).filter(isComplete)}
+ catch(e){catalog=[];console.warn('Catalogue:',e)}
+ paintLibrary();
+}
+function paintLibrary(){const shelf=$('library');shelf.replaceChildren();$('bookCount').textContent=catalog.length+'권';$('empty').style.display=catalog.length?'none':'block';
+ for(const b of catalog){const card=document.createElement('button');card.className='tile';const img=new Image();img.alt=b.title+' 표지';img.src=safePath(b.cover);const desc=document.createElement('div');const title=document.createElement('strong');title.textContent=b.title;const sub=document.createElement('small');sub.textContent=(b.region||'세계')+' · '+b.pages.length+'장면';const note=document.createElement('p');note.textContent='그림과 남녀 나레이션 사전 제작 완료';desc.append(title,sub,note);card.append(img,desc);card.onclick=()=>openBook(b);shelf.append(card)}
+}
+async function loadCandidates(){
+ try{const r=await fetch('./books/candidates.json');const list=await r.json();const host=$('candidates');host.replaceChildren();list.forEach(x=>{const tag=document.createElement('span');tag.className='chip';tag.textContent=(x.region||'세계')+' · '+x.title;host.append(tag)})}catch(e){console.warn(e)}
+}
+function audioOff(){if(track){track.pause();track.src='';track=null}if(trackUrl){URL.revokeObjectURL(trackUrl);trackUrl=null}}
+function stopMusic(){musicOsc.forEach(o=>{try{o.stop()}catch(e){}});musicOsc=[];if(musicGain){musicGain.disconnect();musicGain=null}}
+function playMusic(){if(!musicOn)return;try{ctx=ctx||new(window.AudioContext||window.webkitAudioContext)();ctx.resume();stopMusic();musicGain=ctx.createGain();musicGain.gain.value=.012;musicGain.connect(ctx.destination);const tune=[261.63,329.63,392,349.23,293.66,261.63,293.66,329.63,392,440,392,329.63];const now=ctx.currentTime+.1;for(let k=0;k<9;k++){tune.forEach((f,j)=>{const o=ctx.createOscillator(),g=ctx.createGain(),t=now+(k*tune.length+j)*.75;o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.001,t);g.gain.linearRampToValueAtTime(.33,t+.09);g.gain.exponentialRampToValueAtTime(.001,t+.7);o.connect(g);g.connect(musicGain);o.start(t);o.stop(t+.71);musicOsc.push(o)})}}catch(e){setStatus('배경음을 재생하지 못했습니다.');musicOn=false}}
+async function prefetchBook(b,voice){
+ let count=0;const list=filesOf(b,voice);const result=new Map();
+ for(const path of list){const p=safePath(path);let blob=loaded.get(p);
+  if(!blob){const resp=await fetch('./'+p);if(!resp.ok)throw Error('사전 제작 파일 누락: '+p);blob=await resp.blob();if(blob.size<800)throw Error('파일 크기가 비정상적으로 작습니다: '+p);loaded.set(p,blob)}
+  result.set(p,blob);count++;$('loading').textContent='책의 모든 이미지·나레이션 준비 '+count+' / '+list.length;
  }
- return sky+flowers+figures;
+ // Decode all illustrations before enabling the book.
+ await Promise.all(b.pages.map(p=>new Promise((resolve,reject)=>{const img=new Image(),url=URL.createObjectURL(result.get(p.image));img.onload=()=>{URL.revokeObjectURL(url);resolve()};img.onerror=()=>{URL.revokeObjectURL(url);reject(Error('삽화 파일이 손상됐습니다'))};img.src=url})));
+ return result;
 }
-function createPaper(kind,p,n){const d=document.createElement('div');d.className='paper';if(kind==='picture'){d.innerHTML='<div class="paper-art"><svg viewBox="0 0 720 480">'+sceneSVG(p[2],book)+'</svg></div>'}else{const w=document.createElement('div');w.className='paper-words';const small=document.createElement('small');small.textContent='SAKURA STORY · '+(n+1);const title=document.createElement('h3');title.textContent=p[0];const txt=document.createElement('p');txt.textContent=p[1];w.append(small,title,txt);d.append(w)}return d}
-// Each scene is AI-illustrated once and cached locally. SVG remains an offline fallback.
-const artDB=(()=>{let dbPromise;return {
- async open(){if(!('indexedDB'in window))return null;if(!dbPromise)dbPromise=new Promise(resolve=>{const req=indexedDB.open('sakura-ai-illustrations-v1',1);req.onupgradeneeded=()=>req.result.createObjectStore('illustrations');req.onsuccess=()=>resolve(req.result);req.onerror=()=>resolve(null)});return dbPromise},
- async get(id){const db=await this.open();if(!db)return null;return new Promise(resolve=>{const r=db.transaction('illustrations','readonly').objectStore('illustrations').get(id);r.onsuccess=()=>resolve(r.result||null);r.onerror=()=>resolve(null)})},
- async put(id,blob){const db=await this.open();if(!db)return;try{db.transaction('illustrations','readwrite').objectStore('illustrations').put(blob,id)}catch(e){console.warn('Illustration cache error',e)}},
- async erasePrefix(prefix){const db=await this.open();if(!db)return;return new Promise(resolve=>{const tx=db.transaction('illustrations','readwrite');const store=tx.objectStore('illustrations');const req=store.openCursor();req.onsuccess=()=>{const cur=req.result;if(cur){if(String(cur.key).startsWith(prefix))cur.delete();cur.continue()}};tx.oncomplete=resolve;tx.onerror=resolve})}
-}})();
-let artGenerationTicket=0;
-const sceneArtURLs=new Map();
-function artKey(b,i){return 'v2|'+stories[b].title+'|'+i}
-const artCharacters=[
- 'One adorable russet fox with a cream-white muzzle, amber eyes, small triangular ears, a large fluffy tail with white tip and a blue neck scarf; same exact fox design in every image',
- 'One gentle golden lion with a thick rounded auburn mane, amber eyes and broad soft paws; a tiny pale-gray mouse with round pink ears and a little lilac waistcoat; same character designs throughout',
- 'One cheerful charcoal-blue crow with a cream eye highlight, round cheeks and a small red neck ribbon; a large ochre terracotta pitcher with one curled handle; same character and pitcher designs throughout'
-];
-function artPrompt(b,i){
- const p=stories[b].pages[i],previous=stories[b].pages.slice(0,i).map(x=>x[0]).join(' → ');
- return 'Create ONE finished illustration for a premium Korean preschool picture book. Visual aesthetic: polished cinematic 3D animated family-film artwork, high-end plush character rendering, gorgeous soft global illumination, physically believable fabrics, tactile foliage, expressive eyes, soft watercolor-pastel palette, volumetric sunshine, dreamy detailed backgrounds. Original character designs, not copies of famous film characters. Tall vertical storybook page, composition 3:4, no writing, no letters, no caption, no speech bubbles. Consistent character guide: '+artCharacters[b]+'. Story: '+stories[b].title+'. Current story scene '+(i+1)+' out of '+stories[b].pages.length+'. Scene heading: '+p[0]+'. Depict specifically: '+p[1]+'. Past story context: '+previous+'. Show a clearly distinct camera angle and action specifically for this event, while maintaining exact character appearance.';
+async function openBook(b){
+ if(loading)return;loading=true;unlocked=true;active=b;audioOff();stopMusic();if(musicOn)playMusic();
+ $('home').style.display='none';$('reader').style.display='block';$('bookTitle').textContent=b.title;
+ const source=$('source');source.replaceChildren();source.append('원전 출처: ');const a=document.createElement('a');a.href=b.source_url||'#';a.target='_blank';a.rel='noopener noreferrer';a.textContent=b.source_title||'원전 보기';source.append(a);
+ $('loading').style.display='block';$('book').style.display='none';$('pageNumber').textContent='모든 페이지를 먼저 준비하고 있습니다.';
+ try{const assets=await prefetchBook(b,$('voice').value);if(active!==b)return;
+  mount(b,assets);$('loading').style.display='none';$('book').style.display='block';setStatus('그림과 음성 전체 준비 완료');playPage(0)}
+ catch(e){setStatus('준비 실패: '+e.message);$('loading').textContent='그림책을 열지 않았습니다: '+e.message;$('book').style.display='none'}
+ finally{loading=false}
 }
-function base64FromBlob(blob){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(String(reader.result).split(',')[1]);reader.onerror=reject;reader.readAsDataURL(blob)})}
-async function renderArtInBook(b,i,blob){
- if(book!==b)return;
- const photo=el('flipbook').querySelectorAll('.paper-art')[i];if(!photo)return;
- const id=artKey(b,i);let url=sceneArtURLs.get(id);
- if(!url){url=URL.createObjectURL(blob);sceneArtURLs.set(id,url)}
- let img=photo.querySelector('img.generated-scene');
- if(!img){img=document.createElement('img');img.className='generated-scene';img.alt=stories[b].pages[i][0]+' 장면 AI 삽화';photo.replaceChildren(img)}
- img.src=url;
-}
-async function generateArtRequest(b,i,key,reference){
- const parts=[{text:artPrompt(b,i)}];
- if(reference){parts.push({inlineData:{mimeType:reference.type||'image/png',data:await base64FromBlob(reference)}})}
- const response=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent',{
- method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},
- body:JSON.stringify({contents:[{parts}],generationConfig:{responseModalities:['IMAGE']}})
+function mount(b,assets){
+ if(flip){try{flip.destroy()}catch(e){}flip=null}
+ const host=$('book');host.replaceChildren();
+ if(!window.St||!St.PageFlip)throw Error('책장 넘김 엔진 로딩 실패. 네트워크를 확인하세요.');
+ const pages=[];
+ b.pages.forEach((p,i)=>{
+  const a=document.createElement('div');a.className='leaf';const image=new Image();image.alt=p.heading+' 장면';image.src=URL.createObjectURL(assets.get(p.image));a.append(image);pages.push(a);
+  const t=document.createElement('div');t.className='leaf';const inner=document.createElement('div');inner.className='words';const index=document.createElement('small');index.textContent='SAKURA STORY · '+String(i+1).padStart(2,'0');const h=document.createElement('h3');h.textContent=p.heading;const text=document.createElement('p');text.textContent=p.text;inner.append(index,h,text);t.append(inner);pages.push(t);
  });
- const result=await response.json().catch(()=>({}));
- if(!response.ok)throw Error('Gemini Image HTTP '+response.status+': '+(result.error?.message||'이미지 생성 실패'));
- const part=result.candidates?.flatMap(c=>c.content?.parts||[]).find(p=>p.inlineData?.data);
- if(!part)throw Error('이미지 응답이 비어 있습니다.');
- const mime=part.inlineData.mimeType||'image/png';
- const raw=atob(part.inlineData.data),array=new Uint8Array(raw.length);
- for(let j=0;j<raw.length;j++)array[j]=raw.charCodeAt(j);
- return new Blob([array],{type:mime});
+ pages.forEach(p=>host.append(p));
+ flip=new St.PageFlip(host,{width:350,height:455,size:'stretch',minWidth:155,maxWidth:550,minHeight:205,maxHeight:720,showCover:false,drawShadow:true,maxShadowOpacity:.65,flippingTime:950,usePortrait:false,mobileScrollSupport:false,useMouseEvents:true,disableFlipByClick:true,showPageCorners:true});
+ flip.on('flip',e=>{const n=Math.min(b.pages.length-1,Math.floor(e.data/2));playPage(n)});
+ flip.loadFromHTML(pages);
 }
-async function prepareBookArt(b,force=false){
- const ticket=++artGenerationTicket;
- const status=el('artStatus'),key=getGeminiKey();
- if(!key){status.textContent='🎨 고품질 AI 삽화를 만들려면 Gemini API 키 연결이 필요합니다.';return}
- const total=stories[b].pages.length;let reference=null,ready=0;
- status.textContent='🎨 AI 삽화 '+total+'장 준비를 시작합니다. 처음 한 번은 이미지 생성 시간이 필요합니다.';
- for(let i=0;i<total;i++){
-  if(ticket!==artGenerationTicket||book!==b)return;
-  const id=artKey(b,i);let blob=force?null:await artDB.get(id);
-  if(!blob){
-   try{status.textContent='🎨 '+(i+1)+' / '+total+' 장면 AI 그림 제작 중…';
-    blob=await generateArtRequest(b,i,key,i===0?null:reference);
-    await artDB.put(id,blob)
-   }catch(error){status.textContent='⚠️ '+(i+1)+'번째 그림 생성 실패: '+error.message+' · 기본 삽화 유지';console.warn(error);return}
-  }
-  if(i===0)reference=blob;
-  ready++;await renderArtInBook(b,i,blob);
-  status.textContent='🎨 AI 삽화 '+ready+' / '+total+'장 준비됨'+(ready===total?' · 완성':'');
- }
+function playPage(n){if(!active)return;currentPage=n;$('pageNumber').textContent=(n+1)+' / '+active.pages.length+' · 종이 모서리를 손가락으로 잡아 끌어보세요';audioOff();if(!narrationOn)return;
+ const p=active.pages[n].audio[$('voice').value],blob=loaded.get(p);if(!blob){setStatus('해당 음성 파일을 먼저 준비해야 합니다');return}
+ trackUrl=URL.createObjectURL(blob);track=new Audio(trackUrl);track.volume=.9;track.play().catch(e=>setStatus('음성 자동 재생이 제한됐습니다. 나레이션 버튼을 눌러주세요: '+e.message));
 }
-el('regenerateArt').addEventListener('click',async()=>{if(!getGeminiKey()&&!configureKey())return;const b=book;artGenerationTicket++;await artDB.erasePrefix('v2|'+stories[b].title+'|');prepareBookArt(b,true)});
-function updateReading(){if(!pageFlip)return;const index=pageFlip.getCurrentPageIndex();const nextPage=Math.min(stories[book].pages.length-1,Math.floor(index/2));const changed=page!==nextPage;page=nextPage;el('counter').textContent=(page+1)+' / '+stories[book].pages.length;el('prev').disabled=index===0;el('next').disabled=index>=stories[book].pages.length*2-2;localStorage.setItem('sakura-page-'+book,page);if(voice&&(changed||!narrationAudio))read()}
-function openBook(n){if(music&&!audio)playMusic();book=n;el('home').style.display='none';el('reader').style.display='block';el('readingTitle').textContent=stories[n].title;el('storySource').replaceChildren();const a=document.createElement('a');a.href=stories[n].url;a.target='_blank';a.rel='noopener noreferrer';a.textContent='원전 출처: '+stories[n].source+' ↗';el('storySource').append(a);el('homeTop').classList.remove('active');el('readerTop').classList.add('active');if(pageFlip){try{pageFlip.destroy()}catch(e){}pageFlip=null}const root=el('flipbook');root.innerHTML='';const pages=[];stories[n].pages.forEach((p,i)=>{pages.push(createPaper('picture',p,i),createPaper('text',p,i))});pages.forEach(p=>root.append(p));if(!window.St||!window.St.PageFlip){root.textContent='종이책 엔진을 불러오지 못했습니다. 네트워크를 확인하고 새로고침해 주세요.';return}const saved=Math.min(stories[n].pages.length-1,Number(localStorage.getItem('sakura-page-'+n)||0));pageFlip=new St.PageFlip(root,{width:350,height:450,size:'stretch',minWidth:150,maxWidth:550,minHeight:210,maxHeight:700,drawShadow:true,maxShadowOpacity:.55,flippingTime:1000,showCover:false,usePortrait:false,mobileScrollSupport:false,useMouseEvents:true,disableFlipByClick:true,showPageCorners:true,startPage:saved*2});pageFlip.on('flip',updateReading);pageFlip.loadFromHTML(pages);stopSpeech();updateReading();prepareBookArt(n);window.scrollTo({top:0,behavior:'smooth'})}
-function goHome(){artGenerationTicket++;stopSpeech();el('home').style.display='block';el('reader').style.display='none';el('readerTop').classList.remove('active');el('homeTop').classList.add('active');window.scrollTo({top:0,behavior:'smooth'})}
-function turn(delta){if(pageFlip){if(delta>0)pageFlip.flipNext('bottom');else pageFlip.flipPrev('bottom')}}
-/* Reuses the same Gemini TTS engine and voice choices as the original FairyTale Studio.
-   API key is never written to Github; reads user's existing same-origin studio key. */
-let narrationAudio=null,narrationUrl=null,narrationSerial=0;
-const speechMemory=new Map();
-function getGeminiKey(){return localStorage.getItem('fairytale-gemini-key')||sessionStorage.getItem('fairytale-gemini-key')||sessionStorage.getItem('sakura-gemini-key')||''}
-function configureKey(){
- const current=getGeminiKey();
- const key=window.prompt('기존 동화영상 스튜디오에 사용하던 Google Gemini API 키를 입력해 주세요. 이 브라우저의 세션에만 보관합니다.',current||'');
- if(key===null)return false;
- const clean=key.trim();if(!clean){sessionStorage.removeItem('sakura-gemini-key');updateKeyButton();return false}
- sessionStorage.setItem('sakura-gemini-key',clean);updateKeyButton();return true;
-}
-function updateKeyButton(){el('apiBtn').textContent=getGeminiKey()?'🔑 Gemini 연결됨':'🔑 Gemini 연결'}
-function wavFromPCM(raw,sampleRate){
- const buffer=new ArrayBuffer(44+raw.length),v=new DataView(buffer),bytes=new Uint8Array(buffer);
- function str(i,s){for(let j=0;j<s.length;j++)v.setUint8(i+j,s.charCodeAt(j))}
- str(0,'RIFF');v.setUint32(4,36+raw.length,true);str(8,'WAVE');str(12,'fmt ');
- v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sampleRate,true);v.setUint32(28,sampleRate*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);str(36,'data');v.setUint32(40,raw.length,true);bytes.set(raw,44);return new Blob([buffer],{type:'audio/wav'});
-}
-function decodeAudioData(base64,mime){
- const binary=atob(base64),pcm=new Uint8Array(binary.length);
- for(let i=0;i<binary.length;i++)pcm[i]=binary.charCodeAt(i);
- if(mime.includes('wav'))return new Blob([pcm],{type:'audio/wav'});
- if(mime.includes('mpeg')||mime.includes('mp3'))return new Blob([pcm],{type:'audio/mpeg'});
- const sampleRate=Number(mime.match(/rate=(\d+)/)?.[1])||24000;
- return wavFromPCM(pcm,sampleRate);
-}
-const speechPending=new Map();
-const speechDB=(()=>{let dbPromise=null;return {
- async open(){if(!('indexedDB'in window))return null;if(!dbPromise)dbPromise=new Promise(resolve=>{const r=indexedDB.open('sakura-gemini-audio-v1',1);r.onupgradeneeded=()=>r.result.createObjectStore('clips');r.onsuccess=()=>resolve(r.result);r.onerror=()=>resolve(null)});return dbPromise},
- async get(id){const db=await this.open();if(!db)return null;return new Promise(resolve=>{const t=db.transaction('clips','readonly').objectStore('clips').get(id);t.onsuccess=()=>resolve(t.result||null);t.onerror=()=>resolve(null)})},
- async put(id,blob){const db=await this.open();if(!db)return;try{const t=db.transaction('clips','readwrite');t.objectStore('clips').put(blob,id)}catch(e){console.warn('Audio caching unavailable',e)}}
-}})();
-function storyText(b,p){const item=stories[b].pages[p];return item[0]+'. '+item[1]}
-function audioKey(b,p,v){return ['v5','gemini-3.8-flash-lite-tts',stories[b].title,p,v,storyText(b,p)].join('|')}
-async function requestGeminiAudio(spokenText,voice,key){
- if(!spokenText||!/[가-힣]/.test(spokenText)||/[A-Za-z]/.test(spokenText))throw Error('나레이션에는 한국어 동화 본문만 사용할 수 있습니다.');
- const response=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash-lite-tts:generateContent',{
-  method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},
-  body:JSON.stringify({contents:[{parts:[{text:spokenText}]}],generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:voice==='Leda'?'Leda':'Charon'}}}}})
- });
- const data=await response.json().catch(()=>({}));
- if(!response.ok)throw Error('Gemini 음성 생성 오류 ('+response.status+'): '+(data.error?.message||'API 요청 실패'));
- const part=data.candidates?.flatMap(c=>c.content?.parts||[]).find(x=>x.inlineData?.data);
- if(!part)throw Error('Gemini가 음성 데이터를 반환하지 않았습니다.');
- return decodeAudioData(part.inlineData.data,part.inlineData.mimeType||'audio/L16;rate=24000');
-}
-function ensureAudio(b,p,v,key){
- const id=audioKey(b,p,v);
- if(speechMemory.has(id))return Promise.resolve(speechMemory.get(id));
- if(speechPending.has(id))return speechPending.get(id);
- const job=(async()=>{
-  const stored=await speechDB.get(id);
-  if(stored){speechMemory.set(id,stored);return stored}
-  const blob=await requestGeminiAudio(storyText(b,p),v,key);
-  speechMemory.set(id,blob);speechDB.put(id,blob);return blob;
- })().finally(()=>speechPending.delete(id));
- speechPending.set(id,job);return job;
-}
-function preloadNeighbors(b,p,v,key){
- if(!key)return;
- // Prefetch adjacent pages after the visible page starts playing, without multiplying requests.
- for(const n of [p+1,p+2,p-1]){
-  if(n>=0&&n<stories[b].pages.length)ensureAudio(b,n,v,key).catch(e=>console.warn('Preload:',e.message));
- }
-}
-function stopSpeech(){
- narrationSerial++;
- if(narrationAudio){narrationAudio.pause();narrationAudio.removeAttribute('src');narrationAudio.load();narrationAudio=null}
- if(narrationUrl){URL.revokeObjectURL(narrationUrl);narrationUrl=null}
-}
-async function read(){
- stopSpeech();
- if(!voice)return;
- let key=getGeminiKey();
- if(!key){el('voiceBtn').textContent='🔑 API 연결 필요';if(!configureKey()){voice=false;setVoice(false);return}key=getGeminiKey()}
- const ticket=narrationSerial,b=book,p=page,v=el('voiceSelect').value==='Leda'?'Leda':'Charon';
- const cached=speechMemory.has(audioKey(b,p,v));
- el('voiceBtn').textContent=cached?'🔊 AI 나레이션 ON':'⏳ 첫 음성 준비 중';
- try{
-  const blob=await ensureAudio(b,p,v,key);
-  if(ticket!==narrationSerial||!voice||book!==b||page!==p)return;
-  narrationUrl=URL.createObjectURL(blob);
-  const player=new Audio(narrationUrl);narrationAudio=player;player.volume=.9;
-  el('voiceBtn').textContent='🔊 AI 나레이션 ON';
-  await player.play();
-  // Audio for the next pages is generated while the current page is being read.
-  preloadNeighbors(b,p,v,key);
- }catch(error){
-  if(ticket!==narrationSerial)return;
-  el('voiceBtn').textContent='⚠️ 재생 실패';
-  console.error('Gemini narration:',error);
-  alert('나레이션을 재생하지 못했습니다.\\n'+error.message);
- }
-}
-function setVoice(on){
- voice=on;el('voiceBtn').textContent=voice?'🔊 AI 나레이션 ON':'🔈 나레이션 OFF';
- el('voiceBtn').classList.toggle('on',voice);el('voiceBtn').setAttribute('aria-pressed',voice);
- if(voice)read();else stopSpeech();
-}
-el('apiBtn').addEventListener('click',()=>{if(configureKey()){if(voice)read();if(el('reader').style.display==='block')prepareBookArt(book)}});
-el('voiceSelect').addEventListener('change',()=>{localStorage.setItem('sakura-narrator',el('voiceSelect').value);if(voice)read()});
-el('speedSelect').addEventListener('change',()=>{if(voice)read()});
-const savedNarrator=localStorage.getItem('sakura-narrator');el('voiceSelect').value=savedNarrator==='Leda'?'Leda':'Charon';
-updateKeyButton();el('voiceBtn').classList.add('on');el('musicBtn').classList.add('on');
-function setMusic(on){music=on;el('musicBtn').textContent=music?'♫ 배경음 ON':'♫ 배경음 OFF';el('musicBtn').classList.toggle('on',music);el('musicBtn').setAttribute('aria-pressed',music);if(music)playMusic();else stopMusic()}
-function stopMusic(){if(audio){try{musicNodes.forEach(n=>n.stop());audio.close()}catch(e){} audio=null;musicNodes=[]}}
-function playMusic(){stopMusic();try{audio=new(window.AudioContext||window.webkitAudioContext)();const master=audio.createGain();master.gain.value=.035;master.connect(audio.destination);const notes=[261.63,329.63,392,523.25,440,392,329.63,293.66,261.63,329.63,392,440,392,329.63,293.66,261.63];let t=audio.currentTime+.08;for(let round=0;round<6;round++){notes.forEach((hz,i)=>{let osc=audio.createOscillator(),gain=audio.createGain();osc.type='sine';osc.frequency.value=hz;gain.gain.setValueAtTime(0,t);gain.gain.linearRampToValueAtTime(.48,t+.12);gain.gain.exponentialRampToValueAtTime(.001,t+1.1);osc.connect(gain);gain.connect(master);osc.start(t);osc.stop(t+1.12);musicNodes.push(osc);t+=.63})}}catch(e){setMusic(false)}}
-['bookFirst','bookSecond','bookThird'].forEach((id,i)=>{const card=el(id),svg=card.querySelector('.cover svg');svg.innerHTML=sceneSVG(0,i);card.querySelector('.bookinfo small').textContent='📖 고전 전래 우화 · 이솝';card.querySelector('.bookinfo strong').textContent=stories[i].title;card.querySelector('.bookinfo p').textContent='퍼블릭 도메인 원전 기반 어린이용 새 각색';});
-const heroSVG=document.querySelector('.heroart svg');if(heroSVG)heroSVG.innerHTML=sceneSVG(0,0);
-el('startHero').onclick=()=>openBook(0);el('bookFirst').onclick=()=>openBook(0);el('bookSecond').onclick=()=>openBook(1);el('bookThird').onclick=()=>openBook(2);
-el('homeTop').onclick=goHome;el('readerTop').onclick=()=>openBook(book);el('backBtn').onclick=goHome;
-el('prev').onclick=()=>turn(-1);el('next').onclick=()=>turn(1);el('voiceBtn').onclick=()=>setVoice(!voice);el('musicBtn').onclick=()=>setMusic(!music);
-document.addEventListener('keydown',e=>{if(el('reader').style.display==='block'){if(e.key==='ArrowRight')turn(1);if(e.key==='ArrowLeft')turn(-1);if(e.key==='Escape')goHome()}});
-for(let i=0;i<12;i++){let a=document.createElement('span');a.className='petal';a.textContent='✿';a.style.left=(i*97%100)+'%';a.style.fontSize=(9+i%4*3)+'px';a.style.animationDelay=(-i*.8)+'s';a.style.animationDuration=(13+i%4*4)+'s';document.body.appendChild(a)}
-window.addEventListener('pagehide',()=>{stopSpeech();stopMusic()});
+function closeBook(){active=null;audioOff();stopMusic();$('reader').style.display='none';$('home').style.display='block';}
+$('homeNav').onclick=closeBook;$('back').onclick=closeBook;
+$('narration').onclick=()=>{narrationOn=!narrationOn;$('narration').classList.toggle('on',narrationOn);$('narration').setAttribute('aria-pressed',String(narrationOn));$('narration').textContent=narrationOn?'🔊 나레이션 ON':'🔈 나레이션 OFF';if(active)playPage(currentPage)};
+$('music').onclick=()=>{musicOn=!musicOn;$('music').classList.toggle('on',musicOn);$('music').setAttribute('aria-pressed',String(musicOn));$('music').textContent=musicOn?'♫ 배경음 ON':'♫ 배경음 OFF';if(musicOn&&active)playMusic();else stopMusic()};
+$('voice').onchange=async()=>{if(!active)return;audioOff();const b=active;$('loading').style.display='block';$('loading').textContent='선택한 목소리 음성을 준비 중…';try{await prefetchBook(b,$('voice').value);if(active===b)playPage(currentPage)}catch(e){setStatus(e.message)}finally{$('loading').style.display='none'}};
+window.addEventListener('pagehide',()=>{audioOff();stopMusic();loaded.clear()});
+fetchCatalog();loadCandidates();
 </script></body></html>
