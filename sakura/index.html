@@ -912,7 +912,7 @@ for(const [id,dir] of [['scrollUp',-1],['scrollDown',1]]){
 }
 // Own the reader gesture instead of depending on PageFlip's portrait touch
 // direction detection. Exactly one turn is requested per completed gesture.
-const bookGesture={start:null,dragging:false,lastTurn:0};
+const bookGesture={start:null,dragging:false,lastTurn:-Infinity};
 function gestureBookPoint(e){
  const el=document.querySelector('#reader .shelf .stf__parent')||$('book');
  if(!el)return null;
