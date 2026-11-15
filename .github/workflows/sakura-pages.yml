@@ -22,6 +22,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Install FFmpeg needed for background music production
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y ffmpeg
+          fi
+          ffmpeg -version | head -n 1
       - name: Compose original prebuilt lullaby soundtrack
         run: python sakura/create_bgm.py
       - name: Bundle the exact PageFlip 2.0.7 browser engine
