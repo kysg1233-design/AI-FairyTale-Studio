@@ -7,8 +7,9 @@ assert "generativelanguage.googleapis.com" not in html, "Reading page must not c
 assert "new St.PageFlip(" in html and "useMouseEvents:true" in html
 assert "disableFlipByClick:true" in html
 assert "async function prefetchBook" in html and "await prefetchBook(b" in html
-assert "function playPage(" in html and "new Audio(trackUrl)" in html
+assert "function playPage(" in html and "ctx.createBufferSource()" in html and "ctx.decodeAudioData(bytes)" in html
 assert "id=\"narration\"" in html and "id=\"music\"" in html
+assert "./assets/sakura-lullaby.mp3" in html and "./vendor/page-flip.browser.js" in html
 assert "aria-pressed=\"true\"" in html
 script=re.findall(r"<script>([\s\S]*?)</script>",html)
 assert len(script)==1
