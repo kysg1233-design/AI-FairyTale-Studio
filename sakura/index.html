@@ -92,7 +92,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px;ma
 <button class="book" id="bookSecond"><div class="cover" style="background:#deecdf"><svg viewBox="0 0 720 480"><use href="#landscape"/><use href="#rabbit" x="260" y="190" width="190" height="245"/><circle cx="550" cy="330" r="53" fill="#dfaf84"/><circle cx="540" cy="322" r="8" fill="#65565b"/><circle cx="580" cy="322" r="8" fill="#65565b"/></svg></div><div class="bookinfo"><small>🌼 창작 동화 · 약 2분</small><strong>봄바람의 비밀</strong><p>잃어버린 꽃씨를 찾아 떠나는 작은 여행</p></div></button>
 <button class="book" id="bookThird"><div class="cover" style="background:#e1e8f2"><svg viewBox="0 0 720 480"><use href="#landscape"/><circle cx="550" cy="120" r="71" fill="#fff5dc" opacity=".8"/><use href="#bird" x="320" y="235" width="195" height="175"/></svg></div><div class="bookinfo"><small>🌙 창작 동화 · 약 2분</small><strong>달빛을 품은 새</strong><p>용기를 찾아 떠나는 밤하늘 이야기</p></div></button>
 </section></main>
-<section id="reader" aria-label="동화 읽기"><div class="readerhead"><div><span class="eyebrow">SAKURA STORYBOOK</span><h2 id="readingTitle">벚꽃 숲의 작은 토끼</h2></div><div class="readerctrl"><button class="smallbtn" id="musicBtn" aria-pressed="false">♫ 배경음 OFF</button><button class="smallbtn" id="voiceBtn" aria-pressed="false">🔈 나레이션 OFF</button><label class="voicechoose" for="voiceSelect">목소리 <select id="voiceSelect" aria-label="한국어 목소리 선택"><option value="">기본 한국어</option></select></label><label class="voicechoose" for="speedSelect">속도 <select id="speedSelect" aria-label="나레이션 읽기 속도"><option value="0.68">매우 차분하게</option><option value="0.78" selected>다정하게</option><option value="0.9">보통</option></select></label><button class="smallbtn" id="backBtn">⌂ 책장</button></div></div>
+<section id="reader" aria-label="동화 읽기"><div class="readerhead"><div><span class="eyebrow">SAKURA STORYBOOK</span><h2 id="readingTitle">벚꽃 숲의 작은 토끼</h2></div><div class="readerctrl"><button class="smallbtn" id="apiBtn" title="기존 동화 스튜디오의 Google API 키 연결">🔑 Gemini 연결</button><button class="smallbtn" id="musicBtn" aria-pressed="false">♫ 배경음 OFF</button><button class="smallbtn" id="voiceBtn" aria-pressed="false">🔈 나레이션 OFF</button><label class="voicechoose" for="voiceSelect">목소리 <select id="voiceSelect" aria-label="한국어 목소리 선택"><option value="Kore">🌸 다정한 여성</option><option value="Aoede">👵 포근한 할머니</option><option value="Puck">✨ 밝은 이야기꾼</option><option value="Charon">🌙 차분한 남성</option></select></label><label class="voicechoose" for="speedSelect">속도 <select id="speedSelect" aria-label="나레이션 읽기 속도"><option value="slow" selected>차분히</option><option value="normal">보통</option><option value="fast">경쾌하게</option></select></label><button class="smallbtn" id="backBtn">⌂ 책장</button></div></div>
 <div class="flipwrap"><div id="flipbook" aria-label="손가락으로 책장을 끌어 넘기는 동화책"></div></div>
 <div class="pagefoot"><button id="prev" aria-label="이전 페이지">‹</button><span class="progress" id="counter">1 / 6</span><button id="next" aria-label="다음 페이지">›</button></div><p class="tip">📖 책장을 넘기듯 좌우로 밀거나 페이지를 탭하세요. 음성 품질은 기기에 설치된 한국어 음성에 따라 달라집니다.</p></section>
 <footer class="footer">🌸 벚꽃 동화극장 · 모든 아이의 하루에 작은 꽃 한 송이</footer></div>
@@ -126,14 +126,92 @@ function updateReading(){if(!pageFlip)return;const index=pageFlip.getCurrentPage
 function openBook(n){book=n;el('home').style.display='none';el('reader').style.display='block';el('readingTitle').textContent=stories[n].title;el('homeTop').classList.remove('active');el('readerTop').classList.add('active');if(pageFlip){try{pageFlip.destroy()}catch(e){}pageFlip=null}const root=el('flipbook');root.innerHTML='';const pages=[];stories[n].pages.forEach((p,i)=>{pages.push(createPaper('picture',p,i),createPaper('text',p,i))});pages.forEach(p=>root.append(p));if(!window.St||!window.St.PageFlip){root.textContent='종이책 엔진을 불러오지 못했습니다. 네트워크를 확인하고 새로고침해 주세요.';return}const saved=Math.min(stories[n].pages.length-1,Number(localStorage.getItem('sakura-page-'+n)||0));pageFlip=new St.PageFlip(root,{width:350,height:450,size:'stretch',minWidth:150,maxWidth:550,minHeight:210,maxHeight:700,drawShadow:true,maxShadowOpacity:.55,flippingTime:1000,showCover:false,usePortrait:false,mobileScrollSupport:false,useMouseEvents:true,disableFlipByClick:true,showPageCorners:true,startPage:saved*2});pageFlip.on('flip',updateReading);pageFlip.loadFromHTML(pages);updateReading();window.scrollTo({top:0,behavior:'smooth'})}
 function goHome(){stopSpeech();el('home').style.display='block';el('reader').style.display='none';el('readerTop').classList.remove('active');el('homeTop').classList.add('active');window.scrollTo({top:0,behavior:'smooth'})}
 function turn(delta){if(pageFlip){if(delta>0)pageFlip.flipNext('bottom');else pageFlip.flipPrev('bottom')}}
-function stopSpeech(){if('speechSynthesis'in window)window.speechSynthesis.cancel()}
-function availableKoreanVoices(){return 'speechSynthesis'in window?speechSynthesis.getVoices().filter(v=>v.lang.toLowerCase().startsWith('ko')):[]}
-function femaleScore(v){const a=v.name.toLowerCase();return (/sunhi|sun-hi|seoyeon|seo-yeon|yuna|yu-na|heami|hye-mi|jimin|ji-min|female|여성|여자|소연|서연|유나|선희|혜미|지민|sora|so-ra|nari/.test(a)?12:0)+(/natural|neural|premium|online|google|microsoft/.test(a)?3:0)-(/male|남성|남자|injoon|hyunsu|junwoo/.test(a)?20:0)}
-function refreshVoices(){const select=el('voiceSelect'),voices=availableKoreanVoices(),saved=select.value||localStorage.getItem('sakura-voice')||'';select.innerHTML='<option value="">🌷 다정한 여성 음성 우선</option>';voices.sort((a,b)=>femaleScore(b)-femaleScore(a)).forEach(v=>{let o=document.createElement('option');o.value=v.voiceURI;o.textContent=v.name+(femaleScore(v)>=12?' ♀':'');select.append(o)});if(voices.some(v=>v.voiceURI===saved))select.value=saved}
-function read(){stopSpeech();if(!voice||!('speechSynthesis'in window))return;const p=stories[book].pages[page],u=new SpeechSynthesisUtterance(p[0]+'. '+p[1]);u.lang='ko-KR';u.rate=Number(el('speedSelect').value||.78);u.pitch=.92;u.volume=.9;const voices=availableKoreanVoices().sort((a,b)=>femaleScore(b)-femaleScore(a));u.voice=voices.find(v=>v.voiceURI===el('voiceSelect').value)||voices[0]||null;speechSynthesis.speak(u)}
-if('speechSynthesis'in window){speechSynthesis.addEventListener('voiceschanged',refreshVoices);setTimeout(refreshVoices,100);setTimeout(refreshVoices,1000)}
-el('voiceSelect').addEventListener('change',()=>{localStorage.setItem('sakura-voice',el('voiceSelect').value);if(voice)read()});el('speedSelect').addEventListener('change',()=>{if(voice)read()});
-function setVoice(on){voice=on;if(!('speechSynthesis'in window)){voice=false;alert('이 브라우저에서는 음성 읽기를 지원하지 않아요.');}el('voiceBtn').textContent=voice?'🔊 나레이션 ON':'🔈 나레이션 OFF';el('voiceBtn').classList.toggle('on',voice);el('voiceBtn').setAttribute('aria-pressed',voice);if(voice)read();else stopSpeech()}
+/* Reuses the same Gemini TTS engine and voice choices as the original FairyTale Studio.
+   API key is never written to Github; reads user's existing same-origin studio key. */
+let narrationAudio=null,narrationUrl=null,narrationSerial=0;
+const speechMemory=new Map();
+function getGeminiKey(){return localStorage.getItem('fairytale-gemini-key')||sessionStorage.getItem('fairytale-gemini-key')||sessionStorage.getItem('sakura-gemini-key')||''}
+function configureKey(){
+ const current=getGeminiKey();
+ const key=window.prompt('기존 동화영상 스튜디오에 사용하던 Google Gemini API 키를 입력해 주세요. 이 브라우저의 세션에만 보관합니다.',current||'');
+ if(key===null)return false;
+ const clean=key.trim();if(!clean){sessionStorage.removeItem('sakura-gemini-key');updateKeyButton();return false}
+ sessionStorage.setItem('sakura-gemini-key',clean);updateKeyButton();return true;
+}
+function updateKeyButton(){el('apiBtn').textContent=getGeminiKey()?'🔑 Gemini 연결됨':'🔑 Gemini 연결'}
+function wavFromPCM(raw,sampleRate){
+ const buffer=new ArrayBuffer(44+raw.length),v=new DataView(buffer),bytes=new Uint8Array(buffer);
+ function str(i,s){for(let j=0;j<s.length;j++)v.setUint8(i+j,s.charCodeAt(j))}
+ str(0,'RIFF');v.setUint32(4,36+raw.length,true);str(8,'WAVE');str(12,'fmt ');
+ v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sampleRate,true);v.setUint32(28,sampleRate*2,true);v.setUint16(32,2,true);v.setUint16(34,16,true);str(36,'data');v.setUint32(40,raw.length,true);bytes.set(raw,44);return new Blob([buffer],{type:'audio/wav'});
+}
+function decodeAudioData(base64,mime){
+ const binary=atob(base64),pcm=new Uint8Array(binary.length);
+ for(let i=0;i<binary.length;i++)pcm[i]=binary.charCodeAt(i);
+ if(mime.includes('wav'))return new Blob([pcm],{type:'audio/wav'});
+ if(mime.includes('mpeg')||mime.includes('mp3'))return new Blob([pcm],{type:'audio/mpeg'});
+ const sampleRate=Number(mime.match(/rate=(\\d+)/)?.[1])||24000;
+ return wavFromPCM(pcm,sampleRate);
+}
+function gentleInstruction(voice,pace){
+ const style=voice==='Aoede'?'kind grandmother with a mature, affectionate tone':voice==='Puck'?'bright but soft, friendly storyteller':voice==='Charon'?'calm comforting fatherly storyteller':'gentle and affectionate Korean female bedtime storyteller';
+ const tempo=pace==='slow'?'slow, with comfortable breathing pauses':pace==='fast'?'natural and lightly lively':'unhurried and natural';
+ return 'Read the following Korean fairy tale aloud exactly as written in a '+style+' voice, '+tempo+'. Warm, tender, reassuring, expressive but never shrill, harsh, overly high-pitched or robotic. Do not speak these instructions.\\n\\n';
+}
+async function generateGeminiAudio(text,voice,pace,key){
+ const cacheKey=JSON.stringify([text,voice,pace]);
+ if(speechMemory.has(cacheKey))return speechMemory.get(cacheKey);
+ const endpoint='https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash-lite-tts:generateContent';
+ const payload={contents:[{parts:[{text:gentleInstruction(voice,pace)+text}]}],generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:voice}}}}};
+ const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(payload)});
+ const result=await response.json().catch(()=>({}));
+ if(!response.ok)throw Error('Gemini 음성 생성 오류 ('+response.status+'): '+(result.error?.message||'API 요청 실패'));
+ const part=result.candidates?.flatMap(c=>c.content?.parts||[]).find(p=>p.inlineData?.data);
+ if(!part)throw Error('Gemini에서 음성이 반환되지 않았습니다. API 키와 TTS 사용 가능 여부를 확인해 주세요.');
+ const blob=decodeAudioData(part.inlineData.data,part.inlineData.mimeType||'audio/L16;rate=24000');
+ speechMemory.set(cacheKey,blob);
+ return blob;
+}
+function stopSpeech(){
+ narrationSerial++;
+ if(narrationAudio){narrationAudio.pause();narrationAudio.removeAttribute('src');narrationAudio.load();narrationAudio=null}
+ if(narrationUrl){URL.revokeObjectURL(narrationUrl);narrationUrl=null}
+}
+async function read(){
+ stopSpeech();
+ if(!voice)return;
+ let key=getGeminiKey();
+ if(!key){
+  el('voiceBtn').textContent='🔑 API 연결 필요';
+  if(!configureKey()){voice=false;setVoice(false);return}
+  key=getGeminiKey();
+ }
+ const ticket=narrationSerial, p=stories[book].pages[page],v=el('voiceSelect').value||'Kore',pace=el('speedSelect').value||'slow';
+ el('voiceBtn').textContent='⏳ AI 나레이션 준비 중';
+ try{
+  const blob=await generateGeminiAudio(p[0]+'. '+p[1],v,pace,key);
+  if(ticket!==narrationSerial||!voice)return;
+  narrationUrl=URL.createObjectURL(blob);
+  const a=new Audio(narrationUrl);narrationAudio=a;
+  el('voiceBtn').textContent='🔊 AI 나레이션 ON';
+  a.volume=.9;
+  await a.play();
+ }catch(error){
+  if(ticket!==narrationSerial)return;
+  el('voiceBtn').textContent='⚠️ 음성 재생 실패';
+  console.error('Gemini narration:',error);
+  alert('고품질 나레이션을 재생하지 못했습니다.\\n'+error.message);
+ }
+}
+function setVoice(on){
+ voice=on;el('voiceBtn').textContent=voice?'🔊 AI 나레이션 ON':'🔈 나레이션 OFF';
+ el('voiceBtn').classList.toggle('on',voice);el('voiceBtn').setAttribute('aria-pressed',voice);
+ if(voice)read();else stopSpeech();
+}
+el('apiBtn').addEventListener('click',()=>{configureKey();if(voice)read()});
+el('voiceSelect').addEventListener('change',()=>{if(voice)read()});
+el('speedSelect').addEventListener('change',()=>{if(voice)read()});
+updateKeyButton();
 function setMusic(on){music=on;el('musicBtn').textContent=music?'♫ 배경음 ON':'♫ 배경음 OFF';el('musicBtn').classList.toggle('on',music);el('musicBtn').setAttribute('aria-pressed',music);if(music)playMusic();else stopMusic()}
 function stopMusic(){if(audio){try{musicNodes.forEach(n=>n.stop());audio.close()}catch(e){} audio=null;musicNodes=[]}}
 function playMusic(){stopMusic();try{audio=new(window.AudioContext||window.webkitAudioContext)();const master=audio.createGain();master.gain.value=.035;master.connect(audio.destination);const notes=[261.63,329.63,392,523.25,440,392,329.63,293.66,261.63,329.63,392,440,392,329.63,293.66,261.63];let t=audio.currentTime+.08;for(let round=0;round<6;round++){notes.forEach((hz,i)=>{let osc=audio.createOscillator(),gain=audio.createGain();osc.type='sine';osc.frequency.value=hz;gain.gain.setValueAtTime(0,t);gain.gain.linearRampToValueAtTime(.48,t+.12);gain.gain.exponentialRampToValueAtTime(.001,t+1.1);osc.connect(gain);gain.connect(master);osc.start(t);osc.stop(t+1.12);musicNodes.push(osc);t+=.63})}}catch(e){setMusic(false)}}
