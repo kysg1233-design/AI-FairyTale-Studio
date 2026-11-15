@@ -9,7 +9,13 @@ assert "disableFlipByClick:true" in html
 assert "async function prefetchBook" in html and "await prefetchBook(b" in html
 assert "function playPage(" in html and "ctx.createBufferSource()" in html and "ctx.decodeAudioData(bytes)" in html
 assert "id=\"narration\"" in html and "id=\"music\"" in html
-assert "./assets/sakura-lullaby.mp3" in html and "./vendor/page-flip.browser.js" in html
+assert "musicNames={" in html and "./vendor/page-flip.browser.js" in html
+assert "musicTheme" in html and "sceneMood" in html and "playMusic(" in html
+for theme in ("lullaby","joyful","adventure","mystery","tender"):
+    name=f"sakura-{theme}.mp3"
+    assert name in html, "Missing mood soundtrack reference: "+name
+    asset=root/"assets"/name
+    assert asset.is_file() and asset.stat().st_size>80_000, "Missing pre-rendered soundtrack: "+name
 assert "aria-pressed=\"true\"" in html
 script=re.findall(r"<script>([\s\S]*?)</script>",html)
 assert len(script)==1
