@@ -722,7 +722,8 @@ function playMusic(mood){
  if(!player.src.endsWith('/'+musicNames[desired]))player.src=file;
  player.currentTime=0;musicTheme=desired;
  Promise.resolve(player.play()).then(()=>{
-  if(serial!==musicSwitchId||!musicOn||!active){player.pause();player.volume=0;return}
+  if(serial!==musicSwitchId)return;
+  if(!musicOn||!active){player.pause();player.volume=0;return}
   player.volume=musicVolume();
  }).catch(e=>{
   if(serial!==musicSwitchId)return;
