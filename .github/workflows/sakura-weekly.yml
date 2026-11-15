@@ -106,7 +106,7 @@ jobs:
         name: Verify reader and all published books
         run: python sakura/check_site.py
       - name: Compose original prebuilt lullaby soundtrack
-        run: python sakura/create_bgm.py
+        run: python sakura/create_mood_music.py
       - name: Bundle PageFlip for publishing
         shell: bash
         run: |
