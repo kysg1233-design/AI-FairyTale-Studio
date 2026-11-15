@@ -6,6 +6,9 @@ on:
   schedule:
     - cron: "5 0 * * 1"
   workflow_dispatch:
+concurrency:
+  group: sakura-pages
+  cancel-in-progress: false
 permissions:
   contents: write
   pages: write
@@ -20,7 +23,7 @@ jobs:
     env:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       PYTHONUNBUFFERED: "1"
-      SAKURA_BATCH_SIZE: "4"
+      SAKURA_BATCH_SIZE: "4" # Initial multi-book expansion; all books require valid images and two voices
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
