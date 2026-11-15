@@ -48,27 +48,29 @@ def source_excerpt(candidate):
     with urlopen(Request(url,headers={"User-Agent":"SakuraStoryTheater/1.0"}),timeout=70) as response:
         html=response.read(6_000_000).decode("utf-8","replace")
     soup=BeautifulSoup(html,"html.parser")
-    heading=clean(candidate["heading"]).casefold()
+    def norm_head(v):
+        return clean(re.sub(r"[^a-z0-9]+"," ",str(v).casefold()))
+    heading=norm_head(candidate["heading"])
     # Gutenberg eBooks use both TOC and actual headings. The last full match is normally the story.
     matches=[]
     for h in soup.find_all(re.compile("^h[1-6]$")):
-        if clean(h.get_text(" ",strip=True)).casefold()==heading:matches.append(h)
+        if norm_head(h.get_text(" ",strip=True))==heading:matches.append(h)
     if matches:
         h=matches[-1]
         fragments=[]
         for elem in h.next_elements:
-            if getattr(elem,"name",None) and re.fullmatch("h[1-6]",elem.name):
+            if fragments and getattr(elem,"name",None) and re.fullmatch("h[1-6]",elem.name):
                 break
             if getattr(elem,"name",None)=="p":
                 sentence=clean(elem.get_text(" ",strip=True))
                 if len(sentence)>18: fragments.append(sentence)
-                if len(" ".join(fragments))>14_000: break
+                if len(" ".join(fragments))>60_000: break
         excerpt=" ".join(dict.fromkeys(fragments))
     else:
         # Failure is safer than inventing a different story from a TOC title.
         fail(f"Source heading not found: {candidate['heading']}")
-    if len(excerpt)<300: fail(f"Source extract too short ({len(excerpt)}): {candidate['heading']}")
-    return excerpt[:14000]
+    if len(excerpt)<170: fail(f"Source extract too short ({len(excerpt)}): {candidate['heading']}")
+    return excerpt[:60000]
 def textual_prompt(item,excerpt):
     return (
       "당신은 어린이를 위한 한국어 옛이야기 작가입니다. 제공한 고전 원전만을 근거로 이야기의 "
@@ -184,7 +186,10 @@ def publish_one():
     unpublished=[c for c in candidates if c["heading"] not in published]
     if not unpublished:print("All candidates published");return
     # A failed candidate aborts the run. No incomplete or guessed books are published.
-    c=unpublished[0]
+    counts={r:0 for r in dict.fromkeys(x['region'] for x in candidates)}
+    for b in existing.get('books',[]):
+        if b.get('status')=='ready':counts[b.get('region')]=counts.get(b.get('region'),0)+1
+    c=min(unpublished,key=lambda x:(counts.get(x['region'],0),candidates.index(x)))
     slug="story-"+str(candidates.index(c)+1).zfill(3)
     destination=BOOK_DIR/slug
     if destination.exists():fail("Destination already exists; manual recovery required")
