@@ -280,42 +280,75 @@ footer{padding:34px 0 14px;text-align:center;color:#bba3ad;font-size:12px;letter
 </style><script src="./vendor/page-flip.browser.js"></script>
 </head><body><div class="wrap">
 <header>
- <div class="brand">📖 벚꽃 동화극장</div>
+ <div class="brand"><span class="brandSymbol" aria-hidden="true">📖</span><span>벚꽃 동화극장<small>AI로 만나는 전래동화 그림책</small></span></div>
  <nav class="nav" aria-label="주 메뉴">
- <button class="tab active" data-mode="all" id="homeNav">🏠 홈</button>
- <button class="tab" data-mode="library">📖 동화책장</button>
- <button class="tab" data-mode="popular">👑 인기동화</button>
- <button class="tab" data-mode="new">🗓️ 신규동화</button>
- <button class="tab" data-mode="favs">♡ 내가 찜한 책</button>
+  <button class="tab active" data-mode="all" id="homeNav">⌂ 홈</button>
+  <button class="tab" data-mode="library">▣ 동화책장</button>
+  <button class="tab" data-mode="popular">♛ 인기동화</button>
+  <button class="tab" data-mode="new">▦ 신규동화</button>
+  <button class="tab" data-mode="favs">♡ 내가 찜한 책</button>
  </nav>
 </header>
-<main id="home">
-<section class="hero"><div class="heroCopy"><h1>동화 속 세상이<br><span>눈앞에 펼쳐져요</span></h1><p>아름다운 그림과 따뜻한 목소리로 만나는<br>한국과 세계의 전래동화, 벚꽃 동화극장.</p><button class="btn" id="heroBrowse">🌸 동화책 골라보기</button></div>
- <div class="art"><div class="featureCover"><img id="featuredImage" alt="오늘의 추천 그림책 표지" src="" style="display:none"><div class="featureCopy" id="featuredCopy"><strong id="featuredTitle">동화가 피어나는 곳</strong><span id="featuredDesc">완성된 그림책을 펼쳐 보세요</span><button id="featuredRead" type="button">📖 책 펼치기</button></div></div></div></section>
-<div class="stageShell">
+<main id="home"><div class="stageShell">
 <aside class="sidebar" aria-label="동화 카테고리">
-<div class="sidebarTitle">📚 이야기 책장</div>
-<button class="sideFilter active" data-cat="all"><span>📖 전체 동화</span><small id="count-all">0권</small></button>
-<button class="sideFilter" data-cat="한국"><span>🏯 한국 전래동화</span><small id="count-korea">0권</small></button>
-<button class="sideFilter" data-cat="세계"><span>🌏 세계 전래동화</span><small id="count-world">0권</small></button>
-<button class="sideFilter" data-cat="이솝"><span>🐾 이솝 우화</span><small id="count-aesop">0권</small></button>
-<button class="sideFilter" data-cat="그림"><span>🌲 그림 형제</span><small id="count-grimm">0권</small></button>
-<button class="sideFilter" data-cat="일본"><span>⛩️ 일본 설화</span><small id="count-japan">0권</small></button>
-<button class="sideFilter" data-cat="안데르센"><span>🏰 안데르센 동화</span><small id="count-andersen">0권</small></button>
-<button class="sideFilter" data-cat="아라비아"><span>🕌 아라비안나이트</span><small id="count-arabia">0권</small></button>
-
+ <div class="sidebarTitle">📚 이야기 책장</div>
+ <button class="sideFilter active" data-cat="all"><span>📖 전체 동화</span><small id="count-all">0권</small></button>
+ <button class="sideFilter" data-cat="한국"><span>🏠 한국 전래동화</span><small id="count-korea">0권</small></button>
+ <button class="sideFilter" data-cat="세계"><span>🌏 세계 전래동화</span><small id="count-world">0권</small></button>
+ <button class="sideFilter" data-cat="이솝"><span>🐾 이솝 우화</span><small id="count-aesop">0권</small></button>
+ <button class="sideFilter" data-cat="그림"><span>🌲 그림 형제 동화</span><small id="count-grimm">0권</small></button>
+ <button class="sideFilter" data-cat="일본"><span>⛩️ 일본 설화</span><small id="count-japan">0권</small></button>
+ <button class="sideFilter" data-cat="안데르센"><span>🏰 안데르센 동화</span><small id="count-andersen">0권</small></button>
+ <button class="sideFilter" data-cat="아라비아"><span>🌙 아라비안나이트</span><small id="count-arabia">0권</small></button>
+ <div class="shelfMascot" aria-hidden="true"><span class="mascotRabbit">🐰</span><span class="mascotBook">📖</span><span class="mascotBlossom">🌸</span></div>
 </aside>
-<div class="contentArea"><label class="searchBar">🔎 <input id="search" autocomplete="off" type="search" placeholder="찾고 싶은 동화 제목을 입력하세요" aria-label="동화 검색"></label>
-<div class="intro"><div><h2 id="libraryHeading">📚 반짝반짝 동화책장</h2></div><span id="bookCount">0권</span></div>
-<div id="library" class="grid"></div>
-<div id="empty" class="empty" style="display:none"><strong>🌷 책을 준비하고 있어요</strong></div>
-<div class="intro"><div><h2>✨ 추천 동화</h2></div></div><div class="filmstrip" id="recommendations"></div>
-
+<div class="contentArea">
+ <div class="theaterToolbar" aria-label="동화 설정">
+  <span class="theaterToolbarTitle">✿ 오늘의 동화</span>
+  <div class="theaterToolbarActions">
+   <button class="quickToggle" id="quickMusic" type="button" aria-pressed="true">♫ 배경음 켜짐</button>
+   <button class="quickToggle" id="quickNarration" type="button" aria-pressed="true">🔊 나레이션 켜짐</button>
+   <label class="quickVoiceLabel">🎙️ 목소리 <select id="quickVoice" aria-label="목소리 선택"><option value="male">남자 목소리</option><option value="female">여자 목소리</option></select></label>
+  </div>
+ </div>
+ <section class="hero" id="hero" aria-label="추천 동화 미리보기">
+  <div class="bookSpread">
+   <div class="bookPage bookPageLeft">
+    <div class="bookPageHeading"><span aria-hidden="true">🌸</span><strong id="featuredTitle">동화가 피어나는 곳</strong></div>
+    <div class="previewIllustration"><img id="featuredImage" alt="오늘의 추천 그림책 삽화" src="" style="display:none"></div>
+    <p class="previewSceneHeading" id="featuredSceneHeading">아름다운 이야기를 만나보세요.</p>
+   </div>
+   <div class="bookSpine" aria-hidden="true"></div>
+   <div class="bookPage bookPageRight">
+    <div class="previewStoryCopy"><span class="previewTag">THE STORY</span>
+      <p id="featuredSceneText">그림과 따뜻한 목소리로 만나는 동화의 세계.</p>
+      <span class="previewStoryRegion" id="featuredDesc">한 편의 동화를 펼쳐보세요</span>
+    </div>
+    <button class="previewReadButton" id="featuredRead" type="button">📖 지금 동화 읽기 <span aria-hidden="true">›</span></button>
+   </div>
+  </div>
+  <div class="previewBottomBar">
+   <span class="previewCounter" id="featuredPageCount">동화책 미리보기</span>
+   <button class="previewBrowse" type="button" id="heroBrowse">다른 동화 둘러보기 <span aria-hidden="true">→</span></button>
+  </div>
+ </section>
+ <section id="reader" aria-label="동화 읽기">
+  <div class="readerTitle"><div><h2 id="bookTitle"></h2><p id="source" class="source"></p></div><button class="btn" id="back">← 책장으로</button></div>
+  <div class="controls"><button class="btn on" id="narration" aria-pressed="true">🔊 나레이션 ON</button><label class="btn">목소리 <select id="voice"><option value="male">남자 · 기본</option><option value="female">여자 · 젊고 부드럽게</option></select></label><button class="btn on" id="music" aria-pressed="true">♫ 배경음 ON</button></div>
+  <div id="loading" class="loading" role="status">책의 모든 그림과 나레이션을 다운로드하고 있어요…</div>
+  <div class="shelf"><div id="book"></div></div><p class="readerMeta" id="pageNumber">책 가장자리를 손으로 잡아 넘겨보세요.</p><p class="status" id="status"></p>
+ </section>
+ <section class="recommendationArea" aria-label="추천 동화">
+  <div class="intro"><div><h2>🌸 지금 읽기 좋은 동화</h2></div></div>
+  <div class="filmstrip" id="recommendations"></div>
+ </section>
+ <section class="libraryArea" id="libraryArea" aria-label="동화책장">
+  <div class="intro"><div><h2 id="libraryHeading">📚 반짝반짝 동화책장</h2></div><span id="bookCount">0권</span></div>
+  <label class="searchBar">🔎 <input id="search" autocomplete="off" type="search" placeholder="어떤 이야기를 찾으세요?" aria-label="동화 검색"></label>
+  <div id="library" class="grid"></div>
+  <div id="empty" class="empty" style="display:none"><strong>🌷 책을 준비하고 있어요</strong></div>
+ </section>
 </div></div></main>
-<section id="reader"><div class="readerTitle"><div><h2 id="bookTitle"></h2><p id="source" class="source"></p></div><button class="btn" id="back">← 책장으로</button></div>
-<div class="controls"><button class="btn on" id="narration" aria-pressed="true">🔊 나레이션 ON</button><label class="btn">목소리 <select id="voice"><option value="male">남자 · 기본</option><option value="female">여자 · 젊고 부드럽게</option></select></label><button class="btn on" id="music" aria-pressed="true">♫ 배경음 ON</button></div>
-<div id="loading" class="loading" role="status">책의 모든 그림과 나레이션을 다운로드하고 있어요…</div>
-<div class="shelf"><div id="book"></div></div><p class="readerMeta" id="pageNumber">책 가장자리를 손으로 잡아 넘겨보세요.</p><p class="status" id="status"></p></section>
 <footer>🌸 벚꽃 동화극장</footer>
 </div><script>
 'use strict';
@@ -374,15 +407,18 @@ function paintLibrary(){
  $('featuredTitle').textContent=chosen?chosen.title:'곧 만나게 될 새로운 이야기';
  $('featuredDesc').textContent=chosen?(chosen.region||'세계'):'새로운 동화를 기다려 주세요';
  $('featuredImage').style.display=chosen?'block':'none';if(chosen)$('featuredImage').src=safePath(chosen.cover);
+ $('featuredSceneHeading').textContent=chosen?.pages?.[0]?.heading||'아름다운 이야기를 만나보세요.';
+ $('featuredSceneText').textContent=chosen?.pages?.[0]?.text||'그림과 따뜻한 목소리로 만나는 동화의 세계.';
+ $('featuredPageCount').textContent=chosen?chosen.pages.length+'장면 · 미리보기':'동화책 미리보기';
  $('featuredRead').disabled=!chosen;
  document.querySelectorAll('[data-mode]').forEach(btn=>btn.classList.toggle('active',btn.dataset.mode===viewMode||(viewMode==='all'&&btn.dataset.mode==='all')));
  document.querySelectorAll('[data-cat]').forEach(btn=>btn.classList.toggle('active',btn.dataset.cat===category))
 }
-function switchMode(mode){closeBook();viewMode=mode;category='all';paintLibrary();if(mode!=='all')document.querySelector('.stageShell').scrollIntoView({behavior:'smooth',block:'start'})}
+function switchMode(mode){closeBook();viewMode=mode;category='all';paintLibrary();if(mode!=='all')$('libraryArea').scrollIntoView({behavior:'smooth',block:'start'})}
 document.querySelectorAll('[data-mode]').forEach(btn=>btn.onclick=()=>switchMode(btn.dataset.mode));
-document.querySelectorAll('[data-cat]').forEach(btn=>btn.onclick=()=>{category=btn.dataset.cat;viewMode='library';paintLibrary()});
+document.querySelectorAll('[data-cat]').forEach(btn=>btn.onclick=()=>{category=btn.dataset.cat;viewMode='library';paintLibrary();$('libraryArea').scrollIntoView({behavior:'smooth',block:'start'})});
 $('search').oninput=()=>{searchText=$('search').value.trim().toLocaleLowerCase();paintLibrary()};
-$('heroBrowse').onclick=()=>document.querySelector('.stageShell').scrollIntoView({behavior:'smooth',block:'start'});
+$('heroBrowse').onclick=()=>$('libraryArea').scrollIntoView({behavior:'smooth',block:'start'});
 $('featuredRead').onclick=()=>{if(featured)openBook(featured)};
 function audioOff(){for(const source of [track,introTrack]){if(source){try{source.stop()}catch(e){}try{source.disconnect()}catch(e){}}}track=null;introTrack=null;if(trackUrl){URL.revokeObjectURL(trackUrl);trackUrl=null}}
 // Five original, pre-rendered theme tracks. Never generate music during reading.
@@ -458,7 +494,8 @@ async function prefetchBook(b,voice){
 }
 async function openBook(b){
  if(loading)return;loading=true;unlocked=true;active=b;try{localStorage.setItem('sakura-reads-'+bookId(b),String(readCount(b)+1))}catch(e){};audioOff();stopMusic();try{ctx=ctx||new(window.AudioContext||window.webkitAudioContext)();ctx.resume()}catch(e){}if(musicOn)playMusic(sceneMood(b.pages[0]));
- $('home').style.display='none';$('reader').style.display='block';$('bookTitle').textContent=b.title;
+ $('hero').style.display='none';$('reader').style.display='block';$('bookTitle').textContent=b.title;
+ $('reader').scrollIntoView({behavior:'smooth',block:'start'});
  const source=$('source');source.replaceChildren();source.append('원전 출처: ');const a=document.createElement('a');a.href=b.source_url||'#';a.target='_blank';a.rel='noopener noreferrer';a.textContent=b.source_title||'원전 보기';source.append(a);
  $('loading').style.display='block';$('book').style.display='none';$('pageNumber').textContent='모든 페이지를 먼저 준비하고 있습니다.';
  try{const assets=await prefetchBook(b,$('voice').value);if(active!==b)return;
@@ -527,10 +564,24 @@ function playPage(n){if(!active)return;currentPage=n;if(musicOn)playMusic(sceneM
   const source=ctx.createBufferSource();source.buffer=sound;source.connect(volume);track=source;source.start(start);
  }catch(e){setStatus('나레이션을 재생할 수 없습니다: '+e.message)}
 }
-function closeBook(){active=null;audioOff();stopMusic();$('reader').style.display='none';$('home').style.display='block';}
+function closeBook(){active=null;audioOff();stopMusic();$('reader').style.display='none';$('hero').style.display='block';}
 $('back').onclick=closeBook;
 $('narration').onclick=()=>{narrationOn=!narrationOn;$('narration').classList.toggle('on',narrationOn);$('narration').setAttribute('aria-pressed',String(narrationOn));$('narration').textContent=narrationOn?'🔊 나레이션 ON':'🔈 나레이션 OFF';if(active)playPage(currentPage)};
 $('music').onclick=()=>{musicOn=!musicOn;$('music').classList.toggle('on',musicOn);$('music').setAttribute('aria-pressed',String(musicOn));$('music').textContent=musicOn?'♫ 배경음 ON':'♫ 배경음 OFF';if(musicOn&&active)playMusic(sceneMood(active.pages[currentPage]));else stopMusic()};
+function syncQuickAudioControls(){
+ $('quickMusic').textContent=musicOn?'♫ 배경음 켜짐':'♫ 배경음 꺼짐';
+ $('quickMusic').setAttribute('aria-pressed',String(musicOn));
+ $('quickNarration').textContent=narrationOn?'🔊 나레이션 켜짐':'🔈 나레이션 꺼짐';
+ $('quickNarration').setAttribute('aria-pressed',String(narrationOn));
+ $('quickVoice').value=$('voice').value;
+}
+$('quickMusic').onclick=()=>{$('music').click();syncQuickAudioControls()};
+$('quickNarration').onclick=()=>{$('narration').click();syncQuickAudioControls()};
+$('quickVoice').onchange=()=>{$('voice').value=$('quickVoice').value;$('voice').dispatchEvent(new Event('change'))};
+$('music').addEventListener('click',syncQuickAudioControls);
+$('narration').addEventListener('click',syncQuickAudioControls);
+$('voice').addEventListener('change',syncQuickAudioControls);
+syncQuickAudioControls();
 $('book').addEventListener('pointerdown',()=>{if(musicOn&&active&&!musicTrack)playMusic(sceneMood(active.pages[currentPage]))},{passive:true});
 // On narrow touch devices St.PageFlip can miss a swipe starting outside its paper edge.
 // Keep real drag turning; only fall back to animated flip if the touch gesture made no turn.
