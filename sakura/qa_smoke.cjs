@@ -235,6 +235,7 @@ async function tryCase(name,mobile=false){
   for(let n=1;n<=moral.last;n++){
     await page.evaluate(()=>turnOnePage(1));
     await page.waitForFunction(expected=>flip.getCurrentPageIndex()===expected,n,{timeout:3500});
+    await page.waitForTimeout(1050); // Wait for curl to finish before the next gesture.
     const position=await page.evaluate(()=>flip.getCurrentPageIndex());
     if(position!==n)throw Error('NEXT button failed at '+n+': '+position);
   }
@@ -242,6 +243,7 @@ async function tryCase(name,mobile=false){
   for(let n=moral.last-1;n>=0;n--){
     await page.evaluate(()=>turnOnePage(-1));
     await page.waitForFunction(expected=>flip.getCurrentPageIndex()===expected,n,{timeout:3500});
+    await page.waitForTimeout(1050); // Wait for curl to finish before the next gesture.
     const position=await page.evaluate(()=>flip.getCurrentPageIndex());
     if(position!==n)throw Error('PREVIOUS button failed at '+n+': '+position);
   }
