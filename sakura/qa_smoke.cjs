@@ -44,7 +44,8 @@ async function tryCase(name,mobile=false){
   await page.waitForFunction(()=>document.querySelector('#reader')?.style.display==='block'&&document.querySelector('#book')?.style.display==='block'&&typeof flip!=="undefined"&&flip!=null,null,{timeout:70000});
   result.checks.story_opened=true;
   const leafCount=await page.locator('#book .storyLeaf').count();
-  if(leafCount!==await page.evaluate(()=>active.pages.length+1))throw Error('Story must have one illustrated leaf per scene and one final parent moral page');
+  if(leafCount!==await page.evaluate(()=>active.pages.length))throw Error('Story must have one illustrated leaf per scene');
+  if(await page.locator('#book .leaf').count()!==leafCount+1)throw Error('Last parent moral page missing from physical book');
   if(await page.locator('#book .moralLeaf').count()!==1)throw Error('Parent-read moral closing page missing');
   result.checks.one_leaf_per_scene=leafCount;
   const loaded=await page.evaluate(()=>({
