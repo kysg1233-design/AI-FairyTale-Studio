@@ -7,7 +7,7 @@ on:
     - cron: "5 0 * * *" # Daily until 40 complete books; Python switches to weekly afterward
   workflow_dispatch:
 concurrency:
-  group: sakura-pages
+  group: sakura-story-production
   cancel-in-progress: false
 permissions:
   contents: write
