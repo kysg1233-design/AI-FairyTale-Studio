@@ -1,3 +1,70 @@
 {
-  "books": []
+  "books": [
+    {
+      "title": "여우와 포도",
+      "region": "그리스·세계",
+      "source_title": "THE FOX AND THE GRAPES",
+      "source_url": "https://www.gutenberg.org/cache/epub/19994/pg19994-images.html",
+      "source_credit": "The Aesop for Children",
+      "status": "ready",
+      "published_at": "2026-11-15T05:23:41.401745+00:00",
+      "cover": "books/story-c91cd3e70d00/cover.webp",
+      "pages": [
+        {
+          "heading": "달콤한 포도를 보았어요",
+          "text": "숲속을 거닐던 붉은 여우가 탐스러운 포도 덩굴을 발견했어요. 커다란 참나무 가지 위에 주렁주렁 매달린 보랏빛 포도는 달콤한 즙이 가득해 보였지요.",
+          "image": "books/story-c91cd3e70d00/page-01.webp",
+          "audio": {
+            "male": "books/story-c91cd3e70d00/male-01.mp3",
+            "female": "books/story-c91cd3e70d00/female-01.mp3"
+          }
+        },
+        {
+          "heading": "침이 꼴깍 넘어갔지요",
+          "text": "포도를 바라보던 여우는 입안에 군침이 가득 고였어요. \"저렇게 잘 익은 포도는 처음이야! 꼭 따서 달콤하게 맛보아야겠어.\" 여우는 가슴이 두근거렸답니다.",
+          "image": "books/story-c91cd3e70d00/page-02.webp",
+          "audio": {
+            "male": "books/story-c91cd3e70d00/male-02.mp3",
+            "female": "books/story-c91cd3e70d00/female-02.mp3"
+          }
+        },
+        {
+          "heading": "폴짝, 뛰어올랐지만",
+          "text": "여우는 뒷다리에 힘을 꽉 주고 하늘 높이 훌쩍 뛰어올랐어요. 하지만 나뭇가지가 너무 높아 발끝조차 닿지 않았지요. 여우는 풀밭 위로 털썩 떨어지고 말았어요.",
+          "image": "books/story-c91cd3e70d00/page-03.webp",
+          "audio": {
+            "male": "books/story-c91cd3e70d00/male-03.mp3",
+            "female": "books/story-c91cd3e70d00/female-03.mp3"
+          }
+        },
+        {
+          "heading": "다시 한번 힘을 내어 슝!",
+          "text": "여우는 뒤로 멀찍이 물러서서 힘차게 도움닫기를 했어요. 와다다 달려와 펄쩍 뛰어보았지만 이번에도 닿지 않았답니다. 몇 번을 거듭 뛰어도 포도는 너무나 높았어요.",
+          "image": "books/story-c91cd3e70d00/page-04.webp",
+          "audio": {
+            "male": "books/story-c91cd3e70d00/male-04.mp3",
+            "female": "books/story-c91cd3e70d00/female-04.mp3"
+          }
+        },
+        {
+          "heading": "휴, 너무 지쳤어요",
+          "text": "지쳐버린 여우는 바닥에 털썩 주저앉아 숨을 헐떡였어요. 땀을 뻘뻘 흘리며 저 높은 곳의 포도를 뾰로통하게 째려보았지요. \"휴, 내가 왜 이런 헛수고를 하고 있지?\"",
+          "image": "books/story-c91cd3e70d00/page-05.webp",
+          "audio": {
+            "male": "books/story-c91cd3e70d00/male-05.mp3",
+            "female": "books/story-c91cd3e70d00/female-05.mp3"
+          }
+        },
+        {
+          "heading": "어차피 신 포도일 거야!",
+          "text": "여우는 코웃음을 치며 쌩 돌아섰어요. \"흥, 보나 마나 아주 시큼하고 떫은 포도일 게 뻔해! 먹어봤자 배만 아플 거야.\" 여우는 콧대를 높이고 당당하게 걸어갔답니다.",
+          "image": "books/story-c91cd3e70d00/page-06.webp",
+          "audio": {
+            "male": "books/story-c91cd3e70d00/male-06.mp3",
+            "female": "books/story-c91cd3e70d00/female-06.mp3"
+          }
+        }
+      ]
+    }
+  ]
 }
