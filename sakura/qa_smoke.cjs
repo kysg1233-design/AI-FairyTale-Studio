@@ -43,6 +43,9 @@ async function tryCase(name,mobile=false){
   await page.locator('#library .tile button[aria-label$="읽기"]').first().click();
   await page.waitForFunction(()=>document.querySelector('#reader')?.style.display==='block'&&document.querySelector('#book')?.style.display==='block'&&typeof flip!=="undefined"&&flip!=null,null,{timeout:70000});
   result.checks.story_opened=true;
+  const leafCount=await page.locator('#book .storyLeaf').count();
+  if(leafCount!==expected /* no: expected is books, not pages */ && leafCount!==await page.evaluate(()=>active.pages.length))throw Error('One illustration and chapter must make one physical page');
+  result.checks.one_leaf_per_scene=leafCount;
   const loaded=await page.evaluate(()=>({
     pageIndex:flip.getCurrentPageIndex(),
     imageCount:document.querySelectorAll('.leaf img').length,
@@ -103,10 +106,10 @@ async function tryCase(name,mobile=false){
    await page.mouse.move(right,centerY);await page.mouse.down();
    await page.mouse.move(right-box.width*.58,centerY,{steps:20});await page.mouse.up();
   }
-  await page.waitForTimeout(1450);
+  await page.waitForTimeout(2750);
   const newIndex=await page.evaluate(()=>flip.getCurrentPageIndex());
   result.checks.drag={before:loaded.pageIndex,after:newIndex};
-  if(newIndex===loaded.pageIndex)throw Error('User drag did not turn the page');
+  if(newIndex!==loaded.pageIndex+1)throw Error('One gesture must turn exactly ONE story page: '+loaded.pageIndex+' -> '+newIndex);
   await page.locator('#back').click();
   if(!await page.locator('#home').isVisible())throw Error('Back navigation failed');
   result.checks.return_to_library=true;
