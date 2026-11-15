@@ -111,8 +111,32 @@ async function tryCase(name,mobile=false){
   result.checks.drag={before:loaded.pageIndex,after:newIndex};
   if(newIndex!==loaded.pageIndex+1)throw Error('One gesture must turn exactly ONE story page: '+loaded.pageIndex+' -> '+newIndex);
   await page.locator('#back').click();
-  if(!await page.locator('#home').isVisible())throw Error('Back navigation failed');
+  if(!await page.locator('#hero').isVisible()||await page.locator('#reader').isVisible())throw Error('Back navigation failed');
   result.checks.return_to_library=true;
+  // Regression: PageFlip used to destroy #book on back; the NEXT opening crashed
+  // with "Cannot read properties of null (reading 'replaceChildren')".
+  const reopenChecks=[];
+  for(let cycle=0;cycle<3;cycle++){
+   if(cycle===0)await page.locator('#featuredRead').click();
+   else await page.locator('#library .tile button[aria-label$="읽기"]').first().click();
+   await page.waitForFunction(()=>document.querySelector('#reader')?.style.display==='block'&&
+      document.querySelector('#book')?.style.display==='block'&&document.querySelectorAll('#book .storyLeaf').length===active?.pages?.length&&
+      flip&&flip.getCurrentPageIndex()===0,null,{timeout:65000});
+   const check=await page.evaluate(()=>({
+    bookHosts:document.querySelectorAll('#book').length,
+    leaves:document.querySelectorAll('#book .storyLeaf').length,
+    playing:!!track,
+    current:flip.getCurrentPageIndex(),
+    errorText:document.querySelector('#loading')?.textContent||'',
+    firstImageLoaded:document.querySelector('#book .storyLeaf img')?.naturalWidth>0
+   }));
+   if(check.bookHosts!==1||check.leaves!==loaded.chapterCount||check.current!==0||!check.firstImageLoaded||
+      check.errorText.includes('그림책을 열지 않았습니다'))throw Error('Reopen failed after back navigation: '+JSON.stringify(check));
+   reopenChecks.push(check);
+   await page.locator('#back').click();
+   if(!await page.locator('#hero').isVisible())throw Error('Could not return after reopening '+cycle);
+  }
+  result.checks.reopen_after_back=reopenChecks;
   result.success=true;
   await page.screenshot({path:'sakura/qa-'+name+'.png',fullPage:true});
   await context.close();
