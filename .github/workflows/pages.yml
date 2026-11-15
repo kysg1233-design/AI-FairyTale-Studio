@@ -20,8 +20,8 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: all-pages-publish
+  cancel-in-progress: false
 
 jobs:
   deploy:
@@ -54,6 +54,14 @@ jobs:
           cp /tmp/fairytale-deps/node_modules/@ffmpeg/ffmpeg/dist/esm/*.js site/ffmpeg/
           cp /tmp/fairytale-deps/node_modules/@ffmpeg/core/dist/esm/ffmpeg-core.js site/ffmpeg/
           cp /tmp/fairytale-deps/node_modules/@ffmpeg/core/dist/esm/ffmpeg-core.wasm site/ffmpeg/
+          # Root studio deployments must preserve the Sakura reading library.
+          # Otherwise the next unrelated studio commit deletes /sakura/ from Pages.
+          python sakura/create_mood_music.py
+          mkdir -p sakura/vendor
+          npm pack page-flip@2.0.7 --pack-destination /tmp --silent
+          tar -xOf /tmp/page-flip-2.0.7.tgz package/dist/js/page-flip.browser.js > sakura/vendor/page-flip.browser.js
+          python sakura/check_site.py
+          cp -a sakura site/sakura
           touch site/.nojekyll
       - name: Upload static website
         uses: actions/upload-pages-artifact@v3
