@@ -10,6 +10,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  statuses: write
 concurrency:
   group: all-pages-publish
   cancel-in-progress: false
@@ -66,9 +67,32 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
       - name: Check the real deployed URL on mobile and desktop
+        id: deployed_qa
+        continue-on-error: true
         env:
           SAKURA_URL: ${{ steps.deployment.outputs.page_url }}sakura/
         run: node sakura/qa_smoke.cjs
+      - name: Publish auditable mobile QA result on the tested commit
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SHA: ${{ github.sha }}
+          REPO: ${{ github.repository }}
+          RESULT: ${{ steps.deployed_qa.outcome }}
+        shell: bash
+        run: |
+          if [ "$RESULT" = success ]; then
+            gh api --method POST "repos/$REPO/statuses/$SHA" \
+              -f state=success -f context=sakura/mobile-two-way-qa \
+              -f description='Live deployed site passed desktop and Galaxy touch forward/reverse browser QA'
+          else
+            gh api --method POST "repos/$REPO/statuses/$SHA" \
+              -f state=failure -f context=sakura/mobile-two-way-qa \
+              -f description='Live deployed site mobile QA failed or did not execute'
+          fi
+      - name: Block green deployment unless real live-page QA passed
+        if: steps.deployed_qa.outcome != 'success'
+        run: exit 1
       - name: Save actual browser test report and screenshots
         if: always()
         uses: actions/upload-artifact@v4
