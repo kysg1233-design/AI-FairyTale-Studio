@@ -75,6 +75,22 @@ footer{color:#9e7191}
  .leaf .words p{font-size:clamp(11px,3.1vw,14px);line-height:1.5}
  .readerMeta{font-size:13px}
 }
+
+/* A complete illustrated chapter is ONE page, not separate picture/text pages. */
+#book{width:min(100%,380px);margin-inline:auto}
+.shelf{width:100%;min-width:0}
+.storyLeaf{display:flex;flex-direction:column;background:#fffaf3;overflow:hidden}
+.storyLeaf>img{width:100%;height:51%;flex:0 0 51%;object-fit:cover;display:block}
+.storyLeaf>.words{height:49%;min-height:0;flex:0 0 49%;justify-content:center;padding:4% 6%;overflow:hidden;box-sizing:border-box}
+.storyLeaf .words h3{font-size:clamp(15px,2vw,21px);margin:0 0 .33em;line-height:1.3}
+.storyLeaf .words p{font-size:clamp(11px,1.32vw,15px);line-height:1.42;margin:0}
+@media(max-width:640px){
+ #book{width:min(100%,350px)}
+ .storyLeaf>img{height:50%;flex-basis:50%}
+ .storyLeaf>.words{height:50%;flex-basis:50%;padding:3.5% 5%}
+ .storyLeaf .words h3{font-size:clamp(13px,4.2vw,18px)}
+ .storyLeaf .words p{font-size:clamp(11px,3.5vw,14px);line-height:1.36}
+}
 </style><script src="./vendor/page-flip.browser.js"></script>
 </head><body><div class="wrap">
 <header>
@@ -299,12 +315,15 @@ function mount(b,assets){
  if(!window.St||!St.PageFlip)throw Error('책장 넘김 엔진 로딩 실패. 네트워크를 확인하세요.');
  const pages=[];
  b.pages.forEach((p,i)=>{
-  const a=document.createElement('div');a.className='leaf';const image=new Image();image.alt=p.heading+' 장면';image.src=URL.createObjectURL(assets.get(p.image));a.append(image);pages.push(a);
-  const t=document.createElement('div');t.className='leaf';const inner=document.createElement('div');inner.className='words';const h=document.createElement('h3');h.textContent=p.heading;const text=document.createElement('p');text.textContent=p.text;inner.append(h,text);t.append(inner);pages.push(t);
+  // One scene = one physical leaf, with picture and text together.
+  const leaf=document.createElement('div');leaf.className='leaf storyLeaf';
+  const image=new Image();image.alt=p.heading+' 장면';image.src=URL.createObjectURL(assets.get(p.image));
+  const inner=document.createElement('div');inner.className='words';const h=document.createElement('h3');h.textContent=p.heading;const text=document.createElement('p');text.textContent=p.text;inner.append(h,text);
+  leaf.append(image,inner);pages.push(leaf);
  });
  pages.forEach(p=>host.append(p));
  flip=new St.PageFlip(host,{width:350,height:455,size:'stretch',minWidth:260,maxWidth:550,minHeight:338,maxHeight:720,showCover:false,drawShadow:true,maxShadowOpacity:.65,flippingTime:950,usePortrait:true,mobileScrollSupport:false,useMouseEvents:true,disableFlipByClick:true,showPageCorners:true});
- flip.on('flip',e=>{const n=Math.min(b.pages.length-1,Math.floor(e.data/2));if(n!==currentPage)playPage(n);scheduleTextFit()});
+ flip.on('flip',e=>{const n=Math.min(b.pages.length-1,e.data);if(n!==currentPage)playPage(n);scheduleTextFit()});
  flip.loadFromHTML(pages);
  scheduleTextFit();
 }
