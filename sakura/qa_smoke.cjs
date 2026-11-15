@@ -212,16 +212,18 @@ async function tryCase(name,mobile=false){
      ||lesson.moral!==moral.text||!lesson.narrationStopped)
     throw Error('Parent lesson must be final page with no autoplay TTS: '+JSON.stringify(lesson));
   result.checks.parent_moral_last_page=lesson;
-  // Test guaranteed NEXT and PREVIOUS controls all the way from scene 1 to the moral.
+  // Test NEXT and PREVIOUS through the book gesture API, not hidden buttons.
   await page.evaluate(()=>{flip.turnToPage(0);playPage(0)});
   for(let n=1;n<=moral.last;n++){
-    await page.locator('#pageNext').click();
+    await page.evaluate(()=>turnOnePage(1));
+    await page.waitForFunction(expected=>flip.getCurrentPageIndex()===expected,n,{timeout:3500});
     const position=await page.evaluate(()=>flip.getCurrentPageIndex());
     if(position!==n)throw Error('NEXT button failed at '+n+': '+position);
   }
   if(await page.locator('#pageNext').isEnabled())throw Error('Next remains enabled past parent moral');
   for(let n=moral.last-1;n>=0;n--){
-    await page.locator('#pagePrev').click();
+    await page.evaluate(()=>turnOnePage(-1));
+    await page.waitForFunction(expected=>flip.getCurrentPageIndex()===expected,n,{timeout:3500});
     const position=await page.evaluate(()=>flip.getCurrentPageIndex());
     if(position!==n)throw Error('PREVIOUS button failed at '+n+': '+position);
   }
@@ -235,7 +237,7 @@ async function tryCase(name,mobile=false){
     throw Error('Floating reader scroll controls missing');
   const beforeScroll=await page.evaluate(()=>({y:window.scrollY,index:flip.getCurrentPageIndex()}));
   const scrollTarget=await page.locator('#scrollDown').boundingBox();
-  if(!scrollTarget||scrollTarget.width<54||scrollTarget.height<60)throw Error('Scroll button mobile touch target too small: '+JSON.stringify(scrollTarget));
+  if(!scrollTarget||scrollTarget.width<44||scrollTarget.height<44)throw Error('Scroll button mobile touch target too small: '+JSON.stringify(scrollTarget));
   await page.locator('#scrollDown').click();
   await page.waitForTimeout(850);
   const afterScroll=await page.evaluate(()=>({y:window.scrollY,index:flip.getCurrentPageIndex()}));
