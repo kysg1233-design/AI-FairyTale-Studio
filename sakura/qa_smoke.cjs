@@ -11,7 +11,7 @@ async function tryCase(name,mobile=false){
  const result={name,success:false,checks:{},errors:[]};
  let browser;
  try{
-  browser=await chromium.launch({headless:true,args:['--no-sandbox','--autoplay-policy=no-user-gesture-required']});
+  browser=await chromium.launch({headless:true,args:['--no-sandbox']});
   const context=await browser.newContext({viewport:mobile?{width:390,height:844}:{width:1365,height:900},deviceScaleFactor:mobile?2:1,isMobile:mobile,hasTouch:mobile});
   const page=await context.newPage();
   page.on('pageerror',error=>result.errors.push('Browser JavaScript: '+error.message));
