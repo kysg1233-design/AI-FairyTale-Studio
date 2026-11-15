@@ -34,14 +34,8 @@ jobs:
           ffmpeg -version | head -n 1
       - name: Compose original prebuilt lullaby soundtrack
         run: python sakura/create_mood_music.py
-      - name: Bundle the exact PageFlip 2.0.7 browser engine
-        shell: bash
-        run: |
-          set -euo pipefail
-          mkdir -p sakura/vendor
-          npm pack page-flip@2.0.7 --pack-destination /tmp --silent
-          tar -xOf /tmp/page-flip-2.0.7.tgz package/dist/js/page-flip.browser.js > sakura/vendor/page-flip.browser.js
-          test -s sakura/vendor/page-flip.browser.js
+      - name: Verify independently implemented touch book engine
+        run: test -s sakura/book-turn.js
       - name: Validate Sakura site and complete books
         run: python sakura/check_site.py
       - name: Install Chromium for interactive browser QA
