@@ -693,7 +693,7 @@ async function openBook(b){
  $('hero').style.display='none';$('reader').style.display='block';$('bookTitle').textContent=b.title;
  $('reader').scrollIntoView({behavior:'smooth',block:'start'});
  const source=$('source');source.replaceChildren();source.append('원전 출처: ');const a=document.createElement('a');a.href=b.source_url||'#';a.target='_blank';a.rel='noopener noreferrer';a.textContent=b.source_title||'원전 보기';source.append(a);
- $('loading').style.display='block';$('book').style.display='none';$('pageNumber').textContent='모든 페이지를 먼저 준비하고 있습니다.';
+ $('loading').style.display='block';ensureBookHost().style.display='none';$('pageNumber').textContent='모든 페이지를 먼저 준비하고 있습니다.';
  try{const assets=await prefetchBook(b,$('voice').value);if(active!==b)return;
   mount(b,assets);$('loading').style.display='none';$('book').style.display='block';setStatus('그림과 음성 전체 준비 완료');playPage(0)}
  catch(e){setStatus('준비 실패: '+e.message);$('loading').textContent='그림책을 열지 않았습니다: '+e.message;$('book').style.display='none'}
@@ -728,9 +728,21 @@ function fitStoryText(){
 let fitTimer=null;
 function scheduleTextFit(){clearTimeout(fitTimer);fitTimer=setTimeout(()=>requestAnimationFrame(fitStoryText),120)}
 window.addEventListener('resize',scheduleTextFit);
+// PageFlip.destroy() can remove the very #book element that hosted its sheets.
+// Keep the stable .shelf container and recreate the flip root whenever necessary.
+function ensureBookHost(){
+ const shelf=document.querySelector('#reader .shelf');
+ if(!shelf)throw Error('책장 컨테이너를 찾을 수 없습니다');
+ let host=$('book');
+ if(!host||!shelf.contains(host)){
+  host=document.createElement('div');host.id='book';
+  shelf.replaceChildren(host);
+ }
+ return host;
+}
 function mount(b,assets){
- if(flip){try{flip.destroy()}catch(e){}flip=null}
- const host=$('book');host.replaceChildren();
+ if(flip){try{flip.destroy()}catch(e){console.warn('Old page engine cleanup:',e.message)}flip=null}
+ const host=ensureBookHost();host.replaceChildren();host.style.display='block';
  if(!window.St||!St.PageFlip)throw Error('책장 넘김 엔진 로딩 실패. 네트워크를 확인하세요.');
  const pages=[];
  b.pages.forEach((p,i)=>{
@@ -760,7 +772,7 @@ function playPage(n){if(!active)return;currentPage=n;if(musicOn)playMusic(sceneM
   const source=ctx.createBufferSource();source.buffer=sound;source.connect(volume);track=source;source.start(start);
  }catch(e){setStatus('나레이션을 재생할 수 없습니다: '+e.message)}
 }
-function closeBook(){active=null;audioOff();stopMusic();$('reader').style.display='none';$('hero').style.display='block';}
+function closeBook(){active=null;audioOff();stopMusic();if(flip){try{flip.destroy()}catch(e){console.warn('Page cleanup:',e.message)}flip=null}ensureBookHost();$('reader').style.display='none';$('hero').style.display='block';}
 $('back').onclick=closeBook;
 $('narration').onclick=()=>{narrationOn=!narrationOn;$('narration').classList.toggle('on',narrationOn);$('narration').setAttribute('aria-pressed',String(narrationOn));$('narration').textContent=narrationOn?'🔊 나레이션 ON':'🔈 나레이션 OFF';if(active)playPage(currentPage)};
 $('music').onclick=()=>{musicOn=!musicOn;$('music').classList.toggle('on',musicOn);$('music').setAttribute('aria-pressed',String(musicOn));$('music').textContent=musicOn?'♫ 배경음 ON':'♫ 배경음 OFF';if(musicOn&&active)playMusic(sceneMood(active.pages[currentPage]));else stopMusic()};
@@ -778,11 +790,11 @@ $('music').addEventListener('click',syncQuickAudioControls);
 $('narration').addEventListener('click',syncQuickAudioControls);
 $('voice').addEventListener('change',syncQuickAudioControls);
 syncQuickAudioControls();
-$('book').addEventListener('pointerdown',()=>{if(musicOn&&active&&!musicTrack)playMusic(sceneMood(active.pages[currentPage]))},{passive:true});
+document.querySelector('#reader .shelf').addEventListener('pointerdown',()=>{if(musicOn&&active&&!musicTrack)playMusic(sceneMood(active.pages[currentPage]))},{passive:true});
 // On narrow touch devices St.PageFlip can miss a swipe starting outside its paper edge.
 // Keep real drag turning; only fall back to animated flip if the touch gesture made no turn.
 let mouseDragStart=null;
-$('book').addEventListener('pointerdown',e=>{
+document.querySelector('#reader .shelf').addEventListener('pointerdown',e=>{
  if(e.pointerType==='touch'||!flip)return;
  mouseDragStart={x:e.clientX,y:e.clientY,index:flip.getCurrentPageIndex()};
 },{capture:true});
@@ -798,11 +810,11 @@ document.addEventListener('pointerup',e=>{
  },1130);
 },{capture:true});
 let touchStart=null, nativeTouchTurn=false;
-$('book').addEventListener('touchstart',e=>{
+document.querySelector('#reader .shelf').addEventListener('touchstart',e=>{
  const t=e.touches[0];if(!t||!flip)return;
  nativeTouchTurn=false;touchStart={x:t.clientX,y:t.clientY,index:flip.getCurrentPageIndex()};
 },{capture:true,passive:true});
-$('book').addEventListener('touchend',e=>{
+document.querySelector('#reader .shelf').addEventListener('touchend',e=>{
  if(!touchStart||!flip)return;
  const t=e.changedTouches[0];if(!t)return;
  const from=touchStart;touchStart=null;
