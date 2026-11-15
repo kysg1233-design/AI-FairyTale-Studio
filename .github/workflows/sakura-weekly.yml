@@ -67,11 +67,27 @@ jobs:
             fi
             echo "Model accessible: $model"
           done
+      - id: titleintro
+        name: Prepare male and female spoken book titles for existing books
+        continue-on-error: true
+        run: python sakura/prepare_title_audio.py
+      - name: Publish prepared title clips separately
+        if: steps.titleintro.outcome == 'success'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git add -A sakura/books/
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name "sakura-story-bot"
+          git config user.email "sakura-story-bot@users.noreply.github.com"
+          git commit -m "Publish pre-recorded male and female book title narration"
+          git pull --rebase origin main
+          git push origin HEAD:main
       - id: generate
         name: Generate and check a complete book
         run: python sakura/publish_weekly.py
       - name: Save staged media if daily Gemini quota interrupts production
-        if: steps.generate.outcome == 'failure'
+        if: steps.titleintro.outcome == 'failure' || steps.generate.outcome == 'failure'
         shell: bash
         run: |
           set -euo pipefail
@@ -163,6 +179,7 @@ jobs:
           STEP_SECRET: ${{ steps.secretcheck.outcome }}
           STEP_MODELS: ${{ steps.models.outcome }}
           STEP_GENERATE: ${{ steps.generate.outcome }}
+          STEP_TITLES: ${{ steps.titleintro.outcome }}
           STEP_VALIDATE: ${{ steps.validate.outcome }}
           STEP_COMMIT: ${{ steps.commitbook.outcome }}
           STEP_PAGES: ${{ steps.deployment.outcome }}
@@ -171,7 +188,7 @@ jobs:
         run: |
           python - <<'PY'
           import json, os, pathlib, datetime
-          stage = {k:os.getenv("STEP_"+k,"unknown") for k in ("SECRET","MODELS","GENERATE","VALIDATE","COMMIT","PAGES","BROWSER","PUBLIC")}
+          stage = {k:os.getenv("STEP_"+k,"unknown") for k in ("SECRET","MODELS","GENERATE","TITLES","VALIDATE","COMMIT","PAGES","BROWSER","PUBLIC")}
           books = json.loads(pathlib.Path("sakura/books/index.json").read_text("utf-8")).get("books",[])
           outcome = "success" if all(stage[k]=="success" for k in stage) else "failure"
           result = {"status":outcome,"workflow":"weekly","run_id":os.getenv("GITHUB_RUN_ID"),
