@@ -277,6 +277,202 @@ footer{padding:34px 0 14px;text-align:center;color:#bba3ad;font-size:12px;letter
  html{scroll-behavior:auto}
  .tab,.tile,.tile img,.featureCover,.featureCopy button,#heroBrowse{transition:none}
 }
+
+/* Illustrated story-theater appearance, built around real published books. */
+:root{--wood-dark:#4d292b;--wood:#734535;--wood-light:#ad7450;--petal:#ec91b5;--sky:#b7e6ff}
+body{
+ background:
+ radial-gradient(ellipse 280px 115px at 16% 13%,#ffffffcd 0 48%,transparent 73%),
+ radial-gradient(ellipse 480px 130px at 83% 6%,#ffffffcb 0 51%,transparent 73%),
+ linear-gradient(180deg,#a8dff8 0,#cbeefe 155px,#fce8e9 450px,#fff5e9 820px,#fff6ed 100%);
+ min-height:100vh;color:#543746
+}
+body:before,body:after{position:absolute;pointer-events:none;z-index:5;font-size:clamp(34px,5vw,78px);opacity:.9;
+ filter:drop-shadow(0 3px 5px #b3598263)}
+body:before{content:'🌸 🌸';left:0;top:60px;transform:rotate(-20deg)}
+body:after{content:'🌸 🌸';right:0;top:65px;transform:rotate(20deg)}
+.wrap{max-width:1720px;padding:0 16px 24px}
+header{
+ margin:0 -16px;padding:12px clamp(18px,4vw,60px);border-bottom:2px solid #fff7f8;
+ background:linear-gradient(105deg,#fff1f4db,#f9f8ffe3 45%,#e1f2ffdd);
+ backdrop-filter:blur(15px);box-shadow:0 8px 20px #644e6c22;position:relative;z-index:8;
+ min-height:87px
+}
+.brand{display:flex;align-items:center;gap:13px;font-family:'Gowun Batang',serif;letter-spacing:-1px;
+ color:#73324f;font-size:clamp(25px,2.65vw,42px);font-weight:700;text-shadow:0 1px 0 white}
+.brand:after{display:none}
+.brandSymbol{font-size:clamp(40px,4vw,58px);filter:drop-shadow(0 5px 2px #bb758765)}
+.brand small{display:block;font-family:'Nunito',sans-serif;font-size:clamp(10px,1vw,13px);
+ letter-spacing:0;color:#6f4b5c;margin-top:-4px;font-weight:800}
+.nav{gap:clamp(5px,1.5vw,24px)}
+.tab{font-size:clamp(12px,1.05vw,17px);color:#4f3652;border-radius:999px;
+ font-weight:900;padding:12px clamp(12px,2vw,27px);background:transparent;box-shadow:none}
+.tab.active,.tab:hover{background:linear-gradient(100deg,#fff0f8,#ffdeee);color:#b3377a;
+ border:2px solid #da81ac;box-shadow:0 3px 9px #bd68964a}
+.stageShell{grid-template-columns:250px minmax(0,1fr);gap:15px;margin-top:15px;align-items:stretch}
+.sidebar{align-self:stretch;min-width:0;position:relative;overflow:hidden;border-radius:16px 16px 26px 26px;
+ padding:16px 14px 200px;color:#fff9f2;
+ background:
+ repeating-linear-gradient(0deg,transparent 0 68px,#2c16163c 69px 73px,transparent 74px 90px),
+ linear-gradient(90deg,#4a2624,#9f6243 8%,#714130 33%,#85513b 66%,#4c2b29 100%);
+ border:5px ridge #c38a5f;box-shadow:inset 0 0 20px #361c20a8,9px 9px 21px #6b3a3a54}
+.sidebarTitle{border-bottom:2px solid #deb883;color:#fff5dc;font-size:22px;
+ text-shadow:0 2px 3px #271617a8;padding:15px 7px 22px;margin:0 0 14px;text-align:center}
+.sideFilter{border:0;border-bottom:1px solid #e9b88c55;border-radius:8px;background:#5b313440;
+ padding:13px 11px;margin:2px 0;color:#fff5e9;font-size:14px;text-shadow:0 1px 2px #3c2121b8}
+.sideFilter small{background:transparent;color:#fff0db;padding:0;font-size:12px;white-space:nowrap}
+.sideFilter.active,.sideFilter:hover{border:1px solid #ffe3ee;background:linear-gradient(95deg,#fff0f6,#f8a0c9);
+ color:#8a345b;border-radius:30px;text-shadow:none;box-shadow:0 4px 13px #2e142e5e}
+.sideFilter.active small,.sideFilter:hover small{color:#933d66;background:transparent}
+.shelfMascot{position:absolute;bottom:17px;left:0;right:0;height:180px;text-align:center;
+ background:linear-gradient(180deg,transparent 55%,#532d2a90)}
+.mascotRabbit{position:absolute;left:17%;top:15px;font-size:93px;filter:drop-shadow(1px 7px 5px #381a1c8e)}
+.mascotBook{position:absolute;right:12%;bottom:24px;font-size:62px;filter:drop-shadow(1px 5px 4px #381a1c8e)}
+.mascotBlossom{position:absolute;right:14%;top:5px;font-size:36px}
+.contentArea{min-width:0}
+.theaterToolbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+ padding:9px 18px;margin:0 0 9px;border:1px solid #ffebf0;border-radius:17px;
+ background:linear-gradient(110deg,#57374ced,#78516ae8);box-shadow:0 10px 20px #74506d3b;color:white}
+.theaterToolbarTitle{font-family:'Gowun Batang',serif;font-size:19px;font-weight:700;color:#ffe7ed}
+.theaterToolbarActions{display:flex;flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:9px}
+.quickToggle,.quickVoiceLabel{display:inline-flex;align-items:center;justify-content:center;gap:7px;
+ border:1px solid #ffe4ed8c;background:#fff9fb13;color:white;font-size:13px;
+ border-radius:999px;padding:9px 15px;min-height:37px;font-weight:800}
+.quickToggle[aria-pressed=false]{background:#3b273d88;color:#e2cbd4}
+.quickVoiceLabel{background:#fff8f7;color:#684258;border-color:white}
+.quickVoiceLabel select{background:transparent;border:0;color:#633f55;font-weight:800;
+ font-size:12px;max-width:134px;outline:none;cursor:pointer}
+.hero{display:block;margin:0;min-height:auto;overflow:visible;position:relative;isolation:auto;
+ background:linear-gradient(145deg,#613c4a,#9a7475 55%,#5c3d53);
+ border:9px solid #a8765b;border-radius:22px;
+ box-shadow:inset 0 0 0 3px #e0b28a,0 15px 28px #60445b70;
+ padding:clamp(14px,2.25vw,30px) clamp(12px,2.4vw,34px) 12px}
+.hero:before{content:'🌸';position:absolute;top:14px;left:16px;right:auto;font-size:30px;letter-spacing:0;opacity:.7}
+.hero:after{content:'🌸';position:absolute;top:9px;right:18px;left:auto;bottom:auto;
+ width:auto;height:auto;border:0;font-size:25px;opacity:.7}
+.bookSpread{position:relative;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);
+ width:100%;min-height:clamp(350px,36vw,560px);background:#fff9ed;
+ border:8px solid #e6c29b;border-radius:31px 31px 21px 21px;
+ box-shadow:0 5px 0 #664330,0 13px 0 #e2ae83,0 25px 34px #301a25a8;
+ overflow:hidden}
+.bookPage{min-width:0;position:relative;display:flex;flex-direction:column;justify-content:space-between;
+ padding:clamp(18px,3vw,38px);font-family:'Gowun Batang',serif;
+ background:linear-gradient(90deg,#fffbf1,#fff5e6)}
+.bookPageLeft{border-right:1px solid #d9c3b7;background:linear-gradient(95deg,#f5e4cb 0%,#fff7e8 6%,#fffaf1 90%,#ecd9c1)}
+.bookPageRight{align-items:center;justify-content:center;gap:20px;text-align:center;
+ background:linear-gradient(90deg,#ebd9c5 0%,#fff9ec 8%,#fffaf2 92%,#f3e1ce)}
+.bookSpine{position:absolute;z-index:3;left:calc(50% - 15px);top:0;width:30px;height:100%;
+ pointer-events:none;background:linear-gradient(90deg,transparent,#8c5f4d26 34%,#6948385b 52%,#fff4e0c7 67%,transparent);
+ box-shadow:0 0 12px #67453c1f}
+.bookPageHeading{display:flex;align-items:center;justify-content:center;gap:10px;min-height:65px;
+ padding:10px 14px;border-radius:8px;
+ background:linear-gradient(110deg,#f9ebcd,#fff3da);box-shadow:2px 4px 6px #9e6f533b;
+ color:#7e403e;font-size:clamp(20px,2.2vw,36px);text-align:center}
+.bookPageHeading span{font-size:clamp(20px,2vw,32px)}
+.bookPageHeading strong{font-weight:700;word-break:keep-all}
+.previewIllustration{flex:1;min-height:180px;max-height:350px;margin-top:17px;border-radius:15px;
+ overflow:hidden;border:4px solid #fff8e8;box-shadow:0 3px 12px #78573d40;
+ background:radial-gradient(circle at 30% 30%,#f1e1ad,#f7c4b0 50%,#d5e8aa)}
+.previewIllustration img{width:100%;height:100%;object-fit:cover;display:block}
+.previewSceneHeading{margin:11px 0 0!important;text-align:center;font:700 clamp(14px,1.6vw,21px)/1.5 'Gowun Batang',serif;
+ color:#624343!important}
+.previewStoryCopy{width:100%;max-width:500px;display:flex;flex-direction:column;align-items:center;
+ justify-content:center;gap:23px}
+.previewTag{font-size:11px;letter-spacing:4px;color:#b88a81;font-family:'Nunito',sans-serif;font-weight:900}
+.previewStoryCopy p{font-family:'Gowun Batang',serif;font-weight:700;line-height:2;
+ font-size:clamp(17px,1.75vw,27px);color:#503d3b;margin:0;
+ word-break:keep-all;overflow-wrap:anywhere;max-width:34ch}
+.previewStoryRegion{display:inline-block;font-family:'Nunito',sans-serif;
+ font-size:13px;color:#967a76;border-top:1px solid #e4cec1;padding-top:13px}
+.previewReadButton{border:0;background:linear-gradient(120deg,#b65883,#d887ac);color:white;
+ font-size:clamp(13px,1.3vw,17px);font-weight:900;border-radius:999px;
+ box-shadow:0 7px 14px #b8678c4b;padding:13px 24px}
+.previewReadButton:hover{background:linear-gradient(120deg,#a34a76,#c977a0);transform:translateY(-2px)}
+.previewReadButton:disabled{opacity:.45;cursor:not-allowed}
+.previewBottomBar{display:flex;justify-content:space-between;align-items:center;gap:10px;
+ padding:22px 3px 0;color:#fff6f5;font-size:13px;font-weight:900}
+.previewCounter{background:#3d283bbc;border:1px solid #d6b4b19a;padding:9px 16px;border-radius:30px}
+.previewBrowse{color:#fff8fa;background:transparent;border:1px solid #f4d7e89c;
+ border-radius:30px;padding:9px 16px;font-size:12px;font-weight:900}
+.previewBrowse:hover{background:#ffffff27}
+.recommendationArea,.libraryArea{margin-top:24px;padding:17px 22px 21px;
+ background:#fffaf4e8;border:1px solid #fff8f0;border-radius:23px;
+ box-shadow:0 9px 22px #b67e8e28}
+.recommendationArea .intro,.libraryArea .intro{margin:0 0 12px}
+.recommendationArea .intro h2,.libraryArea .intro h2{font-family:'Gowun Batang',serif;
+ color:#6b3545;font-size:clamp(22px,2vw,28px)}
+.filmstrip{display:flex;overflow-x:auto;gap:14px;padding:5px 2px 13px}
+.filmstrip .tile{flex:0 0 clamp(150px,15vw,205px)}
+.filmstrip .tile img{aspect-ratio:1.25;object-fit:cover}
+.tile{border:2px solid #fff2e9;border-radius:17px;box-shadow:0 6px 13px #956b7552}
+.tile div{background:linear-gradient(175deg,#fffef8,#fff5ec);padding:11px}
+.tile strong{font-size:clamp(15px,1.4vw,19px);color:#4d3341}
+.tile small{color:#8f7180}
+#reader{display:none;max-width:100%;margin:0;padding:22px;
+ background:linear-gradient(130deg,#674352,#4e354d);border:8px ridge #b1846e}
+.readerTitle h2{color:#fff8e9}
+.shelf{background:transparent}
+#book{max-width:100%}
+#library{grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:13px}
+.searchBar{background:white;border:1px solid #ebdae0;border-radius:16px;box-shadow:none;
+ padding:13px 16px;margin-bottom:17px}
+#bookCount{background:#ffe5f0;color:#99466d}
+footer{text-align:center;color:#775466;font-size:12px;padding:24px 0 8px}
+@media(max-width:1100px){
+ .stageShell{grid-template-columns:205px minmax(0,1fr)}
+ .sidebar{padding:12px 8px 180px}
+ .sideFilter{font-size:12px;padding:11px 8px}
+ .bookSpread{min-height:370px}
+ .bookPage{padding:17px}
+ .previewStoryCopy p{font-size:clamp(16px,2.15vw,23px)}
+}
+@media(max-width:720px){
+ body:before,body:after{font-size:35px;top:91px}
+ .wrap{padding:0 11px 18px}
+ header{margin:0 -11px;padding:12px 13px 9px;gap:8px;min-height:unset}
+ .brand{font-size:26px;gap:7px}.brandSymbol{font-size:37px}
+ .brand small{font-size:10px;margin:0}
+ .nav{overflow-x:auto;flex-wrap:nowrap;justify-content:flex-start;width:100%;gap:5px;padding-bottom:6px}
+ .tab{font-size:12px;padding:9px 12px;white-space:nowrap}
+ .stageShell{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+ .sidebar{display:flex;flex-direction:row;flex:0 0 auto;overflow-x:auto;width:100%;gap:6px;
+  padding:9px 9px 10px;border:3px ridge #c7926a;border-radius:15px;box-shadow:0 6px 11px #7c4d5660}
+ .sidebarTitle,.shelfMascot{display:none}
+ .sideFilter{flex:0 0 auto;width:auto;white-space:nowrap;padding:9px 11px;margin:0;border:1px solid #fbd5bb53;
+  border-radius:999px;font-size:12px}
+ .sideFilter.active,.sideFilter:hover{border-radius:999px}
+ .theaterToolbar{padding:9px 11px;gap:7px;justify-content:center}
+ .theaterToolbarTitle{display:none}
+ .theaterToolbarActions{flex-wrap:nowrap;justify-content:center;width:100%;gap:5px}
+ .quickToggle,.quickVoiceLabel{font-size:10px;min-height:34px;padding:7px 7px;gap:3px;white-space:nowrap}
+ .quickVoiceLabel select{font-size:10px;max-width:74px}
+ .hero{padding:10px 9px 10px;border-width:5px;border-radius:17px}
+ .hero:before,.hero:after{display:none}
+ .bookSpread{min-height:320px;border-width:5px;border-radius:13px;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+ .bookPage{padding:10px 8px}
+ .bookPageHeading{gap:3px;min-height:48px;padding:5px;font-size:clamp(12px,3.9vw,19px)}
+ .bookPageHeading span{font-size:16px}
+ .bookSpine{width:15px;left:calc(50% - 7.5px)}
+ .previewIllustration{min-height:135px;max-height:230px;margin-top:9px;border-width:2px;border-radius:8px}
+ .previewSceneHeading{font-size:clamp(10px,3vw,13px);margin:7px 0 0!important;line-height:1.45}
+ .bookPageRight{gap:9px}
+ .previewStoryCopy{gap:10px}
+ .previewTag{font-size:8px;letter-spacing:2px}
+ .previewStoryCopy p{font-size:clamp(11px,3.25vw,15px);line-height:1.6}
+ .previewStoryRegion{font-size:10px;padding-top:7px}
+ .previewReadButton{font-size:10px;padding:10px 11px}
+ .previewBottomBar{padding:14px 1px 0}
+ .previewCounter,.previewBrowse{font-size:10px;padding:7px 10px}
+ .recommendationArea,.libraryArea{padding:13px 11px 14px;margin-top:12px;border-radius:18px}
+ .recommendationArea .intro h2,.libraryArea .intro h2{font-size:21px}
+ .filmstrip .tile{flex-basis:137px}
+ #library{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ #reader{padding:16px 8px;border-width:5px}
+ .readerTitle h2{font-size:22px}
+}
+@media(max-width:380px){.quickVoiceLabel{font-size:0}.quickVoiceLabel select{font-size:10px}
+ .previewStoryCopy p{font-size:11px}.bookSpread{min-height:285px}
+}
 </style><script src="./vendor/page-flip.browser.js"></script>
 </head><body><div class="wrap">
 <header>
