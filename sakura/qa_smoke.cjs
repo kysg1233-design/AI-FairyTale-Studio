@@ -38,7 +38,7 @@ async function tryCase(name,mobile=false){
   if(await page.locator('#library .tile').count()<1)throw Error('Favourite was not persisted');
   result.checks.favourites=true;await page.locator('[data-mode="all"]').click();
   await page.locator('#library .tile button[aria-label$="읽기"]').first().click();
-  await page.waitForFunction(()=>document.querySelector('#reader')?.style.display==='block'&&document.querySelector('#book')?.style.display==='block'&&window.flip!=null,null,{timeout:70000});
+  await page.waitForFunction(()=>document.querySelector('#reader')?.style.display==='block'&&document.querySelector('#book')?.style.display==='block'&&typeof flip!=="undefined"&&flip!=null,null,{timeout:70000});
   result.checks.story_opened=true;
   const loaded=await page.evaluate(()=>({
     pageIndex:flip.getCurrentPageIndex(),
@@ -54,7 +54,7 @@ async function tryCase(name,mobile=false){
   if(loaded.volume<.5)throw Error('Background soundtrack volume too low');
   await page.waitForFunction(()=>musicTrack && musicTrack.readyState>=2,null,{timeout:25000});
   result.checks.media=loaded;
-  const book=page.locator('#book');const box=await book.boundingBox();
+  const book=page.locator('#book');await book.scrollIntoViewIfNeeded();const box=await book.boundingBox();
   if(!box)throw Error('No book visible for drag');
   const right=box.x+box.width-28,centerY=box.y+box.height*.64;
   if(mobile){
