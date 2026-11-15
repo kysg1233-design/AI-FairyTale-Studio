@@ -38,7 +38,7 @@ for index in range(N):
   if 0<=d<12.3:
    env=math.sin(math.pi*min(1,d/12.3))**1.8
    sound+=.014*env*sum(math.sin(2*math.pi*f*d)/len(frequencies) for f in frequencies)
- sound=max(-.95,min(.95,sound*fade))
+ sound=max(-.95,min(.95,sound*fade*2.7))
  samples.append(int(sound*32767))
 with tempfile.TemporaryDirectory() as tmp:
  wavfile=pathlib.Path(tmp)/"soft-lullaby.wav"
