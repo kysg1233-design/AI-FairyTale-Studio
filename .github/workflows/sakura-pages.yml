@@ -32,7 +32,7 @@ jobs:
           fi
           ffmpeg -version | head -n 1
       - name: Compose original prebuilt lullaby soundtrack
-        run: python sakura/create_bgm.py
+        run: python sakura/create_mood_music.py
       - name: Bundle the exact PageFlip 2.0.7 browser engine
         shell: bash
         run: |
