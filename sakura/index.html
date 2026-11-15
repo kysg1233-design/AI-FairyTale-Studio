@@ -115,6 +115,7 @@ async function fetchCatalog(){
 let viewMode='all',category='all',searchText='',featured=null;
 let favourites=new Set();try{favourites=new Set(JSON.parse(localStorage.getItem('sakura-favourites')||'[]'))}catch(e){favourites=new Set()}
 function bookId(b){return b.cover}
+function readCount(b){return Number(localStorage.getItem('sakura-reads-'+bookId(b))||0)}
 function isFave(b){return favourites.has(bookId(b))}
 function toggleFave(b){if(isFave(b))favourites.delete(bookId(b));else favourites.add(bookId(b));localStorage.setItem('sakura-favourites',JSON.stringify([...favourites]));paintLibrary()}
 function countCategory(b,cat){
@@ -139,13 +140,13 @@ function makeTile(b){
 }
 function paintLibrary(){
  const shelf=$('library'),items=catalog.filter(b=>countCategory(b,category)).filter(b=>viewMode!=='favs'||isFave(b)).filter(b=>b.title.toLocaleLowerCase().includes(searchText));
- if(viewMode==='popular')items.sort((a,b)=>b.pages.length-a.pages.length||a.title.localeCompare(b.title,'ko'));
+ if(viewMode==='popular')items.sort((a,b)=>readCount(b)-readCount(a)||a.title.localeCompare(b.title,'ko'));
  if(viewMode==='new')items.sort((a,b)=>String(b.published_at).localeCompare(String(a.published_at)));
  shelf.replaceChildren();items.forEach(b=>shelf.append(makeTile(b)));$('bookCount').textContent=items.length+'권';$('empty').style.display=items.length?'none':'block';
  const counts={'count-all':'all','count-korea':'한국','count-world':'세계','count-aesop':'이솝','count-grimm':'그림','count-japan':'일본'};
  for(const [id,key]of Object.entries(counts))$(id).textContent=catalog.filter(b=>countCategory(b,key)).length+'권';
  const titles={all:'📚 반짝반짝 동화책장',library:'📖 전체 동화책장',popular:'👑 인기 동화',new:'🗓️ 새로 나온 동화',favs:'♡ 내가 찜한 동화'};
- $('libraryHeading').textContent=titles[viewMode];$('libraryInfo').textContent='그림과 남녀 음성을 모두 갖춘 실제 완성 도서 '+catalog.length+'권';
+ $('libraryHeading').textContent=titles[viewMode];$('libraryInfo').textContent=viewMode==='popular'?'이 기기에서 많이 읽은 순서로 정렬했어요':('그림과 남녀 음성을 모두 갖춘 실제 완성 도서 '+catalog.length+'권');
  const picks=$('recommendations');picks.replaceChildren();catalog.slice(-12).reverse().forEach(b=>picks.append(makeTile(b)));
  const chosen=catalog[0]||null;featured=chosen;
  $('featuredTitle').textContent=chosen?chosen.title:'곧 만나게 될 새로운 이야기';
@@ -185,7 +186,7 @@ async function prefetchBook(b,voice){
  return result;
 }
 async function openBook(b){
- if(loading)return;loading=true;unlocked=true;active=b;audioOff();stopMusic();try{ctx=ctx||new(window.AudioContext||window.webkitAudioContext)();ctx.resume()}catch(e){}if(musicOn)playMusic();
+ if(loading)return;loading=true;unlocked=true;active=b;try{localStorage.setItem('sakura-reads-'+bookId(b),String(readCount(b)+1))}catch(e){};audioOff();stopMusic();try{ctx=ctx||new(window.AudioContext||window.webkitAudioContext)();ctx.resume()}catch(e){}if(musicOn)playMusic();
  $('home').style.display='none';$('reader').style.display='block';$('bookTitle').textContent=b.title;
  const source=$('source');source.replaceChildren();source.append('원전 출처: ');const a=document.createElement('a');a.href=b.source_url||'#';a.target='_blank';a.rel='noopener noreferrer';a.textContent=b.source_title||'원전 보기';source.append(a);
  $('loading').style.display='block';$('book').style.display='none';$('pageNumber').textContent='모든 페이지를 먼저 준비하고 있습니다.';
