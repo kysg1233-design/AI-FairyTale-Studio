@@ -5,8 +5,13 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
+  pages: write
+  id-token: write
 jobs:
   publish:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}sakura/
     runs-on: ubuntu-latest
     timeout-minutes: 90
     env:
@@ -49,3 +54,22 @@ jobs:
           git config user.email "sakura-story-bot@users.noreply.github.com"
           git commit -m "Publish complete weekly storybook (illustrations and both voices)"
           git push origin HEAD:main
+      - name: Bundle PageFlip for publishing
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p sakura/vendor
+          npm pack page-flip@2.0.7 --pack-destination /tmp --silent
+          tar -xOf /tmp/page-flip-2.0.7.tgz package/dist/js/page-flip.browser.js > sakura/vendor/page-flip.browser.js
+          test -s sakura/vendor/page-flip.browser.js
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+      - name: Upload complete site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: '.'
+      - name: Publish completed books to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
