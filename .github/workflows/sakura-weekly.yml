@@ -31,6 +31,15 @@ jobs:
           python-version: "3.12"
       - name: Install dependencies
         run: python -m pip install --upgrade "beautifulsoup4>=4.12,<5" "Pillow>=11,<13"
+      - name: Install FFmpeg used to produce all narration MP3s
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y ffmpeg
+          fi
+          ffmpeg -version | head -n 1
       - id: secretcheck
         name: Verify audio tooling and secret
         shell: bash
