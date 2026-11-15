@@ -5,11 +5,13 @@ root=pathlib.Path(__file__).resolve().parent
 html=(root/"index.html").read_text("utf-8")
 assert "generativelanguage.googleapis.com" not in html, "Reading page must not call Gemini"
 assert "new St.PageFlip(" in html and "useMouseEvents:true" in html
-assert "disableFlipByClick:true" in html
+assert "disableFlipByClick:false" in html
 assert "async function prefetchBook" in html and "await prefetchBook(b" in html
 assert "function playPage(" in html and "ctx.createBufferSource()" in html and "ctx.decodeAudioData(bytes)" in html
 assert "id=\"narration\"" in html and "id=\"music\"" in html
-assert "musicNames={" in html and "./vendor/page-flip.browser.js" in html
+assert "musicNames={" in html and 'src="./vendor/page-flip.browser.js"' in html
+assert "nativeTouchTurn" not in html, "Stale variable will crash PageFlip event"
+assert "function gestureEnd(" in html and "flip.flipPrev(" in html and "flip.flipNext(" in html
 assert "musicTheme" in html and "sceneMood" in html and "playMusic(" in html
 for theme in ("lullaby","joyful","adventure","mystery","tender"):
     name=f"sakura-{theme}.mp3"
