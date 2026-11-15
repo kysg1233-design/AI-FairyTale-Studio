@@ -178,6 +178,7 @@ async function tryCase(name,mobile=false){
    await page.waitForFunction(()=>document.querySelector('#reader')?.style.display==='block'&&
       document.querySelector('#book')?.style.display==='block'&&document.querySelectorAll('#book .storyLeaf').length===active?.pages?.length&&
       flip&&flip.getCurrentPageIndex()===0,null,{timeout:65000});
+   await page.locator('#book .storyLeaf img').first().evaluate(img=>img.decode());
    const check=await page.evaluate(()=>({
     bookHosts:document.querySelectorAll('#book').length,
     leaves:document.querySelectorAll('#book .storyLeaf').length,
