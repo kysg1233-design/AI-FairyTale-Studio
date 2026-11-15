@@ -483,7 +483,9 @@ footer{text-align:center;color:#775466;font-size:12px;padding:24px 0 8px}
 .moralContent p{font:700 clamp(15px,1.7vw,20px)/1.8 'Gowun Batang',serif;color:#64445a;word-break:keep-all;margin:4px 0}
 .moralHeart{font:700 12px 'Gowun Batang',serif;color:#bd83a3;flex:0 0 auto}
 /* Native vertical scrolling is allowed on the book; horizontal drags still turn pages. */
-#reader .shelf,#reader #book,#reader .stf__parent{touch-action:pan-y}
+#reader .shelf,#reader #book,#reader .stf__parent,#reader .stf__wrapper,#reader .stf__block,#reader .stf__item,#reader .storyLeaf{touch-action:none;-webkit-user-select:none;user-select:none}
+#reader .storyLeaf .words,#reader .storyLeaf .words *{touch-action:none}
+#reader .shelf{overscroll-behavior:contain}
 .readerScrollNav[hidden]{display:none!important}
 .readerScrollNav{position:fixed;right:max(9px,env(safe-area-inset-right));top:48%;transform:translateY(-50%);z-index:100;
  display:flex;flex-direction:column;gap:12px;pointer-events:auto}
@@ -525,7 +527,7 @@ footer{text-align:center;color:#775466;font-size:12px;padding:24px 0 8px}
 .pageTurnControls button:not(:disabled):active{background:#f1ccdb}
 @media(max-width:720px){.pageTurnControls{margin:9px auto 12px}
  .pageTurnControls button{min-width:114px;min-height:58px;padding:11px 14px}}
-</style><script src="./vendor/page-flip.browser.js"></script>
+</style><script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.min.js"></script>
 </head><body><div class="wrap">
 <header>
  <div class="brand"><span class="brandSymbol" aria-hidden="true">📖</span><span>벚꽃 동화극장<small>AI로 만나는 전래동화 그림책</small></span></div>
@@ -819,7 +821,7 @@ function mount(b,assets){
  moralBlock.append(blossom,moralTitle,moralLead,moralText,moralHeart);moralPage.append(moralBlock);
  pages.push(moralPage);
  pages.forEach(p=>host.append(p));
- flip=new St.PageFlip(host,{width:350,height:455,size:'stretch',minWidth:260,maxWidth:550,minHeight:338,maxHeight:720,showCover:false,drawShadow:true,maxShadowOpacity:.65,flippingTime:950,usePortrait:true,mobileScrollSupport:true,useMouseEvents:true,disableFlipByClick:false,showPageCorners:true});
+ flip=new St.PageFlip(host,{width:350,height:455,size:'stretch',minWidth:260,maxWidth:550,minHeight:338,maxHeight:720,showCover:false,drawShadow:true,maxShadowOpacity:.65,flippingTime:950,usePortrait:true,mobileScrollSupport:false,swipeDistance:25,useMouseEvents:true,disableFlipByClick:false,showPageCorners:true});
  flip.on('flip',e=>{nativeTouchTurn=true;const n=Math.min(b.pages.length,e.data);if(n!==currentPage)playPage(n);updatePageTurnControls();scheduleTextFit()});
  flip.loadFromHTML(pages);
  scheduleTextFit();
