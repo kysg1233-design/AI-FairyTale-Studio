@@ -349,6 +349,22 @@ $('music').onclick=()=>{musicOn=!musicOn;$('music').classList.toggle('on',musicO
 $('book').addEventListener('pointerdown',()=>{if(musicOn&&active&&!musicTrack)playMusic(sceneMood(active.pages[currentPage]))},{passive:true});
 // On narrow touch devices St.PageFlip can miss a swipe starting outside its paper edge.
 // Keep real drag turning; only fall back to animated flip if the touch gesture made no turn.
+let mouseDragStart=null;
+$('book').addEventListener('pointerdown',e=>{
+ if(e.pointerType==='touch'||!flip)return;
+ mouseDragStart={x:e.clientX,y:e.clientY,index:flip.getCurrentPageIndex()};
+},{capture:true});
+document.addEventListener('pointerup',e=>{
+ if(!mouseDragStart||e.pointerType==='touch'||!flip)return;
+ const from=mouseDragStart;mouseDragStart=null;
+ const dx=e.clientX-from.x,dy=e.clientY-from.y;
+ if(Math.abs(dx)<45||Math.abs(dx)<Math.abs(dy)*1.15)return;
+ setTimeout(()=>{
+  // Only recover a missed desktop mouse drag. Never generate a second turn.
+  if(!flip||flip.getCurrentPageIndex()!==from.index)return;
+  if(dx<0)flip.flipNext();else flip.flipPrev();
+ },1130);
+},{capture:true});
 let touchStart=null, nativeTouchTurn=false;
 $('book').addEventListener('touchstart',e=>{
  const t=e.touches[0];if(!t||!flip)return;
