@@ -85,8 +85,12 @@ def textual_prompt(item,excerpt):
       "각 장면은 반드시 이전 장면과 시각적 구도, 장소 또는 행동이 달라야 합니다. "
       "각 장면에 mood를 반드시 하나 선택하세요: calm(평온), joyful(기쁨), adventure(모험), mystery(긴장·신비), tender(슬픔·따뜻한 위로). "
       "어린이에게 과도하게 무서운 음악은 사용하지 않으므로 사건의 감정을 과장하지 마세요. "
+      "원전의 핵심 교훈을 담은 parent_moral 한 문단도 작성하세요. 부모가 아이에게 직접 읽어줄 말투로, "
+      "어린이에게 따뜻하고 구체적이며 이해하기 쉬운 한국어 30~125자로 작성하세요. "
+      "사건과 무관한 상투적 교훈이나 무리한 훈계를 금지합니다. "
       "아래 JSON 스키마 형태의 JSON 객체만 출력하세요. "
-      '{"character_bible":"...","pages":[{"heading":"한국어 장면 제목","text":"동화 본문",'
+      '{"character_bible":"...","parent_moral":"부모가 읽어줄 한 문단의 교훈",'
+      '"pages":[{"heading":"한국어 장면 제목","text":"동화 본문",'
       '"mood":"calm","scene_prompt":"English image direction"}]}. '
       f"\n제목: {item['title']}\n원전 제목: {item['heading']}\n원전 내용:\n{excerpt}"
     )
@@ -111,7 +115,23 @@ def story_plan(item,excerpt):
             # Future model variants may omit mood: the browser has conservative text heuristics.
             mood="calm"
         p.update(heading=h,text=t,scene_prompt=art,mood=mood)
+    # Plans saved from earlier interrupted batches may not contain the new field.
     return data
+def ensure_parent_moral(plan):
+    moral=clean(plan.get("parent_moral",""))
+    if not (30<=len(moral)<=150 and len(re.findall("[가-힣]",moral))>=20 and not re.search("[A-Za-z]{3,}",moral)):
+        excerpts="\\n".join(p["heading"]+": "+p["text"] for p in plan["pages"])
+        instruction=("다음 동화의 사건과 마지막 결말을 근거로, 부모가 아이에게 읽어주는 교훈 단 하나만 한국어로 작성하세요. "
+                     "아이에게 따뜻한 말투로 40~110자, 주어진 사건에서 알 수 없는 내용을 추가하지 마세요. "
+                     "JSON 객체 하나만 작성하세요: {\\\"parent_moral\\\":\\\"...\\\"}\\n"+excerpts)
+        output=google(TEXT_MODEL,{"contents":[{"parts":[{"text":instruction}]}],
+                  "generationConfig":{"responseMimeType":"application/json","temperature":0.3,"maxOutputTokens":250}})
+        raw="".join(p.get("text","") for p in output.get("candidates",[{}])[0].get("content",{}).get("parts",[]))
+        moral=clean(json.loads(raw).get("parent_moral",""))
+    if not (30<=len(moral)<=150 and len(re.findall("[가-힣]",moral))>=20 and not re.search("[A-Za-z]{3,}",moral)):
+        fail("Parent moral missing, invalid or too short; refuse to publish")
+    plan["parent_moral"]=moral
+    return moral
 def save_image(data,output):
     raw=base64.b64decode(data)
     with Image.open(io.BytesIO(raw)) as image:
@@ -222,6 +242,8 @@ def publish_one():
         excerpt=source_excerpt(c)
         plan=story_plan(c,excerpt)
         plan_file.write_text(json.dumps(plan,ensure_ascii=False,indent=2),"utf-8")
+    ensure_parent_moral(plan)
+    plan_file.write_text(json.dumps(plan,ensure_ascii=False,indent=2),"utf-8")
     with contextlib.nullcontext(staging) as work:
         tmp=pathlib.Path(work)
         earlier=[]
@@ -254,7 +276,7 @@ def publish_one():
                for i,p in enumerate(plan["pages"])]
         meta={"title":c["title"],"title_audio":{"male":f"books/{slug}/male-title.mp3","female":f"books/{slug}/female-title.mp3"},"region":c["region"],"source_title":c["heading"],"source_url":c["source_url"],
               "source_credit":c["source"],"status":"ready","published_at":datetime.now(timezone.utc).isoformat(),
-              "cover":f"books/{slug}/cover.webp","pages":pages}
+              "cover":f"books/{slug}/cover.webp","parent_moral":plan["parent_moral"],"pages":pages}
         (tmp/"manifest.json").write_text(json.dumps(meta,ensure_ascii=False,indent=2),"utf-8")
         shutil.copytree(tmp,destination,ignore=shutil.ignore_patterns("story-plan.json"))
         try: verify_package(destination,meta)
