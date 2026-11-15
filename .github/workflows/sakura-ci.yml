@@ -1,0 +1,36 @@
+name: Validate Sakura Story Theater changes
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'sakura/**'
+      - '.github/workflows/sakura-ci.yml'
+  pull_request:
+    paths:
+      - 'sakura/**'
+      - '.github/workflows/sakura-ci.yml'
+permissions:
+  contents: read
+jobs:
+  static-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check Python syntax
+        run: python -m py_compile sakura/publish_weekly.py sakura/create_bgm.py sakura/check_site.py
+      - name: Check website safety and ready book files
+        run: python sakura/check_site.py
+      - name: Validate folktale candidates and source provenance
+        run: |
+          python - <<'PY'
+          import json,pathlib
+          d=json.loads(pathlib.Path('sakura/books/candidates.json').read_text('utf-8'))
+          assert len(d)>=65
+          assert len({(x['source_url'],x['heading']) for x in d})==len(d)
+          assert set(x['region'] for x in d)=={'한국','일본','독일','그리스·세계'}
+          assert all(x['source_url'].startswith('https://www.gutenberg.org/') for x in d)
+          print('PASS:',len(d),'source-backed stories in 4 regions')
+          PY
