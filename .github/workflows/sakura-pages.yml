@@ -22,6 +22,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Compose original prebuilt lullaby soundtrack
+        run: python sakura/create_bgm.py
       - name: Bundle the exact PageFlip 2.0.7 browser engine
         shell: bash
         run: |
