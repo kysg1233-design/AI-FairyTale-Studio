@@ -34,6 +34,17 @@ jobs:
           test -s sakura/vendor/page-flip.browser.js
       - name: Validate Sakura site and complete books
         run: python sakura/check_site.py
+      - name: Install Chromium for interactive browser QA
+        shell: bash
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+      - name: Run real Galaxy touch, audio and desktop book flip checks
+        shell: bash
+        run: |
+          python -m http.server 8777 --bind 127.0.0.1 > /tmp/sakura-http.log 2>&1 &
+          sleep 2
+          SAKURA_URL=http://127.0.0.1:8777/sakura/ node sakura/qa_smoke.cjs
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:
@@ -45,3 +56,17 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+      - name: Check the real deployed URL on mobile and desktop
+        env:
+          SAKURA_URL: ${{ steps.deployment.outputs.page_url }}sakura/
+        run: node sakura/qa_smoke.cjs
+      - name: Save actual browser test report and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sakura-pages-browser-proof
+          path: |
+            sakura/qa-result.json
+            sakura/qa-desktop.png
+            sakura/qa-galaxy-mobile.png
+          if-no-files-found: ignore
