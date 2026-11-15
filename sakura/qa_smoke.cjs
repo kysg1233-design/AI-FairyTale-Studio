@@ -22,6 +22,8 @@ async function tryCase(name,mobile=false){
   const reported=Number((await page.locator('#bookCount').textContent()).replace(/\D/g,'')),cards=await page.locator('#library .tile').count();
   if(cards!==expected||reported!==expected)throw Error('Book count mismatch: actual='+cards+', UI='+reported+', catalog='+expected);
   result.checks.book_count=cards;
+  await page.waitForFunction(()=>document.querySelectorAll('#candidates .chip').length>=100,null,{timeout:20000});
+  result.checks.source_backed_candidates=await page.locator('#candidates .chip').count();
   if(expected<1)throw Error('No complete books in release catalog');
   const cover=page.locator('#library .tile img').first();
   await cover.evaluate(img=>img.decode());result.checks.cover_decoded=true;
@@ -54,6 +56,14 @@ async function tryCase(name,mobile=false){
   if(loaded.volume<.5)throw Error('Background soundtrack volume too low');
   await page.waitForFunction(()=>musicTrack && musicTrack.readyState>=2,null,{timeout:25000});
   result.checks.media=loaded;
+  const playing=await page.evaluate(()=>Boolean(musicTrack&&!musicTrack.paused&&musicTrack.readyState>=2));
+  if(!playing)throw Error('Background music resource loaded but actual playback has not started');
+  result.checks.bgm_playing=true;
+  await page.locator('#voice').selectOption('female');
+  await page.waitForFunction(()=>decoded.size>=active.pages.length*2,null,{timeout:45000});
+  if(await page.locator('#loading').isVisible())await page.locator('#loading').waitFor({state:'hidden',timeout:10000});
+  result.checks.both_male_female_audio_decoded=true;
+  await page.locator('#voice').selectOption('male');
   const book=page.locator('#book');await book.scrollIntoViewIfNeeded();const box=await book.boundingBox();
   if(!box)throw Error('No book visible for drag');
   const right=box.x+box.width-28,centerY=box.y+box.height*.64;
