@@ -1,0 +1,17 @@
+{
+  "status": "failure",
+  "workflow": "weekly",
+  "run_id": "43680657900",
+  "commit": "7a6d3fe4c3d84053981c1774b47cb93c264c63fb",
+  "time_utc": "2026-11-15T05:20:40.730582+00:00",
+  "stage": {
+    "SECRET": "failure",
+    "MODELS": "skipped",
+    "GENERATE": "skipped",
+    "VALIDATE": "skipped",
+    "COMMIT": "skipped",
+    "PAGES": "skipped"
+  },
+  "completed_books": 0,
+  "titles": []
+}
