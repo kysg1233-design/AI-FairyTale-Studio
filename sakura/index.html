@@ -156,8 +156,8 @@ function sceneSVG(step,storyIndex=book){
  return sky+flowers+figures;
 }
 function createPaper(kind,p,n){const d=document.createElement('div');d.className='paper';if(kind==='picture'){d.innerHTML='<div class="paper-art"><svg viewBox="0 0 720 480">'+sceneSVG(p[2],book)+'</svg></div>'}else{const w=document.createElement('div');w.className='paper-words';const small=document.createElement('small');small.textContent='SAKURA STORY · '+(n+1);const title=document.createElement('h3');title.textContent=p[0];const txt=document.createElement('p');txt.textContent=p[1];w.append(small,title,txt);d.append(w)}return d}
-function updateReading(){if(!pageFlip)return;const index=pageFlip.getCurrentPageIndex();page=Math.min(stories[book].pages.length-1,Math.floor(index/2));el('counter').textContent=(page+1)+' / '+stories[book].pages.length;el('prev').disabled=index===0;el('next').disabled=index>=stories[book].pages.length*2-2;localStorage.setItem('sakura-page-'+book,page);if(voice)read()}
-function openBook(n){if(music&&!audio)playMusic();book=n;el('home').style.display='none';el('reader').style.display='block';el('readingTitle').textContent=stories[n].title;el('storySource').replaceChildren();const a=document.createElement('a');a.href=stories[n].url;a.target='_blank';a.rel='noopener noreferrer';a.textContent='원전 출처: '+stories[n].source+' ↗';el('storySource').append(a);el('homeTop').classList.remove('active');el('readerTop').classList.add('active');if(pageFlip){try{pageFlip.destroy()}catch(e){}pageFlip=null}const root=el('flipbook');root.innerHTML='';const pages=[];stories[n].pages.forEach((p,i)=>{pages.push(createPaper('picture',p,i),createPaper('text',p,i))});pages.forEach(p=>root.append(p));if(!window.St||!window.St.PageFlip){root.textContent='종이책 엔진을 불러오지 못했습니다. 네트워크를 확인하고 새로고침해 주세요.';return}const saved=Math.min(stories[n].pages.length-1,Number(localStorage.getItem('sakura-page-'+n)||0));pageFlip=new St.PageFlip(root,{width:350,height:450,size:'stretch',minWidth:150,maxWidth:550,minHeight:210,maxHeight:700,drawShadow:true,maxShadowOpacity:.55,flippingTime:1000,showCover:false,usePortrait:false,mobileScrollSupport:false,useMouseEvents:true,disableFlipByClick:true,showPageCorners:true,startPage:saved*2});pageFlip.on('flip',updateReading);pageFlip.loadFromHTML(pages);updateReading();window.scrollTo({top:0,behavior:'smooth'})}
+function updateReading(){if(!pageFlip)return;const index=pageFlip.getCurrentPageIndex();const nextPage=Math.min(stories[book].pages.length-1,Math.floor(index/2));const changed=page!==nextPage;page=nextPage;el('counter').textContent=(page+1)+' / '+stories[book].pages.length;el('prev').disabled=index===0;el('next').disabled=index>=stories[book].pages.length*2-2;localStorage.setItem('sakura-page-'+book,page);if(voice&&(changed||!narrationAudio))read()}
+function openBook(n){if(music&&!audio)playMusic();book=n;el('home').style.display='none';el('reader').style.display='block';el('readingTitle').textContent=stories[n].title;el('storySource').replaceChildren();const a=document.createElement('a');a.href=stories[n].url;a.target='_blank';a.rel='noopener noreferrer';a.textContent='원전 출처: '+stories[n].source+' ↗';el('storySource').append(a);el('homeTop').classList.remove('active');el('readerTop').classList.add('active');if(pageFlip){try{pageFlip.destroy()}catch(e){}pageFlip=null}const root=el('flipbook');root.innerHTML='';const pages=[];stories[n].pages.forEach((p,i)=>{pages.push(createPaper('picture',p,i),createPaper('text',p,i))});pages.forEach(p=>root.append(p));if(!window.St||!window.St.PageFlip){root.textContent='종이책 엔진을 불러오지 못했습니다. 네트워크를 확인하고 새로고침해 주세요.';return}const saved=Math.min(stories[n].pages.length-1,Number(localStorage.getItem('sakura-page-'+n)||0));pageFlip=new St.PageFlip(root,{width:350,height:450,size:'stretch',minWidth:150,maxWidth:550,minHeight:210,maxHeight:700,drawShadow:true,maxShadowOpacity:.55,flippingTime:1000,showCover:false,usePortrait:false,mobileScrollSupport:false,useMouseEvents:true,disableFlipByClick:true,showPageCorners:true,startPage:saved*2});pageFlip.on('flip',updateReading);pageFlip.loadFromHTML(pages);stopSpeech();updateReading();window.scrollTo({top:0,behavior:'smooth'})}
 function goHome(){stopSpeech();el('home').style.display='block';el('reader').style.display='none';el('readerTop').classList.remove('active');el('homeTop').classList.add('active');window.scrollTo({top:0,behavior:'smooth'})}
 function turn(delta){if(pageFlip){if(delta>0)pageFlip.flipNext('bottom');else pageFlip.flipPrev('bottom')}}
 /* Reuses the same Gemini TTS engine and voice choices as the original FairyTale Studio.
@@ -187,23 +187,44 @@ function decodeAudioData(base64,mime){
  const sampleRate=Number(mime.match(/rate=(\d+)/)?.[1])||24000;
  return wavFromPCM(pcm,sampleRate);
 }
-async function generateGeminiAudio(text,voice,pace,key){
- const cacheKey=JSON.stringify(['ko-only-v3',text,voice]);
- if(speechMemory.has(cacheKey))return speechMemory.get(cacheKey);
- const endpoint='https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash-lite-tts:generateContent';
- // Only the Korean story may enter the speech model. Do not prepend ANY instructions.
- const spokenText=String(text).trim();
+const speechPending=new Map();
+const speechDB=(()=>{let dbPromise=null;return {
+ async open(){if(!('indexedDB'in window))return null;if(!dbPromise)dbPromise=new Promise(resolve=>{const r=indexedDB.open('sakura-gemini-audio-v1',1);r.onupgradeneeded=()=>r.result.createObjectStore('clips');r.onsuccess=()=>resolve(r.result);r.onerror=()=>resolve(null)});return dbPromise},
+ async get(id){const db=await this.open();if(!db)return null;return new Promise(resolve=>{const t=db.transaction('clips','readonly').objectStore('clips').get(id);t.onsuccess=()=>resolve(t.result||null);t.onerror=()=>resolve(null)})},
+ async put(id,blob){const db=await this.open();if(!db)return;try{const t=db.transaction('clips','readwrite');t.objectStore('clips').put(blob,id)}catch(e){console.warn('Audio caching unavailable',e)}}
+}})();
+function storyText(b,p){const item=stories[b].pages[p];return item[0]+'. '+item[1]}
+function audioKey(b,p,v){return ['v5','gemini-3.8-flash-lite-tts',stories[b].title,p,v,storyText(b,p)].join('|')}
+async function requestGeminiAudio(spokenText,voice,key){
  if(!spokenText||!/[가-힣]/.test(spokenText)||/[A-Za-z]/.test(spokenText))throw Error('나레이션에는 한국어 동화 본문만 사용할 수 있습니다.');
- const selectedVoice=voice==='Charon'?'Charon':'Leda';
- const payload={contents:[{parts:[{text:spokenText}]}],generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:selectedVoice}}}}};
- const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(payload)});
- const result=await response.json().catch(()=>({}));
- if(!response.ok)throw Error('Gemini 음성 생성 오류 ('+response.status+'): '+(result.error?.message||'API 요청 실패'));
- const part=result.candidates?.flatMap(c=>c.content?.parts||[]).find(p=>p.inlineData?.data);
- if(!part)throw Error('Gemini에서 음성이 반환되지 않았습니다. API 키와 TTS 사용 가능 여부를 확인해 주세요.');
- const blob=decodeAudioData(part.inlineData.data,part.inlineData.mimeType||'audio/L16;rate=24000');
- speechMemory.set(cacheKey,blob);
- return blob;
+ const response=await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash-lite-tts:generateContent',{
+  method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},
+  body:JSON.stringify({contents:[{parts:[{text:spokenText}]}],generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:voice==='Leda'?'Leda':'Charon'}}}}})
+ });
+ const data=await response.json().catch(()=>({}));
+ if(!response.ok)throw Error('Gemini 음성 생성 오류 ('+response.status+'): '+(data.error?.message||'API 요청 실패'));
+ const part=data.candidates?.flatMap(c=>c.content?.parts||[]).find(x=>x.inlineData?.data);
+ if(!part)throw Error('Gemini가 음성 데이터를 반환하지 않았습니다.');
+ return decodeAudioData(part.inlineData.data,part.inlineData.mimeType||'audio/L16;rate=24000');
+}
+function ensureAudio(b,p,v,key){
+ const id=audioKey(b,p,v);
+ if(speechMemory.has(id))return Promise.resolve(speechMemory.get(id));
+ if(speechPending.has(id))return speechPending.get(id);
+ const job=(async()=>{
+  const stored=await speechDB.get(id);
+  if(stored){speechMemory.set(id,stored);return stored}
+  const blob=await requestGeminiAudio(storyText(b,p),v,key);
+  speechMemory.set(id,blob);speechDB.put(id,blob);return blob;
+ })().finally(()=>speechPending.delete(id));
+ speechPending.set(id,job);return job;
+}
+function preloadNeighbors(b,p,v,key){
+ if(!key)return;
+ // Prefetch adjacent pages after the visible page starts playing, without multiplying requests.
+ for(const n of [p+1,p+2,p-1]){
+  if(n>=0&&n<stories[b].pages.length)ensureAudio(b,n,v,key).catch(e=>console.warn('Preload:',e.message));
+ }
 }
 function stopSpeech(){
  narrationSerial++;
@@ -214,26 +235,24 @@ async function read(){
  stopSpeech();
  if(!voice)return;
  let key=getGeminiKey();
- if(!key){
-  el('voiceBtn').textContent='🔑 API 연결 필요';
-  if(!configureKey()){voice=false;setVoice(false);return}
-  key=getGeminiKey();
- }
- const ticket=narrationSerial, p=stories[book].pages[page],v=el('voiceSelect').value==='Leda'?'Leda':'Charon',pace=el('speedSelect').value||'slow';
- el('voiceBtn').textContent='⏳ AI 나레이션 준비 중';
+ if(!key){el('voiceBtn').textContent='🔑 API 연결 필요';if(!configureKey()){voice=false;setVoice(false);return}key=getGeminiKey()}
+ const ticket=narrationSerial,b=book,p=page,v=el('voiceSelect').value==='Leda'?'Leda':'Charon';
+ const cached=speechMemory.has(audioKey(b,p,v));
+ el('voiceBtn').textContent=cached?'🔊 AI 나레이션 ON':'⏳ 첫 음성 준비 중';
  try{
-  const blob=await generateGeminiAudio(p[0]+'. '+p[1],v,pace,key);
-  if(ticket!==narrationSerial||!voice)return;
+  const blob=await ensureAudio(b,p,v,key);
+  if(ticket!==narrationSerial||!voice||book!==b||page!==p)return;
   narrationUrl=URL.createObjectURL(blob);
-  const a=new Audio(narrationUrl);narrationAudio=a;
+  const player=new Audio(narrationUrl);narrationAudio=player;player.volume=.9;
   el('voiceBtn').textContent='🔊 AI 나레이션 ON';
-  a.volume=.9;
-  await a.play();
+  await player.play();
+  // Audio for the next pages is generated while the current page is being read.
+  preloadNeighbors(b,p,v,key);
  }catch(error){
   if(ticket!==narrationSerial)return;
-  el('voiceBtn').textContent='⚠️ 음성 재생 실패';
+  el('voiceBtn').textContent='⚠️ 재생 실패';
   console.error('Gemini narration:',error);
-  alert('고품질 나레이션을 재생하지 못했습니다.\\n'+error.message);
+  alert('나레이션을 재생하지 못했습니다.\\n'+error.message);
  }
 }
 function setVoice(on){
