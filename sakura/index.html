@@ -94,7 +94,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px;ma
 </section></main>
 <section id="reader" aria-label="동화 읽기"><div class="readerhead"><div><span class="eyebrow">SAKURA STORYBOOK</span><h2 id="readingTitle">벚꽃 숲의 작은 토끼</h2></div><div class="readerctrl"><button class="smallbtn" id="apiBtn" title="기존 동화 스튜디오의 Google API 키 연결">🔑 Gemini 연결</button><button class="smallbtn" id="musicBtn" aria-pressed="false">♫ 배경음 OFF</button><button class="smallbtn" id="voiceBtn" aria-pressed="false">🔈 나레이션 OFF</button><label class="voicechoose" for="voiceSelect">목소리 <select id="voiceSelect" aria-label="한국어 목소리 선택"><option value="Kore">🌸 여성 · 포근한 엄마</option><option value="Charon">🌙 남성 · 다정한 아빠</option></select></label><label class="voicechoose" for="speedSelect">속도 <select id="speedSelect" aria-label="나레이션 읽기 속도"><option value="slow" selected>차분히</option><option value="normal">보통</option><option value="fast">경쾌하게</option></select></label><button class="smallbtn" id="backBtn">⌂ 책장</button></div></div>
 <div class="flipwrap"><div id="flipbook" aria-label="손가락으로 책장을 끌어 넘기는 동화책"></div></div>
-<div class="pagefoot"><button id="prev" aria-label="이전 페이지">‹</button><span class="progress" id="counter">1 / 6</span><button id="next" aria-label="다음 페이지">›</button></div><p class="tip">📖 책장을 넘기듯 좌우로 밀거나 페이지를 탭하세요. 음성은 Gemini AI가 생성합니다. 브라우저 기계음으로 대체하지 않습니다.</p></section>
+<div class="pagefoot"><button id="prev" aria-label="이전 페이지">‹</button><span class="progress" id="counter">1 / 6</span><button id="next" aria-label="다음 페이지">›</button></div><p class="tip">📖 책장을 넘기듯 좌우로 밀거나 페이지를 탭하세요. 한국어 동화 본문만 AI가 읽습니다. 영어 안내 문구는 전송하지 않습니다.</p></section>
 <footer class="footer">🌸 벚꽃 동화극장 · 모든 아이의 하루에 작은 꽃 한 송이</footer></div>
 <script>
 const stories=[
@@ -153,16 +153,15 @@ function decodeAudioData(base64,mime){
  const sampleRate=Number(mime.match(/rate=(\d+)/)?.[1])||24000;
  return wavFromPCM(pcm,sampleRate);
 }
-function gentleInstruction(voice,pace){
- const style=voice==='Charon'?'a soft-spoken and caring Korean father with warm natural baritone, gently smiling, expressive and never announcer-like':'a gentle Korean mother with a mellow, soft, natural feminine speaking voice, reassuring and kind, never squeaky, shrill or overly high-pitched';
- const tempo=pace==='slow'?'slow with natural restful pauses':pace==='fast'?'slightly lively and conversational':'unhurried and natural';
- return 'Read this Korean bedtime picture book passage exactly as written, in the voice of '+style+', '+tempo+'. Use fluent natural Korean, compassionate human phrasing and subtle emotion. Never sound robotic, clipped, sharp, theatrical or like an advertisement. Do not read these instructions aloud.\\n\\n';
-}
 async function generateGeminiAudio(text,voice,pace,key){
- const cacheKey=JSON.stringify([text,voice,pace]);
+ const cacheKey=JSON.stringify(['ko-only-v2',text,voice]);
  if(speechMemory.has(cacheKey))return speechMemory.get(cacheKey);
  const endpoint='https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash-lite-tts:generateContent';
- const payload={contents:[{parts:[{text:gentleInstruction(voice,pace)+text}]}],generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:voice}}}}};
+ // Only the Korean story may enter the speech model. Do not prepend ANY instructions.
+ const spokenText=String(text).trim();
+ if(!spokenText||!/[가-힣]/.test(spokenText)||/[A-Za-z]/.test(spokenText))throw Error('나레이션에는 한국어 동화 본문만 사용할 수 있습니다.');
+ const selectedVoice=voice==='Charon'?'Charon':'Kore';
+ const payload={contents:[{parts:[{text:spokenText}]}],generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:selectedVoice}}}}};
  const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(payload)});
  const result=await response.json().catch(()=>({}));
  if(!response.ok)throw Error('Gemini 음성 생성 오류 ('+response.status+'): '+(result.error?.message||'API 요청 실패'));
