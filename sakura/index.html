@@ -183,12 +183,63 @@ $('search').oninput=()=>{searchText=$('search').value.trim().toLocaleLowerCase()
 $('heroBrowse').onclick=()=>document.querySelector('.stageShell').scrollIntoView({behavior:'smooth',block:'start'});
 $('featuredRead').onclick=()=>{if(featured)openBook(featured)};
 function audioOff(){for(const source of [track,introTrack]){if(source){try{source.stop()}catch(e){}try{source.disconnect()}catch(e){}}}track=null;introTrack=null;if(trackUrl){URL.revokeObjectURL(trackUrl);trackUrl=null}}
-function stopMusic(){if(musicTrack){musicTrack.pause();musicTrack.currentTime=0;musicTrack=null}}
-function playMusic(){
- if(!musicOn||!active||musicTrack)return;
- const music=new Audio('./assets/sakura-lullaby.mp3');
- musicTrack=music;music.loop=true;music.volume=.8;music.preload='auto';
- music.play().catch(e=>{musicTrack=null;setStatus('배경음이 시작되지 않았습니다. 배경음 버튼을 눌러 재생하세요.');console.warn('Music playback:',e.message)});
+// Five original, pre-rendered theme tracks. Never generate music during reading.
+const musicNames={calm:'sakura-lullaby.mp3',joyful:'sakura-joyful.mp3',adventure:'sakura-adventure.mp3',mystery:'sakura-mystery.mp3',tender:'sakura-tender.mp3'};
+const musicCache=new Map();let musicTheme=null,musicSwitchId=0,musicFadeTimer=null;
+const musicGain=.32; // Quiet under the voice, louder when narration is off.
+function sceneMood(p){
+ if(p?.mood&&Object.hasOwn(musicNames,p.mood))return p.mood;
+ const words=((p?.heading||'')+' '+(p?.text||'')).toLowerCase();
+ if(/무섭|두렵|어둠|깜깜|비밀|수상|괴물|마녀|몰래|걱정|두근|속삭|이상한|놀랐|의심/.test(words))return 'mystery';
+ if(/달리|뛰어|쫓|모험|여행|싸우|용감|도전|힘차|훌쩍|폴짝|와다다|달려|펄쩍|찾아나/.test(words))return 'adventure';
+ if(/슬프|눈물|외롭|그리|미안|사과|위로|지쳤|서운|울었|불쌍|안타깝/.test(words))return 'tender';
+ if(/기뻐|기쁘|웃음|행복|즐거|신나|축하|선물|반갑|성공|해냈|환호|기적|놀라운/.test(words))return 'joyful';
+ return 'calm';
+}
+function musicVolume(){return narrationOn?musicGain:.52}
+function stopMusic(){
+ musicSwitchId++;
+ if(musicFadeTimer){clearInterval(musicFadeTimer);musicFadeTimer=null}
+ if(musicTrack){musicTrack.pause();musicTrack.currentTime=0;musicTrack=null}
+ musicTheme=null;
+}
+function preloadMusic(){
+ for(const [theme,file] of Object.entries(musicNames)){
+  if(musicCache.has(theme))continue;
+  const item=new Audio('./assets/'+file);item.loop=true;item.preload='auto';musicCache.set(theme,item);
+ }
+}
+function playMusic(mood){
+ if(!musicOn||!active)return;
+ const desired=Object.hasOwn(musicNames,mood)?mood:sceneMood(active.pages[currentPage]);
+ if(musicTrack&&musicTheme===desired){musicTrack.volume=musicVolume();return}
+ preloadMusic();
+ const old=musicTrack;
+ const next=musicCache.get(desired);
+ if(!next)return;
+ if(musicFadeTimer){clearInterval(musicFadeTimer);musicFadeTimer=null}
+ // Reuse the cached players so switching scenes does not redownload a soundtrack.
+ if(next!==old){next.currentTime=0;next.volume=0}
+ const serial=++musicSwitchId;
+ musicTrack=next;musicTheme=desired;
+ next.play().then(()=>{
+  let elapsed=0;const frames=12,target=musicVolume();
+  musicFadeTimer=setInterval(()=>{
+   if(serial!==musicSwitchId){clearInterval(musicFadeTimer);musicFadeTimer=null;return}
+   elapsed++;
+   next.volume=Math.min(target,target*elapsed/frames);
+   if(old&&old!==next)old.volume=Math.max(0,target*(1-elapsed/frames));
+   if(elapsed>=frames){
+    clearInterval(musicFadeTimer);musicFadeTimer=null;
+    if(old&&old!==next){old.pause();old.currentTime=0}
+   }
+  },115);
+ }).catch(e=>{
+  if(serial!==musicSwitchId)return;
+  musicTrack=null;musicTheme=null;
+  if(old&&old!==next)old.pause();
+  console.warn('Music could not start:',e.message);
+ });
 }
 async function prefetchBook(b,voice){
  let count=0;const list=filesOf(b,voice);const result=new Map();
@@ -204,7 +255,7 @@ async function prefetchBook(b,voice){
  return result;
 }
 async function openBook(b){
- if(loading)return;loading=true;unlocked=true;active=b;try{localStorage.setItem('sakura-reads-'+bookId(b),String(readCount(b)+1))}catch(e){};audioOff();stopMusic();try{ctx=ctx||new(window.AudioContext||window.webkitAudioContext)();ctx.resume()}catch(e){}if(musicOn)playMusic();
+ if(loading)return;loading=true;unlocked=true;active=b;try{localStorage.setItem('sakura-reads-'+bookId(b),String(readCount(b)+1))}catch(e){};audioOff();stopMusic();try{ctx=ctx||new(window.AudioContext||window.webkitAudioContext)();ctx.resume()}catch(e){}if(musicOn)playMusic(sceneMood(b.pages[0]));
  $('home').style.display='none';$('reader').style.display='block';$('bookTitle').textContent=b.title;
  const source=$('source');source.replaceChildren();source.append('원전 출처: ');const a=document.createElement('a');a.href=b.source_url||'#';a.target='_blank';a.rel='noopener noreferrer';a.textContent=b.source_title||'원전 보기';source.append(a);
  $('loading').style.display='block';$('book').style.display='none';$('pageNumber').textContent='모든 페이지를 먼저 준비하고 있습니다.';
@@ -257,7 +308,7 @@ function mount(b,assets){
  flip.loadFromHTML(pages);
  scheduleTextFit();
 }
-function playPage(n){if(!active)return;currentPage=n;$('pageNumber').textContent=(n+1)+' / '+active.pages.length;audioOff();if(!narrationOn)return;
+function playPage(n){if(!active)return;currentPage=n;if(musicOn)playMusic(sceneMood(active.pages[n]));$('pageNumber').textContent=(n+1)+' / '+active.pages.length;audioOff();if(!narrationOn)return;
  const p=active.pages[n].audio[$('voice').value],sound=decoded.get(p);if(!sound){setStatus('해당 음성 파일은 준비되지 않았습니다');return}
  try{
   if(ctx.state==='suspended')ctx.resume();
@@ -274,8 +325,8 @@ function playPage(n){if(!active)return;currentPage=n;$('pageNumber').textContent
 function closeBook(){active=null;audioOff();stopMusic();$('reader').style.display='none';$('home').style.display='block';}
 $('back').onclick=closeBook;
 $('narration').onclick=()=>{narrationOn=!narrationOn;$('narration').classList.toggle('on',narrationOn);$('narration').setAttribute('aria-pressed',String(narrationOn));$('narration').textContent=narrationOn?'🔊 나레이션 ON':'🔈 나레이션 OFF';if(active)playPage(currentPage)};
-$('music').onclick=()=>{musicOn=!musicOn;$('music').classList.toggle('on',musicOn);$('music').setAttribute('aria-pressed',String(musicOn));$('music').textContent=musicOn?'♫ 배경음 ON':'♫ 배경음 OFF';if(musicOn&&active)playMusic();else stopMusic()};
-$('book').addEventListener('pointerdown',()=>{if(musicOn&&active&&!musicTrack)playMusic()},{passive:true});
+$('music').onclick=()=>{musicOn=!musicOn;$('music').classList.toggle('on',musicOn);$('music').setAttribute('aria-pressed',String(musicOn));$('music').textContent=musicOn?'♫ 배경음 ON':'♫ 배경음 OFF';if(musicOn&&active)playMusic(sceneMood(active.pages[currentPage]));else stopMusic()};
+$('book').addEventListener('pointerdown',()=>{if(musicOn&&active&&!musicTrack)playMusic(sceneMood(active.pages[currentPage]))},{passive:true});
 // On narrow touch devices St.PageFlip can miss a swipe starting outside its paper edge.
 // Keep real drag turning; only fall back to animated flip if the touch gesture made no turn.
 let touchStart=null;
