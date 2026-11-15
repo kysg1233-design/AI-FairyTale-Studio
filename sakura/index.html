@@ -86,44 +86,78 @@ header{display:flex;align-items:center;justify-content:space-between;gap:12px;ma
 <main id="home">
 <section class="hero"><div><span class="eyebrow">A LITTLE MAGIC, EVERY DAY ✦</span><h1>벚꽃처럼 피어나는<br><em>우리의 이야기</em></h1><p>하루의 끝, 아이와 함께 펼치는 따스한 동화 한 장.<br>조용한 음악과 부드러운 목소리로 이야기를 만나요.</p><button class="primary" id="startHero">🌸 첫 동화 읽기 &nbsp;→</button></div>
 <div class="heroart"><svg viewBox="0 0 720 480" role="img" aria-label="벚꽃 숲에서 토끼와 새가 만나는 그림"><use href="#landscape"/><use href="#rabbit" x="330" y="196" width="173" height="235"/><use href="#bird" x="485" y="199" width="130" height="121"/><g fill="#ffc9db"><ellipse cx="284" cy="192" rx="6" ry="11" transform="rotate(36 284 192)"/><ellipse cx="600" cy="166" rx="6" ry="11" transform="rotate(-30 600 166)"/></g></svg></div></section>
-<div class="subhead"><div><h2>🌷 오늘의 동화책</h2><p>한 장씩 넘기며 마음을 키우는 시간</p></div><small style="color:#bb93a1">첫 번째 시즌 · 봄</small></div>
+<div class="subhead"><div><h2>📚 세계의 전래동화</h2><p>한 장씩 넘기며 마음을 키우는 시간</p></div><small style="color:#bb93a1">이솝 우화 · 공개 원전 각색</small></div>
 <section class="library">
-<button class="book" id="bookFirst"><div class="cover"><svg viewBox="0 0 720 480"><use href="#landscape"/><use href="#rabbit" x="325" y="188" width="190" height="245"/><use href="#bird" x="480" y="215" width="150" height="135"/></svg></div><div class="bookinfo"><small>🌸 창작 동화 · 약 3분</small><strong>벚꽃 숲의 작은 토끼</strong><p>새 친구와 나누는 다정한 봄날 이야기</p></div></button>
-<button class="book" id="bookSecond"><div class="cover" style="background:#deecdf"><svg viewBox="0 0 720 480"><use href="#landscape"/><use href="#rabbit" x="260" y="190" width="190" height="245"/><circle cx="550" cy="330" r="53" fill="#dfaf84"/><circle cx="540" cy="322" r="8" fill="#65565b"/><circle cx="580" cy="322" r="8" fill="#65565b"/></svg></div><div class="bookinfo"><small>🌼 창작 동화 · 약 2분</small><strong>봄바람의 비밀</strong><p>잃어버린 꽃씨를 찾아 떠나는 작은 여행</p></div></button>
-<button class="book" id="bookThird"><div class="cover" style="background:#e1e8f2"><svg viewBox="0 0 720 480"><use href="#landscape"/><circle cx="550" cy="120" r="71" fill="#fff5dc" opacity=".8"/><use href="#bird" x="320" y="235" width="195" height="175"/></svg></div><div class="bookinfo"><small>🌙 창작 동화 · 약 2분</small><strong>달빛을 품은 새</strong><p>용기를 찾아 떠나는 밤하늘 이야기</p></div></button>
+<button class="book" id="bookFirst"><div class="cover"><svg viewBox="0 0 720 480"><use href="#landscape"/><use href="#rabbit" x="325" y="188" width="190" height="245"/><use href="#bird" x="480" y="215" width="150" height="135"/></svg></div><div class="bookinfo"><small>📖 고전 우화</small><strong>벚꽃 숲의 작은 토끼</strong><p>새 친구와 나누는 다정한 봄날 이야기</p></div></button>
+<button class="book" id="bookSecond"><div class="cover" style="background:#deecdf"><svg viewBox="0 0 720 480"><use href="#landscape"/><use href="#rabbit" x="260" y="190" width="190" height="245"/><circle cx="550" cy="330" r="53" fill="#dfaf84"/><circle cx="540" cy="322" r="8" fill="#65565b"/><circle cx="580" cy="322" r="8" fill="#65565b"/></svg></div><div class="bookinfo"><small>📖 고전 우화</small><strong>봄바람의 비밀</strong><p>잃어버린 꽃씨를 찾아 떠나는 작은 여행</p></div></button>
+<button class="book" id="bookThird"><div class="cover" style="background:#e1e8f2"><svg viewBox="0 0 720 480"><use href="#landscape"/><circle cx="550" cy="120" r="71" fill="#fff5dc" opacity=".8"/><use href="#bird" x="320" y="235" width="195" height="175"/></svg></div><div class="bookinfo"><small>📖 고전 우화</small><strong>달빛을 품은 새</strong><p>용기를 찾아 떠나는 밤하늘 이야기</p></div></button>
 </section></main>
-<section id="reader" aria-label="동화 읽기"><div class="readerhead"><div><span class="eyebrow">SAKURA STORYBOOK</span><h2 id="readingTitle">벚꽃 숲의 작은 토끼</h2></div><div class="readerctrl"><button class="smallbtn" id="apiBtn" title="기존 동화 스튜디오의 Google API 키 연결">🔑 Gemini 연결</button><button class="smallbtn" id="musicBtn" aria-pressed="false">♫ 배경음 OFF</button><button class="smallbtn" id="voiceBtn" aria-pressed="false">🔈 나레이션 OFF</button><label class="voicechoose" for="voiceSelect">목소리 <select id="voiceSelect" aria-label="한국어 목소리 선택"><option value="Kore">🌸 여성 · 포근한 엄마</option><option value="Charon">🌙 남성 · 다정한 아빠</option></select></label><label class="voicechoose" for="speedSelect">속도 <select id="speedSelect" aria-label="나레이션 읽기 속도"><option value="slow" selected>차분히</option><option value="normal">보통</option><option value="fast">경쾌하게</option></select></label><button class="smallbtn" id="backBtn">⌂ 책장</button></div></div>
+<section id="reader" aria-label="동화 읽기"><div class="readerhead"><div><span class="eyebrow">SAKURA STORYBOOK</span><h2 id="readingTitle">벚꽃 숲의 작은 토끼</h2></div><div class="readerctrl"><button class="smallbtn" id="apiBtn" title="기존 동화 스튜디오의 Google API 키 연결">🔑 Gemini 연결</button><button class="smallbtn" id="musicBtn" aria-pressed="true">♫ 배경음 ON</button><button class="smallbtn" id="voiceBtn" aria-pressed="true">🔊 AI 나레이션 ON</button><label class="voicechoose" for="voiceSelect">목소리 <select id="voiceSelect" aria-label="한국어 목소리 선택"><option value="Leda">🌸 여성 · 젊고 부드러운 음색</option><option value="Charon">🌙 남성 · 다정한 아빠</option></select></label><label class="voicechoose" for="speedSelect">속도 <select id="speedSelect" aria-label="나레이션 읽기 속도"><option value="slow" selected>차분히</option><option value="normal">보통</option><option value="fast">경쾌하게</option></select></label><button class="smallbtn" id="backBtn">⌂ 책장</button></div></div>
 <div class="flipwrap"><div id="flipbook" aria-label="손가락으로 책장을 끌어 넘기는 동화책"></div></div>
 <div class="pagefoot"><button id="prev" aria-label="이전 페이지">‹</button><span class="progress" id="counter">1 / 6</span><button id="next" aria-label="다음 페이지">›</button></div><p class="tip">📖 책장을 넘기듯 좌우로 밀거나 페이지를 탭하세요. 한국어 동화 본문만 AI가 읽습니다. 영어 안내 문구는 전송하지 않습니다.</p></section>
 <footer class="footer">🌸 벚꽃 동화극장 · 모든 아이의 하루에 작은 꽃 한 송이</footer></div>
 <script>
 const stories=[
-{title:"벚꽃 숲의 작은 토끼", pages:[
-["벚꽃이 피었어요","따스한 봄날, 작은 토끼 모모는 벚꽃 숲으로 산책을 나왔어요. 분홍 꽃잎이 하늘하늘 춤추고 있었지요.",1],
-["누가 울고 있을까요?","그때 어디선가 작고 가느다란 울음소리가 들렸어요. 나뭇가지에 앉은 아기 새가 길을 잃어버렸대요.",2],
-["함께 찾아보자!","모모는 아기 새에게 말했어요. “걱정하지 마. 내가 함께 찾아줄게!” 두 친구는 벚꽃 길을 따라 걸었어요.",3],
-["꽃잎이 알려준 길","봄바람이 살랑 불더니 꽃잎들이 둥글게 빙글빙글 돌았어요. 꽃잎이 향하는 곳에 작은 둥지가 보였어요.",4],
-["다시 만난 가족","“엄마다!” 아기 새가 기쁘게 노래했어요. 엄마 새도 모모에게 고마운 마음을 전했지요.",5],
-["봄날의 선물","모모의 마음속에도 분홍 벚꽃 한 송이가 활짝 피어났어요. 친절한 마음은 봄바람을 타고 멀리멀리 퍼졌답니다.",6]]},
-{title:"봄바람의 비밀",pages:[
-["사라진 꽃씨","어느 아침, 모모는 정원에서 꽃씨 한 알이 사라진 것을 발견했어요.",1],
-["바람에게 물었어요","“봄바람아, 내 꽃씨를 보았니?” 바람이 나뭇잎 사이로 살랑살랑 대답했어요.",3],
-["작은 여행","모모는 바람을 따라 언덕을 넘고 시냇물을 건넜어요. 길가의 풀들도 함께 손을 흔들었어요.",4],
-["새로운 꽃밭","꽃씨는 햇볕 좋은 언덕에 내려앉아 싹을 틔우고 있었어요. “여기서 자라고 싶었구나!”",5],
-["나눠 가진 봄","모모는 꽃을 꺾지 않고 매일 찾아가 인사했어요. 언덕에는 모두가 함께 보는 꽃밭이 생겼답니다.",6]]},
-{title:"달빛을 품은 새",pages:[
-["작은 새의 소원","작은 새 노리는 달님처럼 환하게 빛나고 싶었어요. 하지만 밤하늘은 너무 넓고 어두웠지요.",2],
-["반짝이는 친구","반딧불이가 말했어요. “작아도 괜찮아. 너의 빛을 찾아봐.”",3],
-["용기의 노래","노리는 떨리는 마음으로 한 음, 두 음 노래하기 시작했어요. 숲속 친구들이 귀를 기울였지요.",4],
-["숲을 밝힌 마음","노리의 노래를 듣고 잠들지 못하던 아기 토끼가 웃었어요. 그 웃음은 달빛보다 따뜻했답니다.",5],
-["나만의 빛","노리는 알게 되었어요. 진짜 빛은 멀리 있는 달이 아니라 친구를 행복하게 하는 마음에 있다는 걸요.",6]]}
+ {title:"여우와 포도",source:"이솝 우화 · The Fox and the Grapes",url:"https://www.gutenberg.org/files/19994/19994-h/19994-h.htm",pages:[
+ ["맛있는 포도 발견","따사로운 오후, 배가 고픈 여우가 포도밭을 지나가고 있었어요. 높은 덩굴에 보랏빛 포도가 주렁주렁 매달려 있었지요.",0],
+ ["손이 닿지 않아요","여우는 발끝을 쭉 뻗었어요. 하지만 포도송이는 너무 높이 있었어요. 여우의 코끝에도 닿지 않았답니다.",1],
+ ["폴짝, 다시 폴짝!","여우는 뒤로 물러서서 있는 힘껏 뛰었어요. 한 번, 두 번, 세 번! 그래도 포도는 여전히 높은 곳에서 흔들렸지요.",2],
+ ["잠깐 쉬어 갈까?","숨이 찬 여우는 풀밭에 털썩 앉았어요. 바람에 흔들리는 포도를 올려다보며 한참 생각했답니다.",3],
+ ["새콤할 거야!","여우는 괜히 코를 찡긋했어요. “흥! 저 포도는 분명 시어서 맛이 없을 거야.” 그렇게 중얼거리며 돌아섰지요.",4],
+ ["솔직한 마음","하지만 여우는 알고 있었어요. 사실은 아주 먹고 싶었다는 걸요. 갖지 못했다고 해서 소중한 것을 깎아내릴 필요는 없답니다.",5]]},
+ {title:"사자와 생쥐",source:"이솝 우화 · The Lion and the Mouse",url:"https://www.gutenberg.org/cache/epub/53103/pg53103-images.html",pages:[
+ ["잠자는 사자","커다란 사자가 숲속 나무 그늘에서 쿨쿨 낮잠을 자고 있었어요. 그때 작은 생쥐 한 마리가 사자 곁을 달려갔지요.",0],
+ ["작은 친구의 약속","깜짝 놀란 사자가 생쥐를 붙잡았어요. 생쥐가 말했어요. “저를 놓아주세요. 언젠가 꼭 도와드릴게요!”",1],
+ ["사자의 웃음","사자는 피식 웃었어요. “이렇게 작은 네가 나를 돕는다고?” 그래도 생쥐를 다정하게 놓아주었답니다.",2],
+ ["숲속의 그물","며칠 뒤 사자가 사냥꾼의 그물에 걸리고 말았어요. 아무리 힘을 써도 그물은 풀리지 않았지요.",3],
+ ["작은 이빨의 힘","사자의 울음소리를 들은 생쥐가 달려왔어요. 생쥐는 작은 이빨로 그물의 밧줄을 갉기 시작했어요.",4],
+ ["서로 돕는 친구","마침내 그물이 끊어졌어요! 사자는 생쥐에게 고맙다고 말했지요. 도움의 크기는 몸집의 크기와 다르답니다.",5]]},
+ {title:"까마귀와 물병",source:"이솝 우화 · The Crow and the Pitcher",url:"https://www.gutenberg.org/cache/epub/53103/pg53103-images.html",pages:[
+ ["목마른 까마귀","햇볕이 쨍쨍한 날, 까마귀가 물을 찾아 날아다녔어요. 그러다 오래된 마당에서 물병 하나를 발견했어요.",0],
+ ["물이 너무 낮아요","까마귀가 물병을 들여다보았어요. 물이 조금 남아 있었지만 부리가 닿기엔 너무 깊었지요.",1],
+ ["좋은 생각이 났어!","까마귀는 주위를 둘러보다 조그만 조약돌들을 발견했어요. “아하! 이 돌들을 이용해 보자.”",2],
+ ["하나씩 퐁당","까마귀는 조약돌을 하나씩 물병 속에 넣었어요. 퐁당, 퐁당! 그때마다 물이 조금씩 높아졌지요.",3],
+ ["드디어 닿았다!","마침내 물이 병 위쪽까지 올라왔어요. 까마귀는 시원한 물을 마시고 환하게 웃었어요.",4],
+ ["지혜로운 해결","까마귀는 다시 하늘로 날아올랐어요. 힘으로 안 되는 일도 차분히 생각하면 방법을 찾을 수 있답니다.",5]]}
 ];
-let book=0,page=0,voice=false,music=false,audio=null,musicNodes=[],pageFlip=null;
+let book=0,page=0,voice=true,music=true,audio=null,musicNodes=[],pageFlip=null;
 const el=id=>document.getElementById(id);
-function sceneSVG(variant){const rabbit=variant===2?'<use href="#rabbit" x="160" y="200" width="190" height="240"/>':'<use href="#rabbit" x="320" y="190" width="190" height="245"/>';return '<use href="#landscape"/>'+rabbit+(variant===1?'':'<use href="#bird" x="480" y="210" width="150" height="140"/>')}
-function createPaper(kind,p,n){const d=document.createElement('div');d.className='paper';if(kind==='picture'){d.innerHTML='<div class="paper-art"><svg viewBox="0 0 720 480">'+sceneSVG(p[2])+'</svg></div>'}else{const w=document.createElement('div');w.className='paper-words';const small=document.createElement('small');small.textContent='SAKURA STORY · '+(n+1);const title=document.createElement('h3');title.textContent=p[0];const txt=document.createElement('p');txt.textContent=p[1];w.append(small,title,txt);d.append(w)}return d}
+function sceneSVG(step,storyIndex=book){
+ const sceneNum=Math.max(0,Math.min(5,Number(step)||0));
+ const palettes=[
+  ['#d4ebf8','#f9e7c9','#badb98'],['#f6e7cd','#fbd5bd','#b6d2a3'],['#deeeec','#ffe6c6','#b3d8a0'],
+  ['#d4e5f7','#fce1c6','#a6cdad'],['#f6d7cf','#ffedc9','#9dca9c'],['#cfdfef','#fce8d0','#9bc998']
+ ];
+ const pal=palettes[sceneNum];
+ const sky='<defs><linearGradient id="sceneSky" x2="0" y2="1"><stop stop-color="'+pal[0]+'"/><stop offset="1" stop-color="'+pal[1]+'"/></linearGradient></defs><rect width="720" height="480" fill="url(#sceneSky)"/><circle cx="'+(530-sceneNum*45)+'" cy="90" r="47" fill="#fff9db" opacity=".9"/><path d="M0 340 Q180 '+(290+sceneNum*5)+' 340 340 T720 316 V480 H0Z" fill="'+pal[2]+'"/><path d="M0 415 Q200 353 405 400 T720 381 V480 H0Z" fill="#7caf86" opacity=".55"/>';
+ const flowers='<g fill="#f8bfd1"><circle cx="83" cy="405" r="8"/><circle cx="192" cy="383" r="6"/><circle cx="610" cy="410" r="8"/></g>';
+ const tree='<path d="M115 370 Q103 206 145 65" stroke="#96735b" stroke-width="23" fill="none"/><g fill="#f3b8c3"><circle cx="145" cy="83" r="67"/><circle cx="92" cy="135" r="57"/><circle cx="218" cy="142" r="55"/></g>';
+ const fox=(x,y,scale=1)=>'<g transform="translate('+x+' '+y+') scale('+scale+')"><path d="M40 155 Q-40 145 -31 90 Q4 100 40 101" fill="#d47b45"/><ellipse cx="101" cy="145" rx="85" ry="62" fill="#dc884f"/><path d="M55 64 L33 -18 L98 20 L157 -18 L167 64Z" fill="#db8a52"/><path d="M54 54 Q105 30 163 54 L145 101 Q100 135 60 100Z" fill="#ffefdb"/><ellipse cx="75" cy="78" rx="7" ry="10" fill="#483946"/><ellipse cx="133" cy="78" rx="7" ry="10" fill="#483946"/><circle cx="105" cy="103" r="10" fill="#65434a"/><ellipse cx="49" cy="188" rx="23" ry="14" fill="#ffeddb"/><ellipse cx="147" cy="188" rx="23" ry="14" fill="#ffeddb"/></g>';
+ const vine='<path d="M550 10 Q585 62 530 145 M520 32 Q610 52 685 3 M556 89 Q650 103 698 70" stroke="#78925e" stroke-width="10" fill="none"/><g fill="#7b77af">'+Array.from({length:14},(_,i)=>'<circle cx="'+(538+(i%4)*23-(Math.floor(i/4)*8))+'" cy="'+(135+Math.floor(i/4)*24)+'" r="15"/>').join('')+'</g><g fill="#91a877"><ellipse cx="602" cy="53" rx="48" ry="18" transform="rotate(22 602 53)"/><ellipse cx="483" cy="49" rx="42" ry="15" transform="rotate(-25 483 49)"/></g>';
+ const lion=(x,y,scale=1)=>'<g transform="translate('+x+' '+y+') scale('+scale+')"><ellipse cx="95" cy="170" rx="95" ry="67" fill="#d89d61"/><circle cx="117" cy="89" r="91" fill="#a86c42"/><circle cx="117" cy="93" r="66" fill="#f6d49a"/><circle cx="85" cy="84" r="7" fill="#59403b"/><circle cx="149" cy="84" r="7" fill="#59403b"/><ellipse cx="117" cy="116" rx="24" ry="20" fill="#fce7c0"/><path d="M109 111 L125 111 L117 124Z" fill="#6b443f"/><path d="M100 136 Q117 150 135 136" stroke="#765146" stroke-width="5" fill="none"/><ellipse cx="36" cy="215" rx="29" ry="17" fill="#e6b47a"/><ellipse cx="160" cy="215" rx="29" ry="17" fill="#e6b47a"/></g>';
+ const mouse=(x,y,scale=1)=>'<g transform="translate('+x+' '+y+') scale('+scale+')"><path d="M22 97 Q-38 89 -20 34" stroke="#bd939b" stroke-width="9" fill="none"/><ellipse cx="70" cy="87" rx="63" ry="46" fill="#b7a3a4"/><circle cx="102" cy="56" r="44" fill="#cbbabc"/><circle cx="77" cy="19" r="25" fill="#cbbabc"/><circle cx="77" cy="19" r="13" fill="#e9b7bd"/><circle cx="110" cy="50" r="5" fill="#433c42"/><circle cx="143" cy="69" r="6" fill="#ec9eaa"/></g>';
+ const crow=(x,y,scale=1)=>'<g transform="translate('+x+' '+y+') scale('+scale+')"><ellipse cx="90" cy="105" rx="72" ry="68" fill="#4c526c"/><circle cx="137" cy="61" r="49" fill="#505873"/><path d="M174 73 L220 88 L174 100Z" fill="#e2ad6a"/><ellipse cx="70" cy="104" rx="40" ry="56" fill="#626b89" transform="rotate(-20 70 104)"/><circle cx="153" cy="52" r="7" fill="#fffbf2"/><circle cx="154" cy="53" r="3" fill="#3b3540"/><path d="M79 168 L72 202 M115 168 L113 202" stroke="#a56c59" stroke-width="7"/></g>';
+ const pitcher='<path d="M446 205 Q430 254 452 396 Q520 427 590 395 Q613 268 594 205Z" fill="#c77e62" stroke="#96604c" stroke-width="11"/><ellipse cx="520" cy="205" rx="75" ry="20" fill="#7e584e"/><ellipse cx="520" cy="207" rx="57" ry="12" fill="#75adc5"/><path d="M592 255 Q676 223 647 327 Q637 352 599 338" fill="none" stroke="#bb705a" stroke-width="16"/>';
+ let figures='';
+ if(storyIndex===0){
+  figures=vine+fox([100,160,250,320,300,400][sceneNum],[206,217,172,254,265,225][sceneNum],[1,1,1.03,.85,.9,.8][sceneNum]);
+  if(sceneNum===2)figures+='<path d="M350 280 Q400 190 448 115" stroke="#e8e5be" stroke-width="7" stroke-dasharray="14 16" fill="none"/>';
+  if(sceneNum===5)figures+='<g fill="#fff0bd"><circle cx="575" cy="349" r="25"/><circle cx="608" cy="378" r="18"/></g>';
+ }else if(storyIndex===1){
+  figures=tree+lion([280,280,280,300,300,350][sceneNum],[215,230,230,215,207,210][sceneNum],[.95,.92,.95,.95,.9,.8][sceneNum]);
+  figures+=mouse([200,170,160,165,235,230][sceneNum],[360,330,350,346,360,340][sceneNum],sceneNum===4?1.05:.77);
+  if(sceneNum===3||sceneNum===4)figures+='<path d="M311 250 L520 405 M370 218 L557 380 M460 241 L337 430 M510 255 L378 426" stroke="#cdbb95" stroke-width="8" opacity=".75"/>';
+ }else{
+  figures= '<path d="M436 250 L606 250" stroke="#b4937e" stroke-width="10"/>'+pitcher+crow([130,160,195,230,235,330][sceneNum],[175,165,160,160,180,110][sceneNum],[.88,.83,.85,.82,.8,.9][sceneNum]);
+  const stones=sceneNum>=2?Array.from({length:sceneNum===2?3:sceneNum===3?7:10},(_,i)=>'<ellipse cx="'+(335+(i%4)*26)+'" cy="'+(401-Math.floor(i/4)*16)+'" rx="14" ry="10" fill="#9e9c91"/>').join(''):'';
+  figures+=stones;
+  if(sceneNum>=4)figures+='<path d="M467 219 Q520 195 573 219" stroke="#7ec9de" stroke-width="8" fill="none"/>';
+ }
+ return sky+flowers+figures;
+}
+function createPaper(kind,p,n){const d=document.createElement('div');d.className='paper';if(kind==='picture'){d.innerHTML='<div class="paper-art"><svg viewBox="0 0 720 480">'+sceneSVG(p[2],book)+'</svg></div>'}else{const w=document.createElement('div');w.className='paper-words';const small=document.createElement('small');small.textContent='SAKURA STORY · '+(n+1);const title=document.createElement('h3');title.textContent=p[0];const txt=document.createElement('p');txt.textContent=p[1];w.append(small,title,txt);d.append(w)}return d}
 function updateReading(){if(!pageFlip)return;const index=pageFlip.getCurrentPageIndex();page=Math.min(stories[book].pages.length-1,Math.floor(index/2));el('counter').textContent=(page+1)+' / '+stories[book].pages.length;el('prev').disabled=index===0;el('next').disabled=index>=stories[book].pages.length*2-2;localStorage.setItem('sakura-page-'+book,page);if(voice)read()}
-function openBook(n){book=n;el('home').style.display='none';el('reader').style.display='block';el('readingTitle').textContent=stories[n].title;el('homeTop').classList.remove('active');el('readerTop').classList.add('active');if(pageFlip){try{pageFlip.destroy()}catch(e){}pageFlip=null}const root=el('flipbook');root.innerHTML='';const pages=[];stories[n].pages.forEach((p,i)=>{pages.push(createPaper('picture',p,i),createPaper('text',p,i))});pages.forEach(p=>root.append(p));if(!window.St||!window.St.PageFlip){root.textContent='종이책 엔진을 불러오지 못했습니다. 네트워크를 확인하고 새로고침해 주세요.';return}const saved=Math.min(stories[n].pages.length-1,Number(localStorage.getItem('sakura-page-'+n)||0));pageFlip=new St.PageFlip(root,{width:350,height:450,size:'stretch',minWidth:150,maxWidth:550,minHeight:210,maxHeight:700,drawShadow:true,maxShadowOpacity:.55,flippingTime:1000,showCover:false,usePortrait:false,mobileScrollSupport:false,useMouseEvents:true,disableFlipByClick:true,showPageCorners:true,startPage:saved*2});pageFlip.on('flip',updateReading);pageFlip.loadFromHTML(pages);updateReading();window.scrollTo({top:0,behavior:'smooth'})}
+function openBook(n){if(music&&!audio)playMusic();book=n;el('home').style.display='none';el('reader').style.display='block';el('readingTitle').textContent=stories[n].title;el('homeTop').classList.remove('active');el('readerTop').classList.add('active');if(pageFlip){try{pageFlip.destroy()}catch(e){}pageFlip=null}const root=el('flipbook');root.innerHTML='';const pages=[];stories[n].pages.forEach((p,i)=>{pages.push(createPaper('picture',p,i),createPaper('text',p,i))});pages.forEach(p=>root.append(p));if(!window.St||!window.St.PageFlip){root.textContent='종이책 엔진을 불러오지 못했습니다. 네트워크를 확인하고 새로고침해 주세요.';return}const saved=Math.min(stories[n].pages.length-1,Number(localStorage.getItem('sakura-page-'+n)||0));pageFlip=new St.PageFlip(root,{width:350,height:450,size:'stretch',minWidth:150,maxWidth:550,minHeight:210,maxHeight:700,drawShadow:true,maxShadowOpacity:.55,flippingTime:1000,showCover:false,usePortrait:false,mobileScrollSupport:false,useMouseEvents:true,disableFlipByClick:true,showPageCorners:true,startPage:saved*2});pageFlip.on('flip',updateReading);pageFlip.loadFromHTML(pages);updateReading();window.scrollTo({top:0,behavior:'smooth'})}
 function goHome(){stopSpeech();el('home').style.display='block';el('reader').style.display='none';el('readerTop').classList.remove('active');el('homeTop').classList.add('active');window.scrollTo({top:0,behavior:'smooth'})}
 function turn(delta){if(pageFlip){if(delta>0)pageFlip.flipNext('bottom');else pageFlip.flipPrev('bottom')}}
 /* Reuses the same Gemini TTS engine and voice choices as the original FairyTale Studio.
@@ -154,13 +188,13 @@ function decodeAudioData(base64,mime){
  return wavFromPCM(pcm,sampleRate);
 }
 async function generateGeminiAudio(text,voice,pace,key){
- const cacheKey=JSON.stringify(['ko-only-v2',text,voice]);
+ const cacheKey=JSON.stringify(['ko-only-v3',text,voice]);
  if(speechMemory.has(cacheKey))return speechMemory.get(cacheKey);
  const endpoint='https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash-lite-tts:generateContent';
  // Only the Korean story may enter the speech model. Do not prepend ANY instructions.
  const spokenText=String(text).trim();
  if(!spokenText||!/[가-힣]/.test(spokenText)||/[A-Za-z]/.test(spokenText))throw Error('나레이션에는 한국어 동화 본문만 사용할 수 있습니다.');
- const selectedVoice=voice==='Charon'?'Charon':'Kore';
+ const selectedVoice=voice==='Charon'?'Charon':'Leda';
  const payload={contents:[{parts:[{text:spokenText}]}],generationConfig:{responseModalities:['AUDIO'],speechConfig:{voiceConfig:{prebuiltVoiceConfig:{voiceName:selectedVoice}}}}};
  const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},body:JSON.stringify(payload)});
  const result=await response.json().catch(()=>({}));
@@ -185,7 +219,7 @@ async function read(){
   if(!configureKey()){voice=false;setVoice(false);return}
   key=getGeminiKey();
  }
- const ticket=narrationSerial, p=stories[book].pages[page],v=el('voiceSelect').value==='Charon'?'Charon':'Kore',pace=el('speedSelect').value||'slow';
+ const ticket=narrationSerial, p=stories[book].pages[page],v=el('voiceSelect').value==='Leda'?'Leda':'Charon',pace=el('speedSelect').value||'slow';
  el('voiceBtn').textContent='⏳ AI 나레이션 준비 중';
  try{
   const blob=await generateGeminiAudio(p[0]+'. '+p[1],v,pace,key);
@@ -210,11 +244,12 @@ function setVoice(on){
 el('apiBtn').addEventListener('click',()=>{configureKey();if(voice)read()});
 el('voiceSelect').addEventListener('change',()=>{localStorage.setItem('sakura-narrator',el('voiceSelect').value);if(voice)read()});
 el('speedSelect').addEventListener('change',()=>{if(voice)read()});
-const savedNarrator=localStorage.getItem('sakura-narrator');if(savedNarrator==='Kore'||savedNarrator==='Charon')el('voiceSelect').value=savedNarrator;
-updateKeyButton();
+const savedNarrator=localStorage.getItem('sakura-narrator');el('voiceSelect').value=savedNarrator==='Leda'?'Leda':'Charon';
+updateKeyButton();el('voiceBtn').classList.add('on');el('musicBtn').classList.add('on');
 function setMusic(on){music=on;el('musicBtn').textContent=music?'♫ 배경음 ON':'♫ 배경음 OFF';el('musicBtn').classList.toggle('on',music);el('musicBtn').setAttribute('aria-pressed',music);if(music)playMusic();else stopMusic()}
 function stopMusic(){if(audio){try{musicNodes.forEach(n=>n.stop());audio.close()}catch(e){} audio=null;musicNodes=[]}}
 function playMusic(){stopMusic();try{audio=new(window.AudioContext||window.webkitAudioContext)();const master=audio.createGain();master.gain.value=.035;master.connect(audio.destination);const notes=[261.63,329.63,392,523.25,440,392,329.63,293.66,261.63,329.63,392,440,392,329.63,293.66,261.63];let t=audio.currentTime+.08;for(let round=0;round<6;round++){notes.forEach((hz,i)=>{let osc=audio.createOscillator(),gain=audio.createGain();osc.type='sine';osc.frequency.value=hz;gain.gain.setValueAtTime(0,t);gain.gain.linearRampToValueAtTime(.48,t+.12);gain.gain.exponentialRampToValueAtTime(.001,t+1.1);osc.connect(gain);gain.connect(master);osc.start(t);osc.stop(t+1.12);musicNodes.push(osc);t+=.63})}}catch(e){setMusic(false)}}
+['bookFirst','bookSecond','bookThird'].forEach((id,i)=>{const card=el(id),svg=card.querySelector('.cover svg');svg.innerHTML=sceneSVG(0,i);card.querySelector('.bookinfo small').textContent='📖 고전 전래 우화 · 이솝';card.querySelector('.bookinfo strong').textContent=stories[i].title;card.querySelector('.bookinfo p').textContent='어린이를 위해 새롭게 각색한 이야기';});
 el('startHero').onclick=()=>openBook(0);el('bookFirst').onclick=()=>openBook(0);el('bookSecond').onclick=()=>openBook(1);el('bookThird').onclick=()=>openBook(2);
 el('homeTop').onclick=goHome;el('readerTop').onclick=()=>openBook(book);el('backBtn').onclick=goHome;
 el('prev').onclick=()=>turn(-1);el('next').onclick=()=>turn(1);el('voiceBtn').onclick=()=>setVoice(!voice);el('musicBtn').onclick=()=>setMusic(!music);
