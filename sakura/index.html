@@ -62,8 +62,8 @@ function stopMusic(){if(musicTrack){musicTrack.pause();musicTrack.currentTime=0;
 function playMusic(){
  if(!musicOn||!active||musicTrack)return;
  const music=new Audio('./assets/sakura-lullaby.mp3');
- musicTrack=music;music.loop=true;music.volume=.18;music.preload='auto';
- music.play().catch(e=>{setStatus('배경음 재생 제한: 책을 다시 선택하면 재시도합니다.');console.warn('Music playback:',e.message)});
+ musicTrack=music;music.loop=true;music.volume=.8;music.preload='auto';
+ music.play().catch(e=>{musicTrack=null;setStatus('배경음이 시작되지 않았습니다. 배경음 버튼을 눌러 재생하세요.');console.warn('Music playback:',e.message)});
 }
 async function prefetchBook(b,voice){
  let count=0;const list=filesOf(b,voice);const result=new Map();
@@ -109,6 +109,7 @@ function closeBook(){active=null;audioOff();stopMusic();$('reader').style.displa
 $('homeNav').onclick=closeBook;$('back').onclick=closeBook;
 $('narration').onclick=()=>{narrationOn=!narrationOn;$('narration').classList.toggle('on',narrationOn);$('narration').setAttribute('aria-pressed',String(narrationOn));$('narration').textContent=narrationOn?'🔊 나레이션 ON':'🔈 나레이션 OFF';if(active)playPage(currentPage)};
 $('music').onclick=()=>{musicOn=!musicOn;$('music').classList.toggle('on',musicOn);$('music').setAttribute('aria-pressed',String(musicOn));$('music').textContent=musicOn?'♫ 배경음 ON':'♫ 배경음 OFF';if(musicOn&&active)playMusic();else stopMusic()};
+$('book').addEventListener('pointerdown',()=>{if(musicOn&&active&&!musicTrack)playMusic()},{passive:true});
 $('voice').onchange=async()=>{if(!active)return;audioOff();const b=active;$('loading').style.display='block';$('loading').textContent='선택한 목소리 음성을 준비 중…';try{await prefetchBook(b,$('voice').value);if(active===b)playPage(currentPage)}catch(e){setStatus(e.message)}finally{$('loading').style.display='none'}};
 window.addEventListener('pagehide',()=>{audioOff();stopMusic();loaded.clear();decoded.clear()});
 fetchCatalog();loadCandidates();
