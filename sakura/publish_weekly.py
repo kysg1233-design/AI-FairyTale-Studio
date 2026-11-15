@@ -114,7 +114,7 @@ def save_image(data,output):
 def visual_difference(a,b):
     x=a.convert("L").resize((16,16));y=b.convert("L").resize((16,16))
     return sum(abs(k-v) for k,v in zip(x.getdata(),y.getdata()))/(256*255)
-def image_generate(item,plan,i,outpath):
+def image_generate(item,plan,i,outpath,reference=None):
     p=plan["pages"][i]
     message=(
       "Create a premium original children's storybook illustration, cinematic high-end 3D "
@@ -126,7 +126,18 @@ def image_generate(item,plan,i,outpath):
       ". Distinct scene "+str(i+1)+" out of "+str(DEFAULT_PAGES)+": "+p["scene_prompt"]+
       ". This is a specific separate event, not a repeated portrait."
     )
-    data=google(IMAGE_MODEL,{"contents":[{"parts":[{"text":message}]}],
+    parts=[{"text":message}]
+    if reference is not None:
+        if not reference.is_file(): fail("Image character reference missing")
+        parts[0]["text"] += (
+          " The attached preceding picture is a CHARACTER AND STYLE REFERENCE ONLY. "
+          "Keep the character's facial structure, clothing, body proportions, colours and "
+          "rendering style identical, but create the CURRENT scene as a clearly different "
+          "composition, action and camera angle. Do not copy the earlier scene."
+        )
+        parts.append({"inlineData":{"mimeType":"image/webp",
+                   "data":base64.b64encode(reference.read_bytes()).decode("ascii")}})
+    data=google(IMAGE_MODEL,{"contents":[{"parts":parts}],
          "generationConfig":{"responseModalities":["IMAGE"]}})
     inline=next((p["inlineData"]["data"] for c in data.get("candidates",[]) for p in c.get("content",{}).get("parts",[]) if p.get("inlineData",{}).get("data")),None)
     if not inline: fail(f"No image generated at page {i+1}")
@@ -185,7 +196,7 @@ def publish_one():
         earlier=[]
         for i in range(DEFAULT_PAGES):
             p=plan["pages"][i];filename=tmp/f"page-{i+1:02d}.webp"
-            small=image_generate(c,plan,i,filename)
+            small=image_generate(c,plan,i,filename,tmp/f"page-{i:02d}.webp" if i else None)
             if any(visual_difference(small,prev)<0.045 for prev in earlier):fail("Too-similar adjacent illustration; refuse publication")
             earlier.append(small)
             for person in ("male","female"):
