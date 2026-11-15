@@ -819,7 +819,7 @@ function mount(b,assets){
  moralBlock.append(blossom,moralTitle,moralLead,moralText,moralHeart);moralPage.append(moralBlock);
  pages.push(moralPage);
  pages.forEach(p=>host.append(p));
- flip=new St.PageFlip(host,{width:350,height:455,size:'stretch',minWidth:260,maxWidth:550,minHeight:338,maxHeight:720,showCover:false,drawShadow:true,maxShadowOpacity:.65,flippingTime:950,usePortrait:true,mobileScrollSupport:true,useMouseEvents:true,disableFlipByClick:true,showPageCorners:true});
+ flip=new St.PageFlip(host,{width:350,height:455,size:'stretch',minWidth:260,maxWidth:550,minHeight:338,maxHeight:720,showCover:false,drawShadow:true,maxShadowOpacity:.65,flippingTime:950,usePortrait:true,mobileScrollSupport:true,useMouseEvents:true,disableFlipByClick:false,showPageCorners:true});
  flip.on('flip',e=>{nativeTouchTurn=true;const n=Math.min(b.pages.length,e.data);if(n!==currentPage)playPage(n);updatePageTurnControls();scheduleTextFit()});
  flip.loadFromHTML(pages);
  scheduleTextFit();
@@ -833,9 +833,9 @@ function turnOnePage(direction){
  if(!flip||!active)return;
  const target=Math.max(0,Math.min(active.pages.length,flip.getCurrentPageIndex()+direction));
  if(target===flip.getCurrentPageIndex())return;
- // turnToPage is deterministic even when touch gestures are caught by scrolling.
- flip.turnToPage(target);
- if(currentPage!==target)playPage(target);
+ // Use the physical page-turn animation instead of instantly jumping pages.
+ // The 'flip' event is the single source of truth for narration and page count.
+ if(direction>0)flip.flipNext();else flip.flipPrev();
  scheduleTextFit();
 }
 $('pagePrev').onclick=()=>turnOnePage(-1);
