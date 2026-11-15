@@ -87,7 +87,7 @@ jobs:
         name: Generate and check a complete book
         run: python sakura/publish_weekly.py
       - name: Save staged media if daily Gemini quota interrupts production
-        if: steps.titleintro.outcome == 'failure' || steps.generate.outcome == 'failure'
+        if: always() && (steps.titleintro.outcome == 'failure' || steps.generate.outcome == 'failure')
         shell: bash
         run: |
           set -euo pipefail
