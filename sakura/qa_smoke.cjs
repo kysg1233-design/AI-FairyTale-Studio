@@ -166,6 +166,24 @@ async function tryCase(name,mobile=false){
   const newIndex=await page.evaluate(()=>flip.getCurrentPageIndex());
   result.checks.drag={before:loaded.pageIndex,after:newIndex};
   if(newIndex!==loaded.pageIndex+1)throw Error('One gesture must turn exactly ONE story page: '+loaded.pageIndex+' -> '+newIndex);
+  // Regression gate: a real RIGHTWARD finger drag MUST navigate backwards.
+  // Earlier QA only tested the forward swipe, letting one-way readers deploy.
+  await page.waitForTimeout(1250);
+  const backStart=box.x+box.width*.32,backEnd=box.x+box.width*.86;
+  if(mobile){
+   const cdp=await context.newCDPSession(page);
+   await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:backStart,y:centerY}]});
+   for(let n=1;n<=18;n++)await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:backStart+(backEnd-backStart)*n/18,y:centerY}]});
+   await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+  }else{
+   await page.mouse.move(backStart,centerY);await page.mouse.down();
+   await page.mouse.move(backEnd,centerY,{steps:20});await page.mouse.up();
+  }
+  await page.waitForTimeout(2750);
+  const previousIndex=await page.evaluate(()=>flip.getCurrentPageIndex());
+  result.checks.reverse_drag={before:newIndex,after:previousIndex};
+  if(previousIndex!==newIndex-1)throw Error('Real finger drag RIGHT must turn one page BACK: '+newIndex+' -> '+previousIndex);
+  if(result.errors.length)throw Error('JavaScript errors while dragging: '+result.errors.join('; '));
   await page.locator('#back').click();
   if(!await page.locator('#hero').isVisible()||await page.locator('#reader').isVisible())throw Error('Back navigation failed');
   result.checks.return_to_library=true;
