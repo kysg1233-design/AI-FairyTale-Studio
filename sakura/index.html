@@ -323,7 +323,7 @@ function mount(b,assets){
  });
  pages.forEach(p=>host.append(p));
  flip=new St.PageFlip(host,{width:350,height:455,size:'stretch',minWidth:260,maxWidth:550,minHeight:338,maxHeight:720,showCover:false,drawShadow:true,maxShadowOpacity:.65,flippingTime:950,usePortrait:true,mobileScrollSupport:false,useMouseEvents:true,disableFlipByClick:true,showPageCorners:true});
- flip.on('flip',e=>{const n=Math.min(b.pages.length-1,e.data);if(n!==currentPage)playPage(n);scheduleTextFit()});
+ flip.on('flip',e=>{nativeTouchTurn=true;const n=Math.min(b.pages.length-1,e.data);if(n!==currentPage)playPage(n);scheduleTextFit()});
  flip.loadFromHTML(pages);
  scheduleTextFit();
 }
@@ -348,10 +348,10 @@ $('music').onclick=()=>{musicOn=!musicOn;$('music').classList.toggle('on',musicO
 $('book').addEventListener('pointerdown',()=>{if(musicOn&&active&&!musicTrack)playMusic(sceneMood(active.pages[currentPage]))},{passive:true});
 // On narrow touch devices St.PageFlip can miss a swipe starting outside its paper edge.
 // Keep real drag turning; only fall back to animated flip if the touch gesture made no turn.
-let touchStart=null;
+let touchStart=null, nativeTouchTurn=false;
 $('book').addEventListener('touchstart',e=>{
  const t=e.touches[0];if(!t||!flip)return;
- touchStart={x:t.clientX,y:t.clientY,index:flip.getCurrentPageIndex()};
+ nativeTouchTurn=false;touchStart={x:t.clientX,y:t.clientY,index:flip.getCurrentPageIndex()};
 },{capture:true,passive:true});
 $('book').addEventListener('touchend',e=>{
  if(!touchStart||!flip)return;
@@ -360,9 +360,11 @@ $('book').addEventListener('touchend',e=>{
  const dx=t.clientX-from.x,dy=t.clientY-from.y;
  if(Math.abs(dx)<48||Math.abs(dx)<Math.abs(dy)*1.15)return;
  setTimeout(()=>{
-  if(!flip||flip.getCurrentPageIndex()!==from.index)return;
+  // Wait until native animation has completed before considering a fallback.
+  // Otherwise the same finger swipe triggers TWO independent page flips.
+  if(!flip||nativeTouchTurn||flip.getCurrentPageIndex()!==from.index)return;
   if(dx<0)flip.flipNext();else flip.flipPrev();
- },140);
+ },1150);
 },{capture:true,passive:true});
 
 $('voice').onchange=async()=>{if(!active)return;audioOff();const b=active;$('loading').style.display='block';$('loading').textContent='선택한 목소리 음성을 준비 중…';try{await prefetchBook(b,$('voice').value);if(active===b)playPage(currentPage)}catch(e){setStatus(e.message)}finally{$('loading').style.display='none'}};
