@@ -24,14 +24,74 @@ h2{font:700 25px 'Gowun Batang',serif}.intro{display:flex;align-items:end;justif
 .shelf{min-height:490px;display:flex;justify-content:center;align-items:center;filter:drop-shadow(0 17px 22px #8d6f7b62);padding:15px 4px}
 #book{touch-action:pan-y;max-width:100%}.leaf{background:#fffaf2;border:1px solid #efdfd9;overflow:hidden}.leaf img{width:100%;height:100%;object-fit:cover}.leaf .words{display:flex;flex-direction:column;justify-content:center;height:100%;padding:9%;background:#fffaf3;font-family:'Gowun Batang',serif}.words small{font:800 10px 'Nunito',sans-serif;color:#b8869e}.words h3{font-size:clamp(18px,2.2vw,29px);line-height:1.4}.words p{line-height:1.8;font-size:clamp(15px,1.55vw,20px);word-break:keep-all}.readerMeta{text-align:center;color:#a27e8e;font-size:12px}.status{font-size:12px;color:#8f7180;min-height:18px}.loading{background:#fff8f2;display:none;border-radius:19px;padding:14px 20px;color:#9a7282;margin:15px 0}footer{text-align:center;color:#a58b95;font-size:11px;padding:35px}
 @media(max-width:720px){.wrap{padding:12px 13px}.nav .tab{padding:8px 10px;font-size:12px}.hero{grid-template-columns:1fr}.heroCopy{padding:26px 20px 0}.art{min-height:170px;max-height:200px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.tile strong{font-size:16px}.tile div{padding:10px}.shelf{min-height:350px;padding:5px 0}.leaf .words{padding:7%}.leaf .words h3{font-size:16px}.leaf .words p{font-size:12px;line-height:1.65}.controls{gap:5px}.btn{font-size:11px;padding:8px 9px}}
+
+/* 2026 Sakura illustrated-library redesign; responsive without inventing titles or counts */
+:root{--pink:#df6b9b;--berry:#6c214b;--wood:#673f2e;--gold:#e9bb77;--paper:#fff9ed}
+body{background:radial-gradient(circle at 0 0,#ffdce8 0,transparent 29%),radial-gradient(circle at 100% 8%,#d8edff,transparent 36%),linear-gradient(125deg,#fff7f1,#fef0f7 60%,#fffaf0);color:#54324b}
+.wrap{max-width:1500px;padding:0 clamp(10px,2vw,28px) 35px}
+header{padding:14px clamp(8px,2vw,28px);margin:0 -10px 0;border-bottom:2px solid #ffffffb3;background:linear-gradient(115deg,#fff0f6ed,#e7f6ffed);box-shadow:0 5px 26px #a8739f19;position:relative;z-index:4}
+.brand{font-family:'Gowun Batang',serif;font-size:clamp(23px,2.7vw,37px);color:#92295e;text-shadow:1px 1px #fff}.brand small{font-size:10px;color:#a86784;letter-spacing:2px}
+.nav{display:flex;gap:8px;flex-wrap:wrap}.tab{border:1px solid transparent;background:transparent;color:#6e4063;transition:.2s;padding:11px 18px;font-weight:900;font-size:14px}.tab.active,.tab:hover{background:#fff2f8;border:1px solid #ec96ba;box-shadow:0 5px 13px #e8a6bb66;color:#ba477b}
+.hero{grid-template-columns:1fr 1fr;margin-top:20px;min-height:330px;background:linear-gradient(130deg,#6a3b53 0%,#b9768b 49%,#fde6db 100%);border:7px solid #fff2f0;box-shadow:0 19px 36px #9f628059;position:relative}
+.heroCopy{position:relative;z-index:2;color:#fff;padding:35px clamp(24px,5vw,65px)}.heroCopy small{color:#ffe0aa;font-weight:900}.heroCopy h1{color:#fff8f8;text-shadow:1px 3px #7d4562;font-size:clamp(33px,4vw,56px)}.heroCopy h1 span{color:#ffe2a5}.heroCopy p{color:#fff0f6;font-size:16px}
+.hero .art{background:linear-gradient(130deg,#ffd8e53b,#fff1c97a);padding:14px;display:flex;align-items:center;justify-content:center}
+.featureCover{position:relative;width:min(98%,530px);height:300px;border-radius:12px 21px 21px 12px;display:flex;overflow:hidden;background:linear-gradient(135deg,#efdcc4,#fff8ef);box-shadow:14px 16px 2px #8b4c5061,22px 23px 27px #51222a70;border:8px solid #fbeacb;transform:rotate(-2deg)}
+.featureCover img{object-fit:cover;width:63%;height:100%;}.featureCopy{width:37%;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px;text-align:center;gap:10px;font-family:'Gowun Batang',serif;color:#81465e;font-weight:700;background:#fff7e6}.featureCopy strong{font-size:clamp(17px,2vw,29px)}.featureCopy span{font-size:12px;line-height:1.7}.featureCopy button{background:#d8769f;color:#fff;border:0;padding:10px 14px;border-radius:18px;font-weight:900}
+.stageShell{display:grid;grid-template-columns:250px minmax(0,1fr);gap:17px;margin-top:20px}
+.sidebar{background:linear-gradient(115deg,#80543b,#603b35 70%,#7c4e44);border-radius:21px;padding:18px 13px;color:#fff8e8;box-shadow:inset 0 0 0 3px #c89768,0 12px 25px #6a42504a;align-self:start}
+.sidebarTitle{font:700 21px 'Gowun Batang',serif;padding:12px 10px;border-bottom:2px solid #edc38a;margin:0 0 15px}.sideFilter{display:flex;width:100%;align-items:center;justify-content:space-between;border:0;border-bottom:1px solid #fff2ce30;background:transparent;color:#fff5ea;text-align:left;padding:13px 11px;font-weight:800}.sideFilter:hover,.sideFilter.active{border-radius:25px;background:linear-gradient(90deg,#ffeff8,#ef9ec3);color:#823b58}.sideFilter small{font-size:11px;opacity:.9}
+.sideNote{margin:20px 7px 6px;border-radius:13px;background:#ffffff16;padding:13px;font-size:12px;line-height:1.9;color:#ffe2d0}
+.contentArea{min-width:0}
+.searchBar{display:flex;align-items:center;gap:12px;border-radius:15px;background:#ffffffd9;border:1px solid #e7c7d3;padding:12px 16px;box-shadow:0 7px 17px #e4b8c72b;margin-bottom:14px}
+.searchBar input{border:0;outline:0;background:transparent;font:inherit;width:100%;min-width:0;color:#703c5e}
+.intro{margin:17px 0 14px}.intro h2{margin:0;font-size:clamp(18px,2vw,26px)}.intro p{margin-top:5px}
+#bookCount{font-weight:900;background:#ffe4ee;border-radius:99px;padding:7px 12px;color:#a24c76;font-size:12px}
+.grid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:16px}
+.tile{position:relative;border:2px solid #fff;box-shadow:0 8px 19px #8b517b32;transition:.2s;cursor:pointer}.tile:hover{transform:translateY(-5px);box-shadow:0 13px 28px #8b517b45}.tile img{aspect-ratio:4/3}.tile strong{font-size:19px}.tile div{padding:13px 16px 15px}.tile p{margin-bottom:0}
+.faveBtn{position:absolute;top:9px;right:9px;width:38px;height:38px;border-radius:50%;border:1px solid #fbd5e5;background:#fff9f3e8;font-size:20px;z-index:2;color:#c45d8b}.faveBtn[aria-pressed=true]{background:#ed8bb5;color:#fff}
+.empty{border:2px dashed #df97b8;background:linear-gradient(130deg,#fffdf3e6,#fff1f8f0);min-height:170px}
+#candidates{max-height:175px;overflow:auto;background:#fff9f1a0;padding:14px;border:1px solid #f1d8d8;border-radius:18px}.chip{background:#ffedf3;border:1px solid #f4d4e1}
+.readingStage{background:linear-gradient(130deg,#7b4b54,#b78473 35%,#684152 65%,#443b50);border:9px solid #e9c79a;border-radius:21px;box-shadow:inset 0 0 0 3px #ffebbc,0 20px 32px #8d567366;padding:18px}
+#reader{padding:25px 8px}.readerTitle h2{font-size:29px}.readerTitle{padding:0 9px 16px}.controls{justify-content:center;margin:2px 0 13px}.btn{background:#fff6fb;color:#995878}.btn.on{background:#bf5c8e;border-color:#e59cbc}.shelf{min-height:485px}.leaf{box-shadow:inset 0 0 25px #ce9f816b}.readerMeta,.status{color:#fff5dd}.loading{max-width:750px;margin:12px auto;background:#fff4e8}
+.filmstrip{display:flex;gap:12px;overflow-x:auto;padding:7px 3px 18px;scroll-snap-type:x mandatory;scrollbar-color:#e4a0bd transparent}.filmstrip .tile{flex:0 0 172px;scroll-snap-align:start}.filmstrip .tile strong{font-size:15px}.filmstrip .tile p{display:none}
+footer{color:#9e7191}
+@media(max-width:880px){.stageShell{grid-template-columns:170px minmax(0,1fr)}.sidebar{padding:12px 7px}.sideFilter{font-size:12px}.hero{min-height:260px}.featureCover{height:240px}.featureCopy span{font-size:10px}}
+@media(max-width:640px){header{padding:10px}.brand{font-size:24px}.brand small{font-size:8px}.nav{width:100%;overflow-x:auto;flex-wrap:nowrap}.tab{flex:0 0 auto;padding:9px 12px;font-size:11px}header{flex-wrap:wrap}.hero{grid-template-columns:1fr;min-height:auto;margin-top:11px;border-width:4px}.heroCopy{padding:22px 20px 8px}.heroCopy h1{font-size:31px;margin:7px 0}.heroCopy p{font-size:12px;line-height:1.6}.hero .art{max-height:190px;min-height:170px}.featureCover{height:157px;width:min(94%,320px);border-width:4px;box-shadow:8px 9px 8px #7b4b5890}.featureCopy strong{font-size:17px}.featureCopy button{font-size:10px;padding:6px}.stageShell{display:block}.sidebar{display:flex;overflow-x:auto;border-radius:15px;padding:9px;gap:7px;margin-bottom:15px;box-shadow:0 7px 15px #74464a36}.sidebarTitle,.sideNote{display:none}.sideFilter{width:auto;white-space:nowrap;border:1px solid #e6b4a363;border-radius:99px;padding:9px 10px;gap:10px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.tile strong{font-size:15px}.tile small{font-size:11px}.tile p{font-size:10px}.readingStage{padding:8px;border-width:5px}.shelf{min-height:345px}.filmstrip .tile{flex-basis:140px}.readerTitle h2{font-size:22px}.btn{font-size:11px}}
+
 </style><script src="./vendor/page-flip.browser.js"></script>
 </head><body><div class="wrap">
-<header><div class="brand">🌸 벚꽃 동화극장<small>SAKURA STORY THEATER</small></div><nav class="nav"><button class="tab" id="homeNav">📚 동화책장</button></nav></header>
-<main id="home"><section class="hero"><div class="heroCopy"><small>STORIES FROM AROUND THE WORLD</small><h1>벚꽃처럼 피어나는<br><span>우리의 이야기</span></h1><p>한국과 세계의 오랜 이야기를<br>그림과 따뜻한 목소리로 만나요.<br>모든 그림과 음성은 책을 공개하기 전에 준비합니다.</p></div><div class="art"><svg viewBox="0 0 500 350" aria-label="벚꽃 아래 열린 그림책"><defs><linearGradient id="bg" x2="0" y2="1"><stop stop-color="#ffe5ef"/><stop offset="1" stop-color="#ffeecf"/></linearGradient></defs><rect width="500" height="350" fill="url(#bg)"/><path d="M40 340 Q120 240 250 285 T500 278 V350H0Z" fill="#c5ddb2"/><path d="M80 310Q55 150 110 30" stroke="#ab8174" stroke-width="21" fill="none"/><g fill="#f4b3c8"><circle cx="99" cy="35" r="70"/><circle cx="45" cy="91" r="56"/><circle cx="160" cy="84" r="52"/></g><path d="M160 215 Q210 190 252 227 Q292 189 351 218V306Q285 279 252 311Q205 278 160 305Z" fill="#fff9eb" stroke="#bb8a98" stroke-width="7"/><path d="M252 226V310" stroke="#cb9eaa" stroke-width="5"/><g fill="#ed9ab2"><circle cx="190" cy="239" r="8"/><circle cx="321" cy="240" r="8"/></g></svg></div></section>
-<div class="intro"><div><h2>📖 지금 읽을 수 있는 완성 동화</h2><p>그림 전 페이지 + 남녀 음성 전 페이지 검증 완료된 책만 표시</p></div><span id="bookCount"></span></div>
-<div id="library" class="grid"></div><div id="empty" class="empty" style="display:none"><strong>새 그림책을 준비하고 있어요 🌷</strong><p>그림과 남녀 나레이션이 모두 제작·검증되면 책장에 자동으로 추가됩니다.<br>미완성 그림책은 독서 화면에 노출하지 않습니다.</p></div>
-<div class="intro"><div><h2>🌏 준비 중인 세계 전래동화</h2><p>원전 출처를 검토한 제작 후보입니다. 완성된 책으로 표시하지 않습니다.</p></div></div><div id="candidates" class="candidate"></div>
-</main>
+<header>
+ <div class="brand">📖 벚꽃 동화극장<small>AI로 만나는 전래동화 그림책</small></div>
+ <nav class="nav" aria-label="주 메뉴">
+ <button class="tab active" data-mode="all" id="homeNav">🏠 홈</button>
+ <button class="tab" data-mode="library">📖 동화책장</button>
+ <button class="tab" data-mode="popular">👑 인기동화</button>
+ <button class="tab" data-mode="new">🗓️ 신규동화</button>
+ <button class="tab" data-mode="favs">♡ 내가 찜한 책</button>
+ </nav>
+</header>
+<main id="home">
+<section class="hero"><div class="heroCopy"><small>✦ ONCE UPON A TIME ✦</small><h1>동화 속 세상이<br><span>눈앞에 펼쳐져요</span></h1><p>아름다운 그림과 따뜻한 목소리로 만나는<br>한국과 세계의 전래동화, 벚꽃 동화극장.</p><button class="btn" id="heroBrowse">🌸 동화책 골라보기</button></div>
+ <div class="art"><div class="featureCover"><img id="featuredImage" alt="오늘의 추천 그림책 표지" src="" style="display:none"><div class="featureCopy" id="featuredCopy"><strong id="featuredTitle">동화가 피어나는 곳</strong><span id="featuredDesc">완성된 그림책을 펼쳐 보세요</span><button id="featuredRead" type="button">📖 책 펼치기</button></div></div></div></section>
+<div class="stageShell">
+<aside class="sidebar" aria-label="동화 카테고리">
+<div class="sidebarTitle">📚 이야기 책장</div>
+<button class="sideFilter active" data-cat="all"><span>📖 전체 동화</span><small id="count-all">0권</small></button>
+<button class="sideFilter" data-cat="한국"><span>🏯 한국 전래동화</span><small id="count-korea">0권</small></button>
+<button class="sideFilter" data-cat="세계"><span>🌏 세계 전래동화</span><small id="count-world">0권</small></button>
+<button class="sideFilter" data-cat="이솝"><span>🐾 이솝 우화</span><small id="count-aesop">0권</small></button>
+<button class="sideFilter" data-cat="그림"><span>🌲 그림 형제</span><small id="count-grimm">0권</small></button>
+<button class="sideFilter" data-cat="일본"><span>⛩️ 일본 설화</span><small id="count-japan">0권</small></button>
+<div class="sideNote">🌷 완성된 그림책만 책장에 전시합니다.<br>작품을 공개하기 전에 그림과 남녀 나레이션을 미리 준비해요.</div>
+</aside>
+<div class="contentArea"><label class="searchBar">🔎 <input id="search" autocomplete="off" type="search" placeholder="찾고 싶은 동화 제목을 입력하세요" aria-label="동화 검색"></label>
+<div class="intro"><div><h2 id="libraryHeading">📚 반짝반짝 동화책장</h2><p id="libraryInfo">동화책을 골라 손으로 페이지를 넘겨보세요.</p></div><span id="bookCount">0권</span></div>
+<div id="library" class="grid"></div>
+<div id="empty" class="empty" style="display:none"><strong>🌷 준비된 책을 찾을 수 없어요</strong><p>새로운 그림책은 삽화와 남녀 목소리를 모두 준비한 뒤 게시됩니다.</p></div>
+<div class="intro"><div><h2>✨ 지금 읽기 좋은 동화</h2><p>검증을 마친 책에서 추천합니다.</p></div></div><div class="filmstrip" id="recommendations"></div>
+<div class="intro"><div><h2>🌍 앞으로 만날 전래동화</h2><p>원전이 확보된 제작 후보입니다. 실제 출간된 책과 구분합니다.</p></div></div>
+<div id="candidates" class="candidate"></div>
+</div></div></main>
 <section id="reader"><div class="readerTitle"><div><h2 id="bookTitle"></h2><p id="source" class="source"></p></div><button class="btn" id="back">← 책장으로</button></div>
 <div class="controls"><button class="btn on" id="narration" aria-pressed="true">🔊 나레이션 ON</button><label class="btn">목소리 <select id="voice"><option value="male">남자 · 기본</option><option value="female">여자 · 젊고 부드럽게</option></select></label><button class="btn on" id="music" aria-pressed="true">♫ 배경음 ON</button></div>
 <div id="loading" class="loading" role="status">책의 모든 그림과 나레이션을 다운로드하고 있어요…</div>
@@ -51,9 +111,56 @@ async function fetchCatalog(){
  catch(e){catalog=[];console.warn('Catalogue:',e)}
  paintLibrary();
 }
-function paintLibrary(){const shelf=$('library');shelf.replaceChildren();$('bookCount').textContent=catalog.length+'권';$('empty').style.display=catalog.length?'none':'block';
- for(const b of catalog){const card=document.createElement('button');card.className='tile';const img=new Image();img.alt=b.title+' 표지';img.src=safePath(b.cover);const desc=document.createElement('div');const title=document.createElement('strong');title.textContent=b.title;const sub=document.createElement('small');sub.textContent=(b.region||'세계')+' · '+b.pages.length+'장면';const note=document.createElement('p');note.textContent='그림과 남녀 나레이션 사전 제작 완료';desc.append(title,sub,note);card.append(img,desc);card.onclick=()=>openBook(b);shelf.append(card)}
+
+let viewMode='all',category='all',searchText='',featured=null;
+let favourites=new Set();try{favourites=new Set(JSON.parse(localStorage.getItem('sakura-favourites')||'[]'))}catch(e){favourites=new Set()}
+function bookId(b){return b.cover}
+function isFave(b){return favourites.has(bookId(b))}
+function toggleFave(b){if(isFave(b))favourites.delete(bookId(b));else favourites.add(bookId(b));localStorage.setItem('sakura-favourites',JSON.stringify([...favourites]));paintLibrary()}
+function countCategory(b,cat){
+ const z=(b.region||'')+' '+(b.source_credit||'')+' '+(b.source_title||'');
+ if(cat==='all')return true;
+ if(cat==='한국')return b.region==='한국';
+ if(cat==='이솝')return /Aesop|이솝|그리스/i.test(z);
+ if(cat==='그림')return /Grimm|그림|독일/i.test(z);
+ if(cat==='일본')return /일본|Japanese|Ozaki/i.test(z);
+ if(cat==='세계')return b.region!=='한국';
+ return true
 }
+function makeTile(b){
+ const card=document.createElement('article');card.className='tile';
+ const open=document.createElement('button');open.type='button';open.style.cssText='background:none;border:0;padding:0;width:100%;text-align:left;color:inherit';open.setAttribute('aria-label',b.title+' 읽기');
+ const img=new Image();img.alt=b.title+' 표지';img.loading='lazy';img.src=safePath(b.cover);
+ const desc=document.createElement('div'),title=document.createElement('strong'),sub=document.createElement('small'),note=document.createElement('p');
+ title.textContent=b.title;sub.textContent=(b.region||'세계')+' · '+b.pages.length+'장면';note.textContent='🎧 남녀 나레이션 · 준비 완료';
+ desc.append(title,sub,note);open.append(img,desc);open.onclick=()=>openBook(b);
+ const fav=document.createElement('button');fav.type='button';fav.className='faveBtn';fav.textContent=isFave(b)?'♥':'♡';fav.setAttribute('aria-pressed',String(isFave(b)));fav.setAttribute('aria-label',b.title+' 찜하기');fav.onclick=()=>toggleFave(b);
+ card.append(open,fav);return card
+}
+function paintLibrary(){
+ const shelf=$('library'),items=catalog.filter(b=>countCategory(b,category)).filter(b=>viewMode!=='favs'||isFave(b)).filter(b=>b.title.toLocaleLowerCase().includes(searchText));
+ if(viewMode==='popular')items.sort((a,b)=>b.pages.length-a.pages.length||a.title.localeCompare(b.title,'ko'));
+ if(viewMode==='new')items.sort((a,b)=>String(b.published_at).localeCompare(String(a.published_at)));
+ shelf.replaceChildren();items.forEach(b=>shelf.append(makeTile(b)));$('bookCount').textContent=items.length+'권';$('empty').style.display=items.length?'none':'block';
+ const counts={'count-all':'all','count-korea':'한국','count-world':'세계','count-aesop':'이솝','count-grimm':'그림','count-japan':'일본'};
+ for(const [id,key]of Object.entries(counts))$(id).textContent=catalog.filter(b=>countCategory(b,key)).length+'권';
+ const titles={all:'📚 반짝반짝 동화책장',library:'📖 전체 동화책장',popular:'👑 인기 동화',new:'🗓️ 새로 나온 동화',favs:'♡ 내가 찜한 동화'};
+ $('libraryHeading').textContent=titles[viewMode];$('libraryInfo').textContent='그림과 남녀 음성을 모두 갖춘 실제 완성 도서 '+catalog.length+'권';
+ const picks=$('recommendations');picks.replaceChildren();catalog.slice(-12).reverse().forEach(b=>picks.append(makeTile(b)));
+ const chosen=catalog[0]||null;featured=chosen;
+ $('featuredTitle').textContent=chosen?chosen.title:'곧 만나게 될 새로운 이야기';
+ $('featuredDesc').textContent=chosen?(chosen.region||'세계')+' · 완성된 그림책':'그림·음성 제작이 끝나면 책장에 공개돼요';
+ $('featuredImage').style.display=chosen?'block':'none';if(chosen)$('featuredImage').src=safePath(chosen.cover);
+ $('featuredRead').disabled=!chosen;
+ document.querySelectorAll('[data-mode]').forEach(btn=>btn.classList.toggle('active',btn.dataset.mode===viewMode||(viewMode==='all'&&btn.dataset.mode==='all')));
+ document.querySelectorAll('[data-cat]').forEach(btn=>btn.classList.toggle('active',btn.dataset.cat===category))
+}
+function switchMode(mode){closeBook();viewMode=mode;category='all';paintLibrary();if(mode!=='all')document.querySelector('.stageShell').scrollIntoView({behavior:'smooth',block:'start'})}
+document.querySelectorAll('[data-mode]').forEach(btn=>btn.onclick=()=>switchMode(btn.dataset.mode));
+document.querySelectorAll('[data-cat]').forEach(btn=>btn.onclick=()=>{category=btn.dataset.cat;viewMode='library';paintLibrary()});
+$('search').oninput=()=>{searchText=$('search').value.trim().toLocaleLowerCase();paintLibrary()};
+$('heroBrowse').onclick=()=>document.querySelector('.stageShell').scrollIntoView({behavior:'smooth',block:'start'});
+$('featuredRead').onclick=()=>{if(featured)openBook(featured)};
 async function loadCandidates(){
  try{const r=await fetch('./books/candidates.json');const list=await r.json();const host=$('candidates');host.replaceChildren();list.forEach(x=>{const tag=document.createElement('span');tag.className='chip';tag.textContent=(x.region||'세계')+' · '+x.title;host.append(tag)})}catch(e){console.warn(e)}
 }
@@ -106,7 +213,7 @@ function playPage(n){if(!active)return;currentPage=n;$('pageNumber').textContent
  try{if(ctx.state==='suspended')ctx.resume();const source=ctx.createBufferSource();const volume=ctx.createGain();volume.gain.value=.9;source.buffer=sound;source.connect(volume);volume.connect(ctx.destination);track=source;source.start(0)}catch(e){setStatus('나레이션을 재생할 수 없습니다: '+e.message)}
 }
 function closeBook(){active=null;audioOff();stopMusic();$('reader').style.display='none';$('home').style.display='block';}
-$('homeNav').onclick=closeBook;$('back').onclick=closeBook;
+$('back').onclick=closeBook;
 $('narration').onclick=()=>{narrationOn=!narrationOn;$('narration').classList.toggle('on',narrationOn);$('narration').setAttribute('aria-pressed',String(narrationOn));$('narration').textContent=narrationOn?'🔊 나레이션 ON':'🔈 나레이션 OFF';if(active)playPage(currentPage)};
 $('music').onclick=()=>{musicOn=!musicOn;$('music').classList.toggle('on',musicOn);$('music').setAttribute('aria-pressed',String(musicOn));$('music').textContent=musicOn?'♫ 배경음 ON':'♫ 배경음 OFF';if(musicOn&&active)playMusic();else stopMusic()};
 $('book').addEventListener('pointerdown',()=>{if(musicOn&&active&&!musicTrack)playMusic()},{passive:true});
