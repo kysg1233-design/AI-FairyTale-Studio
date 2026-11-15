@@ -44,7 +44,8 @@ async function tryCase(name,mobile=false){
   await page.waitForFunction(()=>document.querySelector('#reader')?.style.display==='block'&&document.querySelector('#book')?.style.display==='block'&&typeof flip!=="undefined"&&flip!=null,null,{timeout:70000});
   result.checks.story_opened=true;
   const leafCount=await page.locator('#book .storyLeaf').count();
-  if(leafCount!==expected /* no: expected is books, not pages */ && leafCount!==await page.evaluate(()=>active.pages.length))throw Error('One illustration and chapter must make one physical page');
+  if(leafCount!==await page.evaluate(()=>active.pages.length+1))throw Error('Story must have one illustrated leaf per scene and one final parent moral page');
+  if(await page.locator('#book .moralLeaf').count()!==1)throw Error('Parent-read moral closing page missing');
   result.checks.one_leaf_per_scene=leafCount;
   const loaded=await page.evaluate(()=>({
     pageIndex:flip.getCurrentPageIndex(),
@@ -137,6 +138,42 @@ async function tryCase(name,mobile=false){
    if(!await page.locator('#hero').isVisible())throw Error('Could not return after reopening '+cycle);
   }
   result.checks.reopen_after_back=reopenChecks;
+  // The final dedicated leaf must show the story-specific parent lesson, never TTS.
+  await page.locator('#featuredRead').click();
+  await page.waitForFunction(()=>document.querySelector('#book')?.style.display==='block'&&
+     document.querySelectorAll('#book .moralLeaf').length===1,null,{timeout:65000});
+  const moral=await page.evaluate(()=>{
+    const last=active.pages.length;flip.turnToPage(last);return {last,text:active.parent_moral};
+  });
+  await page.waitForTimeout(300);
+  const lesson=await page.evaluate(()=>({
+    index:flip.getCurrentPageIndex(),pageNumber:document.querySelector('#pageNumber').textContent,
+    title:document.querySelector('.moralLeaf h3')?.textContent,
+    moral:document.querySelector('.moralLeaf p')?.textContent,
+    narrationStopped:track===null
+  }));
+  if(lesson.index!==moral.last||!lesson.pageNumber.includes('교훈')||lesson.title!=='오늘의 교훈'
+     ||lesson.moral!==moral.text||!lesson.narrationStopped)
+    throw Error('Parent lesson must be final page with no autoplay TTS: '+JSON.stringify(lesson));
+  result.checks.parent_moral_last_page=lesson;
+  // Floating scroll buttons must move the viewport, never the book pages.
+  await page.evaluate(()=>{window.scrollTo(0,0)});
+  await page.waitForTimeout(200);
+  if(!await page.locator('#scrollDown').isVisible()||!await page.locator('#scrollUp').isVisible())
+    throw Error('Floating reader scroll controls missing');
+  const beforeScroll=await page.evaluate(()=>({y:window.scrollY,index:flip.getCurrentPageIndex()}));
+  await page.locator('#scrollDown').click();
+  await page.waitForTimeout(850);
+  const afterScroll=await page.evaluate(()=>({y:window.scrollY,index:flip.getCurrentPageIndex()}));
+  if(afterScroll.y<=beforeScroll.y+60||afterScroll.index!==beforeScroll.index)
+    throw Error('Down scroll control did not scroll independently of the book: '+JSON.stringify({beforeScroll,afterScroll}));
+  await page.locator('#scrollUp').click();
+  await page.waitForTimeout(850);
+  const upScroll=await page.evaluate(()=>window.scrollY);
+  if(upScroll>=afterScroll.y-40)throw Error('Up scroll control did not move document upward');
+  result.checks.separate_scroll_buttons={beforeScroll,afterScroll,upScroll};
+  await page.locator('#back').click();
+  if(await page.locator('#scrollDown').isVisible())throw Error('Scroll buttons remain visible after closing the book');
   result.success=true;
   await page.screenshot({path:'sakura/qa-'+name+'.png',fullPage:true});
   await context.close();
