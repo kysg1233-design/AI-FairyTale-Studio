@@ -218,10 +218,11 @@ function fitStoryText(){
  for(const inner of words){
   const title=inner.querySelector('h3'),para=inner.querySelector('p');if(!title||!para)continue;
   inner.classList.remove('text-tight');title.style.fontSize='';para.style.fontSize='';
+  inner.style.justifyContent='';inner.style.padding='';inner.style.overflowY='';title.style.lineHeight='';para.style.lineHeight='';
+  if(inner.clientHeight<100)continue; // PageFlip may keep non-visible sheets unmeasured. Fit when shown.
   const fits=()=>inner.scrollHeight<=inner.clientHeight+1&&title.scrollWidth<=title.clientWidth+1&&para.scrollWidth<=para.clientWidth+1;
   if(fits())continue;
   inner.classList.add('text-tight');
-  const height=inner.clientHeight;
   // Determine a comfortable font size for the exact rendered book page.
   let normal=parseFloat(getComputedStyle(para).fontSize)||13;
   let head=parseFloat(getComputedStyle(title).fontSize)||16;
