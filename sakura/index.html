@@ -82,6 +82,7 @@ footer{color:#9e7191}
 <button class="sideFilter" data-cat="이솝"><span>🐾 이솝 우화</span><small id="count-aesop">0권</small></button>
 <button class="sideFilter" data-cat="그림"><span>🌲 그림 형제</span><small id="count-grimm">0권</small></button>
 <button class="sideFilter" data-cat="일본"><span>⛩️ 일본 설화</span><small id="count-japan">0권</small></button>
+<button class="sideFilter" data-cat="안데르센"><span>🏰 안데르센 동화</span><small id="count-andersen">0권</small></button>
 <div class="sideNote">🌷 완성된 그림책만 책장에 전시합니다.<br>작품을 공개하기 전에 그림과 남녀 나레이션을 미리 준비해요.</div>
 </aside>
 <div class="contentArea"><label class="searchBar">🔎 <input id="search" autocomplete="off" type="search" placeholder="찾고 싶은 동화 제목을 입력하세요" aria-label="동화 검색"></label>
@@ -125,6 +126,7 @@ function countCategory(b,cat){
  if(cat==='이솝')return /Aesop|이솝|그리스/i.test(z);
  if(cat==='그림')return /Grimm|그림|독일/i.test(z);
  if(cat==='일본')return /일본|Japanese|Ozaki/i.test(z);
+ if(cat==='안데르센')return /Andersen|안데르센/i.test(z);
  if(cat==='세계')return b.region!=='한국';
  return true
 }
@@ -143,7 +145,7 @@ function paintLibrary(){
  if(viewMode==='popular')items.sort((a,b)=>readCount(b)-readCount(a)||a.title.localeCompare(b.title,'ko'));
  if(viewMode==='new')items.sort((a,b)=>String(b.published_at).localeCompare(String(a.published_at)));
  shelf.replaceChildren();items.forEach(b=>shelf.append(makeTile(b)));$('bookCount').textContent=items.length+'권';$('empty').style.display=items.length?'none':'block';
- const counts={'count-all':'all','count-korea':'한국','count-world':'세계','count-aesop':'이솝','count-grimm':'그림','count-japan':'일본'};
+ const counts={'count-all':'all','count-korea':'한국','count-world':'세계','count-aesop':'이솝','count-grimm':'그림','count-japan':'일본','count-andersen':'안데르센'};
  for(const [id,key]of Object.entries(counts))$(id).textContent=catalog.filter(b=>countCategory(b,key)).length+'권';
  const titles={all:'📚 반짝반짝 동화책장',library:'📖 전체 동화책장',popular:'👑 인기 동화',new:'🗓️ 새로 나온 동화',favs:'♡ 내가 찜한 동화'};
  $('libraryHeading').textContent=titles[viewMode];$('libraryInfo').textContent=viewMode==='popular'?'이 기기에서 많이 읽은 순서로 정렬했어요':('그림과 남녀 음성을 모두 갖춘 실제 완성 도서 '+catalog.length+'권');
