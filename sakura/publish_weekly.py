@@ -192,7 +192,11 @@ def publish_one():
     # Begin with the Gutenberg Aesop chapter whose source heading has been independently verified.
     # Thereafter balance the catalogue across Korean, Japanese, European and Aesop stories.
     first=next((x for x in unpublished if x['heading']=='THE FOX AND THE GRAPES'),None)
-    c=first if not existing.get('books') and first else min(unpublished,key=lambda x:(counts.get(x['region'],0),candidates.index(x)))
+    # The first launch should give readers several illustrated books, not a single title.
+    # Prefer headings previously validated against Aesop; the weekly runs can expand into other regions.
+    aesop_queue=['THE LION AND THE MOUSE','THE CROW AND THE PITCHER','THE TORTOISE AND THE HARE','THE FOX AND THE CROW','THE FOX AND THE GRAPES']
+    preferred=next((x for heading in aesop_queue for x in unpublished if x['heading']==heading),None)
+    c=first if not existing.get('books') and first else (preferred if len(existing.get('books',[]))<5 and preferred else min(unpublished,key=lambda x:(counts.get(x['region'],0),candidates.index(x))))
     slug="story-"+hashlib.sha256((c["source_url"]+"#"+c["heading"]).encode("utf-8")).hexdigest()[:12]
     destination=BOOK_DIR/slug
     if destination.exists():fail("Destination already exists; manual recovery required")
@@ -228,5 +232,18 @@ def publish_one():
     pending.replace(INDEX)
     print("SUCCESS: complete verified book published",slug)
 if __name__=="__main__":
-    try:publish_one()
-    except Exception as e:print("PUBLISH REFUSED:",str(e),file=sys.stderr);sys.exit(1)
+    target=max(1,min(int(os.getenv("SAKURA_BATCH_SIZE","4")),5))
+    completed=0
+    for n in range(target):
+        before=len(json.loads(INDEX.read_text("utf-8")).get("books",[])) if INDEX.exists() else 0
+        try:
+            publish_one()
+        except Exception as e:
+            print(f"BOOK {n+1} OF {target} NOT PUBLISHED: {e}",file=sys.stderr)
+            # Preserve verified books from previous iterations and proceed to public release.
+            if completed==0:sys.exit(1)
+            break
+        after=len(json.loads(INDEX.read_text("utf-8")).get("books",[])) if INDEX.exists() else 0
+        if after==before:break
+        completed+=1
+    print(f"BATCH RESULT: {completed} newly verified complete storybooks")
