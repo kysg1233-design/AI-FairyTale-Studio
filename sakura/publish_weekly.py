@@ -32,6 +32,8 @@ def http_json(url,body=None,retries=4,extra_headers=None):
             with urlopen(Request(url,data=raw,headers=headers),timeout=125) as r: return json.loads(r.read().decode("utf-8"))
         except HTTPError as e:
             msg=e.read().decode("utf8","replace")[:550]
+            if e.code==429 and ("per_day" in msg or "per day" in msg or "daily" in msg.lower()):
+                fail("Daily Gemini quota exceeded (HTTP 429). Already-produced scene media remain in a restartable staging folder.")
             if e.code not in (408,429,500,502,503,504) or attempt==retries-1: fail(f"HTTP {e.code}: {msg}")
         except (URLError, TimeoutError) as e:
             if attempt==retries-1: fail(f"Network error: {e}")
@@ -253,7 +255,13 @@ def publish_one():
     pending.replace(INDEX)
     print("SUCCESS: complete verified book published",slug)
 if __name__=="__main__":
-    target=max(1,min(int(os.getenv("SAKURA_BATCH_SIZE","4")),5))
+    existing_books=len(json.loads(INDEX.read_text("utf-8")).get("books",[])) if INDEX.exists() else 0
+    # Seed several fully preproduced books daily until the 40-book library is established.
+    # After that, only the Monday scheduled run publishes one new book.
+    if existing_books>=40 and os.getenv("GITHUB_EVENT_NAME")=="schedule" and datetime.now(timezone.utc).weekday()!=0:
+        print("40-book seed reached: weekly-only publishing is active")
+        sys.exit(0)
+    target=max(1,min(int(os.getenv("SAKURA_BATCH_SIZE","3")),3)) if existing_books<40 else 1
     completed=0
     for n in range(target):
         before=len(json.loads(INDEX.read_text("utf-8")).get("books",[])) if INDEX.exists() else 0
