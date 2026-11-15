@@ -92,6 +92,191 @@ footer{color:#9e7191}
  .storyLeaf .words h3{font-size:clamp(13px,4.2vw,18px)}
  .storyLeaf .words p{font-size:clamp(11px,3.5vw,14px);line-height:1.36}
 }
+
+/* Sakura Atelier — polished illustrated library, November 2026.
+   Visual-only upgrade. Do not change verified audio, story, or flipping code. */
+:root{
+ --sakura-plum:#54354f;
+ --sakura-rose:#ca7396;
+ --sakura-blush:#f5d5df;
+ --sakura-ink:#3f3040;
+ --sakura-cream:#fffaf7;
+ --sakura-line:#ebdfe3;
+ --sakura-shadow:0 22px 55px rgba(104,65,82,.11);
+}
+html{scroll-behavior:smooth}
+body{color:var(--sakura-ink);background:
+ radial-gradient(ellipse 600px 420px at -130px 0,#f9e1e6 0,transparent 77%),
+ radial-gradient(ellipse 550px 400px at 105% 260px,#f1e8f5 0,transparent 70%),
+ linear-gradient(180deg,#fffafb 0%,#fff6f6 45%,#fcf7f4 100%);
+ font-family:'Nunito',system-ui,sans-serif}
+.wrap{max-width:1440px;padding:0 clamp(16px,4vw,56px) 46px}
+header{margin:0 calc(-1 * clamp(16px,4vw,56px));padding:17px clamp(16px,4vw,56px);
+ background:rgba(255,250,250,.90);border:0;border-bottom:1px solid #eedfe6;
+ box-shadow:0 6px 24px rgba(113,69,92,.045);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+ position:relative;z-index:15}
+.brand{font-family:'Gowun Batang',serif;font-size:clamp(25px,2.7vw,34px);font-weight:700;letter-spacing:-1.7px;color:#773f61;white-space:nowrap}
+.brand:after{content:'✦';font-size:13px;color:#df9db8;margin-left:6px;vertical-align:top}
+.nav{gap:5px}.tab{border:1px solid transparent;border-radius:999px;background:transparent;
+ font-size:13px;letter-spacing:-.25px;font-weight:800;color:#816d7d;padding:11px 15px;box-shadow:none;
+ transition:color .2s,background .2s,transform .2s,border .2s}
+.tab.active,.tab:hover{background:#fff0f5;color:#a64878;border:1px solid #f1cfda;box-shadow:none}
+.tab:hover{transform:translateY(-1px)}.tab:focus-visible{outline:3px solid #d49aba;outline-offset:2px}
+.hero{margin-top:26px;min-height:370px;grid-template-columns:1fr 1fr;align-items:stretch;
+ background:radial-gradient(circle at 16% 18%,rgba(255,238,244,.17),transparent 32%),
+ linear-gradient(116deg,#57344f 0%,#83536f 49%,#ce90a1 100%);
+ border:1px solid #cf9aac;border-radius:33px;box-shadow:0 22px 48px rgba(95,51,76,.19);
+ overflow:hidden;isolation:isolate}
+.hero:before{content:'✦  ·  ✧  ·  ✦';position:absolute;right:35px;top:18px;font-size:25px;
+ letter-spacing:25px;color:rgba(255,242,226,.45);z-index:0}
+.hero:after{content:'';position:absolute;width:360px;height:360px;bottom:-250px;left:-100px;
+ border-radius:50%;border:75px solid rgba(255,225,237,.065);pointer-events:none}
+.heroCopy{padding:clamp(28px,4.6vw,66px) clamp(25px,5vw,72px);display:flex;
+ flex-direction:column;align-items:flex-start;justify-content:center;min-width:0}
+.heroCopy h1{font-family:'Gowun Batang',serif;font-size:clamp(36px,4.5vw,62px);
+ line-height:1.42;letter-spacing:-2.3px;margin:0 0 16px;color:#fff8f5;
+ text-shadow:0 2px 14px rgba(65,33,49,.25)}
+.heroCopy h1 span{color:#ffe0cf}
+.heroCopy p{font-size:14px;line-height:1.9;letter-spacing:-.15px;color:#fbe6ed;margin:0 0 26px}
+#heroBrowse{background:#fff6f0;border:1px solid #fff;color:#815170;
+ box-shadow:0 8px 20px #4d2a4936;padding:13px 23px;font-size:14px;letter-spacing:-.3px}
+#heroBrowse:hover{background:#fff;transform:translateY(-2px)}
+.hero .art{min-height:340px;position:relative;padding:26px;
+ background:radial-gradient(ellipse at 55% 40%,rgba(255,233,214,.7),transparent 56%),
+ radial-gradient(ellipse at 70% 80%,rgba(241,186,209,.42),transparent 55%);}
+.featureCover{height:305px;width:min(100%,500px);border:6px solid #fff2df;border-radius:9px 19px 19px 9px;
+ background:#fbf0e6;box-shadow:5px 5px 0 #f8dcc5,18px 20px 27px rgba(52,26,48,.36);
+ transform:rotate(-4deg);transition:transform .35s,box-shadow .35s}
+.featureCover:hover{transform:rotate(-1.5deg) translateY(-5px);box-shadow:8px 12px 0 #f8dcc5,22px 29px 35px rgba(52,26,48,.28)}
+.featureCover:before{content:'';position:absolute;left:3px;top:0;bottom:0;width:9px;
+ background:linear-gradient(90deg,#5e355241,#ffffff70,#824b4c12);z-index:2}
+.featureCover img{width:62%;object-fit:cover}
+.featureCopy{width:38%;background:linear-gradient(155deg,#fff9eb,#fce9e7);padding:17px;gap:14px;color:#79495e}
+.featureCopy strong{font-size:clamp(19px,2vw,29px);line-height:1.45;word-break:keep-all}
+.featureCopy span{font-size:12px;letter-spacing:.3px;color:#9c7586}
+.featureCopy button{background:#aa617e;border:1px solid #a55776;color:#fff;padding:10px 14px;
+ border-radius:999px;box-shadow:0 4px 12px #ad6c8a40;transition:background .2s,transform .2s}
+.featureCopy button:hover{background:#89445f;transform:translateY(-2px)}
+.stageShell{grid-template-columns:234px minmax(0,1fr);gap:29px;margin-top:35px;align-items:start}
+.sidebar{background:rgba(255,255,255,.88);border:1px solid #f0dce4;border-radius:24px;
+ padding:17px 13px 20px;color:#654357;box-shadow:var(--sakura-shadow)}
+.sidebarTitle{font-family:'Gowun Batang',serif;color:#71445d;font-size:21px;
+ border-bottom:1px solid #f3e3e8;margin:0 6px 9px;padding:12px 8px 18px}
+.sideFilter{font-size:13px;font-weight:800;letter-spacing:-.3px;color:#866e7d;
+ border:1px solid transparent;border-radius:13px;padding:13px 12px;gap:12px;transition:background .16s,color .16s}
+.sideFilter small{font-size:11px;background:#f9f2f5;color:#a88999;padding:3px 7px;border-radius:99px}
+.sideFilter.active,.sideFilter:hover{color:#a14c75;background:#fff0f5;border-color:#f7d7e3;border-radius:13px}
+.sideFilter.active small,.sideFilter:hover small{background:white;color:#b5698b}
+.contentArea{min-width:0}
+.searchBar{padding:16px 20px;background:rgba(255,255,255,.93);border:1px solid #eee0e6;
+ border-radius:19px;box-shadow:0 6px 18px rgba(93,55,72,.05);font-size:17px}
+.searchBar:focus-within{border-color:#dba4bd;box-shadow:0 0 0 4px rgba(221,159,186,.18)}
+.searchBar input{font-size:14px;font-weight:600;color:#6f4d60}
+.searchBar input::placeholder{color:#b3a1ac}
+.intro{margin:27px 0 17px}.intro h2{font-family:'Gowun Batang',serif;
+ font-size:clamp(21px,2.2vw,29px);letter-spacing:-.8px;color:#604157}
+#bookCount{border:1px solid #f0d5e0;background:#fff1f6;color:#b06488;font-weight:900;font-size:12px;
+ border-radius:999px;padding:8px 14px}
+.grid{grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:20px}
+.tile{background:#fff;border:1px solid #f0e4e7;border-radius:21px;overflow:hidden;
+ box-shadow:0 9px 24px rgba(98,65,75,.08);transition:transform .22s,box-shadow .22s,border-color .22s}
+.tile:hover{transform:translateY(-6px);box-shadow:0 20px 34px rgba(101,59,82,.18);border-color:#edbed2}
+.tile button[aria-label$="읽기"]{display:block}
+.tile img{aspect-ratio:4/3;width:100%;object-fit:cover;transition:transform .3s}
+.tile:hover img{transform:scale(1.035)}
+.tile div{position:relative;z-index:1;background:white;padding:17px 18px 18px}
+.tile strong{font:700 clamp(16px,1.55vw,21px)/1.45 'Gowun Batang',serif;letter-spacing:-.65px;color:#594155}
+.tile small{margin:7px 0 0;color:#ae91a0;font-weight:700;font-size:12px}
+.faveBtn{width:38px;height:38px;top:12px;right:12px;border:1px solid rgba(255,255,255,.8);
+ background:rgba(255,250,252,.93);color:#bd718f;box-shadow:0 4px 12px rgba(79,50,62,.18);
+ backdrop-filter:blur(7px);transition:transform .2s}
+.faveBtn:hover{transform:scale(1.1)}
+.faveBtn[aria-pressed=true]{background:#b65b83;color:#fff}
+.filmstrip{gap:15px;padding:7px 3px 22px}.filmstrip .tile{flex-basis:185px}
+.empty{background:#fffdfd;border:1px dashed #e9bdcd;border-radius:22px;min-height:170px}
+.empty strong{color:#95627d;font-size:20px}
+#reader{max-width:1060px;margin:26px auto 0;padding:30px clamp(15px,4vw,42px);
+ border-radius:28px;background:linear-gradient(155deg,#64465d,#483246 78%);
+ border:1px solid #875f7c;box-shadow:0 24px 55px #7d547536}
+.readerTitle h2{font-family:'Gowun Batang',serif;font-size:clamp(24px,3vw,35px);color:#fff7f5;margin:0}
+.readerTitle{padding:0 0 13px;align-items:center}
+.source{color:#ead4e0;font-size:12px}.source a{color:#fff0da}
+.controls{justify-content:center;gap:10px;margin:12px 0 22px}
+.controls .btn,#back{background:#fff7f9;border:1px solid #f5dce7;color:#80516b;
+ box-shadow:0 5px 12px #2d20302b;border-radius:999px;padding:11px 16px}
+.controls .btn.on{background:#c37b9b;color:#fff;border-color:#eaa4c2}
+.controls select{background:transparent;border:none;color:inherit;font-weight:800;max-width:190px}
+.controls select option{color:#50324c}
+#back{font-weight:900}#back:hover{background:#fff}
+.shelf{background:transparent;border:0;filter:drop-shadow(0 23px 17px rgba(17,9,19,.32))}
+.storyLeaf{background:#fffaf2;border:1px solid #eadbcf;box-shadow:inset 0 0 24px rgba(199,150,107,.10)}
+.storyLeaf>img{border-bottom:1px solid #f0dfdf}
+.storyLeaf>.words{background:linear-gradient(145deg,#fffdf6,#fff5ed)}
+.storyLeaf .words h3{color:#6e4358;font-weight:700}
+.storyLeaf .words p{color:#55414e}
+.readerMeta{font-size:14px;color:#ffe8ef;letter-spacing:2px;font-weight:900}
+.status{color:#f1dce6;font-size:12px}
+.loading{border:1px solid #ffe9ed;background:#fff9f8;color:#80516b}
+footer{padding:34px 0 14px;text-align:center;color:#bba3ad;font-size:12px;letter-spacing:.3px}
+@media(min-width:1000px){.heroCopy h1{font-size:clamp(42px,4.2vw,60px)}}
+@media(max-width:900px){.stageShell{grid-template-columns:190px minmax(0,1fr);gap:16px}
+ .sidebar{padding:12px 8px}.sideFilter{font-size:12px;padding:12px 9px}
+ .hero{min-height:320px}.featureCover{height:250px}.heroCopy{padding:30px}
+}
+@media(max-width:640px){
+ .wrap{padding:0 14px 24px}
+ header{margin:0 -14px;padding:17px 15px 10px;gap:11px;flex-direction:column;align-items:stretch}
+ .brand{font-size:27px;line-height:1.35}
+ .nav{width:100%;flex-wrap:nowrap;overflow-x:auto;gap:5px;padding:2px 1px 7px;
+  scrollbar-width:none}.nav::-webkit-scrollbar{display:none}
+ .tab{flex:0 0 auto;font-size:12px;padding:10px 13px;white-space:nowrap}
+ .hero{margin-top:15px;border-radius:25px;min-height:unset;grid-template-columns:1fr;
+  border:1px solid #d5a4b7}
+ .heroCopy{padding:25px 24px 7px}
+ .heroCopy h1{font-size:clamp(31px,8.4vw,42px);line-height:1.35;margin-bottom:11px;letter-spacing:-1.6px}
+ .heroCopy p{font-size:12px;line-height:1.75;margin-bottom:13px}
+ #heroBrowse{font-size:12px;padding:10px 16px}
+ .hero .art{min-height:190px;max-height:208px;padding:14px 23px 20px}
+ .featureCover{width:min(88%,325px);height:169px;border-width:4px}
+ .featureCopy{gap:7px;padding:8px}
+ .featureCopy strong{font-size:17px}.featureCopy span{font-size:10px}
+ .featureCopy button{font-size:10px;padding:7px 10px}
+ .stageShell{display:block;margin-top:17px}
+ .sidebar{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:8px;border:0;
+  background:transparent;box-shadow:none;padding:2px 0 13px;border-radius:0;
+  scrollbar-width:none}.sidebar::-webkit-scrollbar{display:none}
+ .sidebarTitle{display:none}
+ .sideFilter{flex:0 0 auto;width:auto;white-space:nowrap;border-radius:999px;
+  background:#fff;border:1px solid #efdae3;color:#876b7d;
+  box-shadow:0 4px 10px #82546a12;font-size:12px;padding:11px 13px}
+ .sideFilter.active,.sideFilter:hover{border-radius:999px;background:#fff0f5}
+ .sideFilter small{font-size:10px;padding:2px 5px}
+ .searchBar{padding:14px 15px;border-radius:15px}
+ .searchBar input{font-size:13px}
+ .intro{margin:22px 0 14px}.intro h2{font-size:23px}
+ .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+ .tile{border-radius:16px}
+ .tile div{padding:11px 11px 13px}
+ .tile strong{font-size:16px}.tile small{font-size:11px}
+ .faveBtn{top:7px;right:7px;width:32px;height:32px;font-size:18px}
+ .filmstrip{gap:10px}.filmstrip .tile{flex-basis:145px}
+ #reader{margin:16px 0 0;border-radius:23px;padding:20px 10px 23px}
+ .readerTitle{gap:8px;padding:0 5px 9px}
+ .readerTitle h2{font-size:23px}
+ #back{padding:9px 12px;font-size:11px}
+ .controls{gap:7px;margin:10px 0 14px}
+ .controls .btn{padding:9px 10px;font-size:11px}
+ .controls select{font-size:11px;max-width:125px}
+ .shelf{max-width:390px;min-height:340px;padding:4px 0}
+ .storyLeaf .words h3{font-size:clamp(13px,4.2vw,18px)}
+ .storyLeaf .words p{font-size:clamp(11px,3.5vw,14px);line-height:1.36}
+ .readerMeta{font-size:13px;letter-spacing:1px}
+ footer{padding:27px 0 5px}
+}
+@media(prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto}
+ .tab,.tile,.tile img,.featureCover,.featureCopy button,#heroBrowse{transition:none}
+}
 </style><script src="./vendor/page-flip.browser.js"></script>
 </head><body><div class="wrap">
 <header>
