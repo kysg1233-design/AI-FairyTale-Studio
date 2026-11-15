@@ -78,7 +78,7 @@ async function tryCase(name,mobile=false){
   const responds=await page.evaluate(async()=>Promise.all(Object.values(musicNames).map(async file=>{
    const r=await fetch('./assets/'+file);return {file,status:r.status,size:(await r.blob()).size}
   })));
-  if(responds.some(x=>x.status!==200||x.size<80000))throw Error('A pre-made mood track missing: '+JSON.stringify(responds));
+  if(responds.some(x=>![200,206].includes(x.status)||x.size<80000))throw Error('A pre-made mood track missing: '+JSON.stringify(responds));
   const change=await page.evaluate(()=>{
    const prev=musicTheme,other=prev==='adventure'?'joyful':'adventure';
    playMusic(other);return {prev,other}
