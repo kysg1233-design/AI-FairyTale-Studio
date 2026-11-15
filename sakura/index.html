@@ -40,7 +40,7 @@ h2{font:700 25px 'Gowun Batang',serif}.intro{display:flex;align-items:end;justif
 </div><script>
 'use strict';
 const $=id=>document.getElementById(id);
-let catalog=[],active=null,flip=null,currentPage=0,narrationOn=true,musicOn=true,loading=false,track=null,trackUrl=null,unlocked=false,ctx=null,musicOsc=[],musicGain=null;
+let catalog=[],active=null,flip=null,currentPage=0,narrationOn=true,musicOn=true,loading=false,track=null,trackUrl=null,unlocked=false,ctx=null,musicTrack=null;
 const cache=new Map(); const loaded=new Map(); const decoded=new Map();
 function safePath(x){if(typeof x!=='string'||!/^books\/[a-z0-9-]+\/[a-zA-Z0-9_.-]+$/.test(x))throw Error('잘못된 파일 경로');return x}
 function filesOf(b,voice){return [b.cover,...b.pages.map(p=>p.image),...b.pages.map(p=>p.audio[voice])]}
@@ -58,8 +58,13 @@ async function loadCandidates(){
  try{const r=await fetch('./books/candidates.json');const list=await r.json();const host=$('candidates');host.replaceChildren();list.forEach(x=>{const tag=document.createElement('span');tag.className='chip';tag.textContent=(x.region||'세계')+' · '+x.title;host.append(tag)})}catch(e){console.warn(e)}
 }
 function audioOff(){if(track){try{track.stop()}catch(e){}track.disconnect();track=null}if(trackUrl){URL.revokeObjectURL(trackUrl);trackUrl=null}}
-function stopMusic(){musicOsc.forEach(o=>{try{o.stop()}catch(e){}});musicOsc=[];if(musicGain){musicGain.disconnect();musicGain=null}}
-function playMusic(){if(!musicOn)return;try{ctx=ctx||new(window.AudioContext||window.webkitAudioContext)();ctx.resume();stopMusic();musicGain=ctx.createGain();musicGain.gain.value=.012;musicGain.connect(ctx.destination);const tune=[261.63,329.63,392,349.23,293.66,261.63,293.66,329.63,392,440,392,329.63];const now=ctx.currentTime+.1;for(let k=0;k<9;k++){tune.forEach((f,j)=>{const o=ctx.createOscillator(),g=ctx.createGain(),t=now+(k*tune.length+j)*.75;o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(.001,t);g.gain.linearRampToValueAtTime(.33,t+.09);g.gain.exponentialRampToValueAtTime(.001,t+.7);o.connect(g);g.connect(musicGain);o.start(t);o.stop(t+.71);musicOsc.push(o)})}}catch(e){setStatus('배경음을 재생하지 못했습니다.');musicOn=false}}
+function stopMusic(){if(musicTrack){musicTrack.pause();musicTrack.currentTime=0;musicTrack=null}}
+function playMusic(){
+ if(!musicOn||!active||musicTrack)return;
+ const music=new Audio('./assets/sakura-lullaby.mp3');
+ musicTrack=music;music.loop=true;music.volume=.18;music.preload='auto';
+ music.play().catch(e=>{setStatus('배경음 재생 제한: 책을 다시 선택하면 재시도합니다.');console.warn('Music playback:',e.message)});
+}
 async function prefetchBook(b,voice){
  let count=0;const list=filesOf(b,voice);const result=new Map();
  for(const path of list){const p=safePath(path);let blob=loaded.get(p);
