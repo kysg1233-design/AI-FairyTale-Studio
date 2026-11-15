@@ -4,7 +4,7 @@ Requires GEMINI_API_KEY in GitHub Actions secrets. Incomplete books never enter 
 No user API key is ever sent to the static website; all generation happens before publication.
 """
 from __future__ import annotations
-import os, sys, re, json, time, base64, wave, tempfile, shutil, subprocess, hashlib, io, pathlib
+import os, sys, re, json, time, base64, wave, tempfile, shutil, subprocess, hashlib, io, pathlib, contextlib
 from datetime import datetime, timezone
 from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
@@ -201,18 +201,38 @@ def publish_one():
     destination=BOOK_DIR/slug
     if destination.exists():fail("Destination already exists; manual recovery required")
     print("Producing:",c["region"],c["title"],c["heading"])
-    excerpt=source_excerpt(c)
-    plan=story_plan(c,excerpt)
-    with tempfile.TemporaryDirectory(prefix="sakura-") as work:
+    # Persist unfinished media across quota resets. The browser only reads verified books/index.json.
+    staging=BOOK_DIR/"_staging"/slug
+    staging.mkdir(parents=True,exist_ok=True)
+    plan_file=staging/"story-plan.json"
+    if plan_file.exists():
+        plan=json.loads(plan_file.read_text("utf-8"))
+        if len(plan.get("pages",[]))!=DEFAULT_PAGES:fail("Staged story plan is invalid")
+        print("Resuming staged source-backed story:",c["title"])
+    else:
+        excerpt=source_excerpt(c)
+        plan=story_plan(c,excerpt)
+        plan_file.write_text(json.dumps(plan,ensure_ascii=False,indent=2),"utf-8")
+    with contextlib.nullcontext(staging) as work:
         tmp=pathlib.Path(work)
         earlier=[]
         for i in range(DEFAULT_PAGES):
             p=plan["pages"][i];filename=tmp/f"page-{i+1:02d}.webp"
-            small=image_generate(c,plan,i,filename,tmp/f"page-{i:02d}.webp" if i else None)
+            if filename.is_file() and filename.stat().st_size>=4000:
+                with Image.open(filename) as previously_generated:
+                    small=previously_generated.convert("RGB")
+                    small.thumbnail((90,90))
+                print("Reused staged illustration",i+1)
+            else:
+                small=image_generate(c,plan,i,filename,tmp/f"page-{i:02d}.webp" if i else None)
             if any(visual_difference(small,prev)<0.045 for prev in earlier):fail("Too-similar adjacent illustration; refuse publication")
             earlier.append(small)
             for person in ("male","female"):
-                create_audio(p["heading"]+". "+p["text"],person,tmp/f"{person}-{i+1:02d}.mp3")
+                recorded=tmp/f"{person}-{i+1:02d}.mp3"
+                if recorded.is_file() and recorded.stat().st_size>=4000:
+                    print("Reused staged",person,"narration",i+1)
+                else:
+                    create_audio(p["heading"]+". "+p["text"],person,recorded)
             print(f"Completed {i+1}/{DEFAULT_PAGES}: unique image, male voice, female voice")
         shutil.copyfile(tmp/"page-01.webp",tmp/"cover.webp")
         pages=[{"heading":p["heading"],"text":p["text"],"image":f"books/{slug}/page-{i+1:02d}.webp",
@@ -222,9 +242,10 @@ def publish_one():
               "source_credit":c["source"],"status":"ready","published_at":datetime.now(timezone.utc).isoformat(),
               "cover":f"books/{slug}/cover.webp","pages":pages}
         (tmp/"manifest.json").write_text(json.dumps(meta,ensure_ascii=False,indent=2),"utf-8")
-        shutil.copytree(tmp,destination)
+        shutil.copytree(tmp,destination,ignore=shutil.ignore_patterns("story-plan.json"))
         try: verify_package(destination,meta)
         except: shutil.rmtree(destination,ignore_errors=True);raise
+        shutil.rmtree(staging,ignore_errors=True)
     existing["books"]=[*existing.get("books",[]),meta]
     # index updates LAST, after complete package validation.
     pending=INDEX.with_suffix(".json.tmp")
