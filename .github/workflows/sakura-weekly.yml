@@ -54,6 +54,8 @@ jobs:
           git config user.email "sakura-story-bot@users.noreply.github.com"
           git commit -m "Publish complete weekly storybook (illustrations and both voices)"
           git push origin HEAD:main
+      - name: Compose original prebuilt lullaby soundtrack
+        run: python sakura/create_bgm.py
       - name: Bundle PageFlip for publishing
         shell: bash
         run: |
