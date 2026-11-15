@@ -57,9 +57,7 @@ jobs:
           # Root studio deployments must preserve the Sakura reading library.
           # Otherwise the next unrelated studio commit deletes /sakura/ from Pages.
           python sakura/create_mood_music.py
-          mkdir -p sakura/vendor
-          npm pack page-flip@2.0.7 --pack-destination /tmp --silent
-          tar -xOf /tmp/page-flip-2.0.7.tgz package/dist/js/page-flip.browser.js > sakura/vendor/page-flip.browser.js
+          test -s sakura/book-turn.js
           python sakura/check_site.py
           cp -a sakura site/sakura
           touch site/.nojekyll
