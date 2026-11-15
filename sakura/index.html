@@ -514,6 +514,17 @@ footer{text-align:center;color:#775466;font-size:12px;padding:24px 0 8px}
  .readerScrollNav button{width:56px;height:66px;min-width:56px;min-height:66px;
   border-radius:18px;font-size:28px;background:rgba(88,42,73,.72)}
 }
+
+/* Guaranteed accessible page navigation independent from vertical scrolling */
+.pageTurnControls{display:flex;justify-content:space-between;gap:16px;margin:8px auto 13px;max-width:390px;padding:0 7px}
+.pageTurnControls button{border:2px solid #f5d9e5;border-radius:17px;background:#fff4f8;color:#73435b;
+ box-shadow:0 5px 14px #24132636;padding:14px 19px;min-width:120px;min-height:56px;
+ font-size:21px;font-weight:900;touch-action:manipulation;cursor:pointer}
+.pageTurnControls button span{font-size:15px;vertical-align:middle}
+.pageTurnControls button:disabled{opacity:.36;cursor:default}
+.pageTurnControls button:not(:disabled):active{background:#f1ccdb}
+@media(max-width:720px){.pageTurnControls{margin:9px auto 12px}
+ .pageTurnControls button{min-width:114px;min-height:58px;padding:11px 14px}}
 </style><script src="./vendor/page-flip.browser.js"></script>
 </head><body><div class="wrap">
 <header>
@@ -573,7 +584,11 @@ footer{text-align:center;color:#775466;font-size:12px;padding:24px 0 8px}
   <div class="readerTitle"><div><h2 id="bookTitle"></h2><p id="source" class="source"></p></div><button class="btn" id="back">← 책장으로</button></div>
   <div class="controls"><button class="btn on" id="narration" aria-pressed="true">🔊 나레이션 ON</button><label class="btn">목소리 <select id="voice"><option value="male">남자 · 기본</option><option value="female">여자 · 젊고 부드럽게</option></select></label><button class="btn on" id="music" aria-pressed="true">♫ 배경음 ON</button></div>
   <div id="loading" class="loading" role="status">책의 모든 그림과 나레이션을 다운로드하고 있어요…</div>
-  <div class="shelf"><div id="book"></div></div><p class="readerMeta" id="pageNumber">책 가장자리를 손으로 잡아 넘겨보세요.</p><p class="status" id="status"></p>
+  <div class="shelf"><div id="book"></div></div>
+  <div class="pageTurnControls" aria-label="동화 페이지 넘기기">
+    <button type="button" id="pagePrev" aria-label="이전 장으로 넘기기">‹ <span>이전 장</span></button>
+    <button type="button" id="pageNext" aria-label="다음 장으로 넘기기"><span>다음 장</span> ›</button>
+  </div><p class="readerMeta" id="pageNumber">책 가장자리를 손으로 잡아 넘겨보세요.</p><p class="status" id="status"></p>
   <div id="scrollNav" class="readerScrollNav" aria-label="화면 위아래 이동" hidden><button type="button" id="scrollUp" aria-label="화면 위로 스크롤" title="화면 위로">↑</button><button type="button" id="scrollDown" aria-label="화면 아래로 스크롤" title="화면 아래로">↓</button></div>
  </section>
  <section class="recommendationArea" aria-label="추천 동화">
@@ -675,72 +690,44 @@ function sceneMood(p){
 function musicVolume(){return narrationOn?musicGain:.52}
 // Hard stop ALL cached players, including the outgoing soundtrack of a crossfade.
 // Each pending play() promise and fade timer also checks the generation token.
-function cancelMusicFade(){
- if(musicFadeTimer){clearInterval(musicFadeTimer);musicFadeTimer=null}
-}
+// Exactly ONE audio player may run at any time. There is no crossfade or second player.
+function cancelMusicFade(){if(musicFadeTimer){clearInterval(musicFadeTimer);musicFadeTimer=null}}
 function pauseEveryMusicTrack(){
  for(const player of musicCache.values()){
-  try{player.pause();player.volume=0;player.currentTime=0}catch(e){console.warn('Music pause:',e.message)}
+  try{player.pause();player.volume=0;player.currentTime=0}catch(e){}
  }
- if(musicTrack&&!Array.from(musicCache.values()).includes(musicTrack)){
-  try{musicTrack.pause();musicTrack.volume=0;musicTrack.currentTime=0}catch(e){}
- }
+ if(musicTrack){try{musicTrack.pause();musicTrack.volume=0;musicTrack.currentTime=0}catch(e){}}
 }
 function stopMusic(){
- musicSwitchId++;
- cancelMusicFade();
- pauseEveryMusicTrack();
+ musicSwitchId++;cancelMusicFade();pauseEveryMusicTrack();
  musicTrack=null;musicTheme=null;
 }
 function preloadMusic(){
- for(const [theme,file] of Object.entries(musicNames)){
-  if(musicCache.has(theme))continue;
-  const item=new Audio('./assets/'+file);item.loop=true;item.preload='auto';item.volume=0;
-  musicCache.set(theme,item);
- }
+ // Create one reusable player. Different soundtracks replace its src, never overlap.
+ if(musicTrack)return;
+ const player=new Audio();player.loop=true;player.preload='auto';player.volume=0;
+ musicCache.clear();musicCache.set('single',player);musicTrack=player;
 }
 function playMusic(mood){
  if(!musicOn||!active){stopMusic();return}
  const desired=Object.hasOwn(musicNames,mood)?mood:sceneMood(active.pages[currentPage]);
  preloadMusic();
- const next=musicCache.get(desired);
- if(musicTrack===next&&musicTheme===desired&&!next.paused){next.volume=musicVolume();return}
- const previous=musicTrack;
- cancelMusicFade();
- const serial=++musicSwitchId;
- // Only the active track and, briefly, the one being faded out are ever audible.
- for(const item of musicCache.values()){
-  if(item!==next&&item!==previous){item.pause();item.volume=0;item.currentTime=0}
- }
- musicTrack=next;musicTheme=desired;
- if(next!==previous){next.currentTime=0;next.volume=0}
- const start=next.play();
- Promise.resolve(start).then(()=>{
-  if(serial!==musicSwitchId||!musicOn||!active){
-   // A delayed play() completion must not restart music after OFF/back.
-   next.pause();next.volume=0;return;
-  }
-  const frames=10,target=musicVolume();let frame=0;
-  musicFadeTimer=setInterval(()=>{
-   if(serial!==musicSwitchId||!musicOn||!active){
-    cancelMusicFade();next.pause();next.volume=0;
-    if(previous&&previous!==next){previous.pause();previous.volume=0}
-    return;
-   }
-   frame++;
-   next.volume=Math.min(target,target*frame/frames);
-   if(previous&&previous!==next)previous.volume=Math.max(0,Math.min(previous.volume,target*(1-frame/frames)));
-   if(frame>=frames){
-    cancelMusicFade();
-    if(previous&&previous!==next){previous.pause();previous.volume=0;previous.currentTime=0}
-   }
-  },90);
+ const player=musicTrack;
+ if(!player)return;
+ if(musicTheme===desired&&!player.paused){player.volume=musicVolume();return}
+ musicSwitchId++;cancelMusicFade();
+ player.pause();player.volume=0;
+ const serial=musicSwitchId;
+ const file='./assets/'+musicNames[desired];
+ if(!player.src.endsWith('/'+musicNames[desired]))player.src=file;
+ player.currentTime=0;musicTheme=desired;
+ Promise.resolve(player.play()).then(()=>{
+  if(serial!==musicSwitchId||!musicOn||!active){player.pause();player.volume=0;return}
+  player.volume=musicVolume();
  }).catch(e=>{
   if(serial!==musicSwitchId)return;
-  next.pause();next.volume=0;
-  if(previous&&previous!==next){previous.pause();previous.volume=0}
-  musicTrack=null;musicTheme=null;
-  console.warn('Music playback:',e.message);
+  player.pause();player.volume=0;musicTheme=null;
+  console.warn('BGM playback:',e.message);
  });
 }
 async function prefetchBook(b,voice){
@@ -832,11 +819,27 @@ function mount(b,assets){
  pages.push(moralPage);
  pages.forEach(p=>host.append(p));
  flip=new St.PageFlip(host,{width:350,height:455,size:'stretch',minWidth:260,maxWidth:550,minHeight:338,maxHeight:720,showCover:false,drawShadow:true,maxShadowOpacity:.65,flippingTime:950,usePortrait:true,mobileScrollSupport:true,useMouseEvents:true,disableFlipByClick:true,showPageCorners:true});
- flip.on('flip',e=>{nativeTouchTurn=true;const n=Math.min(b.pages.length,e.data);if(n!==currentPage)playPage(n);scheduleTextFit()});
+ flip.on('flip',e=>{nativeTouchTurn=true;const n=Math.min(b.pages.length,e.data);if(n!==currentPage)playPage(n);updatePageTurnControls();scheduleTextFit()});
  flip.loadFromHTML(pages);
  scheduleTextFit();
 }
-function playPage(n){if(!active)return;currentPage=n;audioOff();if(n===active.pages.length){$('pageNumber').textContent='오늘의 교훈 · '+(n+1)+' / '+(active.pages.length+1);if(musicOn)playMusic('tender');return}if(musicOn)playMusic(sceneMood(active.pages[n]));$('pageNumber').textContent=(n+1)+' / '+(active.pages.length+1);if(!narrationOn)return;
+function updatePageTurnControls(){
+ const max=active?active.pages.length:0;
+ $('pagePrev').disabled=!active||currentPage<=0;
+ $('pageNext').disabled=!active||currentPage>=max;
+}
+function turnOnePage(direction){
+ if(!flip||!active)return;
+ const target=Math.max(0,Math.min(active.pages.length,flip.getCurrentPageIndex()+direction));
+ if(target===flip.getCurrentPageIndex())return;
+ // turnToPage is deterministic even when touch gestures are caught by scrolling.
+ flip.turnToPage(target);
+ if(currentPage!==target)playPage(target);
+ scheduleTextFit();
+}
+$('pagePrev').onclick=()=>turnOnePage(-1);
+$('pageNext').onclick=()=>turnOnePage(1);
+function playPage(n){if(!active)return;currentPage=n;updatePageTurnControls();audioOff();if(n===active.pages.length){$('pageNumber').textContent='오늘의 교훈 · '+(n+1)+' / '+(active.pages.length+1);if(musicOn)playMusic('tender');return}if(musicOn)playMusic(sceneMood(active.pages[n]));$('pageNumber').textContent=(n+1)+' / '+(active.pages.length+1);if(!narrationOn)return;
  const p=active.pages[n].audio[$('voice').value],sound=decoded.get(p);if(!sound){setStatus('해당 음성 파일은 준비되지 않았습니다');return}
  try{
   if(ctx.state==='suspended')ctx.resume();
@@ -874,8 +877,9 @@ document.querySelector('#reader .shelf').addEventListener('pointerdown',()=>{if(
 // Fixed, translucent page-scroll controls live outside the touch-sensitive book.
 const scrollSteps=Math.max(250,Math.round(window.innerHeight*.72));
 function scrollReadingPage(direction){
- const step=Math.max(340,Math.round(window.innerHeight*.84));
- window.scrollBy({top:direction*step,behavior:'smooth'});
+ // One press = one small, predictable step. No full-screen jumps.
+ const step=92;
+ window.scrollBy({top:direction*step,behavior:'instant'});
 }
 for(const [id,dir] of [['scrollUp',-1],['scrollDown',1]]){
  const button=$(id);let pointerHandled=false;
