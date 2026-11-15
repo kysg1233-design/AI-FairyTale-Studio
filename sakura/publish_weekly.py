@@ -147,7 +147,7 @@ def image_generate(item,plan,i,outpath,reference=None):
     if not inline: fail(f"No image generated at page {i+1}")
     return save_image(inline,outpath)
 def create_audio(text,person,output):
-    if re.search("[A-Za-z]",text) or len(re.findall("[가-힣]",text))<25:fail("English in spoken narration")
+    if re.search("[A-Za-z]",text) or len(re.findall("[가-힣]",text))<7:fail("Non-Korean or empty spoken narration")
     voice={"male":"Charon","female":"Leda"}[person]
     # IMPORTANT: no English prompting in the spoken contents; earlier version read it aloud.
     result=google(VOICE_MODEL,{"contents":[{"parts":[{"text":text}]}],
@@ -172,7 +172,8 @@ def create_audio(text,person,output):
 def verify_package(path,meta):
     assets=[meta["cover"]]
     for p in meta["pages"]:assets.extend([p["image"],p["audio"]["male"],p["audio"]["female"]])
-    if len(assets)!=1+3*DEFAULT_PAGES:fail("Missing asset references")
+    if meta.get("title_audio"):assets.extend(meta["title_audio"].values())
+    if len(assets)!=1+3*DEFAULT_PAGES+(2 if meta.get("title_audio") else 0):fail("Missing asset references")
     for rel in assets:
         filename=ROOT/rel
         if not filename.is_file() or filename.stat().st_size<4000:fail("Asset missing or invalid: "+rel)
@@ -236,11 +237,16 @@ def publish_one():
                 else:
                     create_audio(p["heading"]+". "+p["text"],person,recorded)
             print(f"Completed {i+1}/{DEFAULT_PAGES}: unique image, male voice, female voice")
+        # Two pre-recorded book-title introductions; read before the first scene.
+        for person in ("male","female"):
+            audio=tmp/f"{person}-title.mp3"
+            if not audio.is_file() or audio.stat().st_size<4000:
+                create_audio(c["title"]+". 오늘의 이야기를 시작할게요.",person,audio)
         shutil.copyfile(tmp/"page-01.webp",tmp/"cover.webp")
         pages=[{"heading":p["heading"],"text":p["text"],"image":f"books/{slug}/page-{i+1:02d}.webp",
                 "audio":{"male":f"books/{slug}/male-{i+1:02d}.mp3","female":f"books/{slug}/female-{i+1:02d}.mp3"}}
                for i,p in enumerate(plan["pages"])]
-        meta={"title":c["title"],"region":c["region"],"source_title":c["heading"],"source_url":c["source_url"],
+        meta={"title":c["title"],"title_audio":{"male":f"books/{slug}/male-title.mp3","female":f"books/{slug}/female-title.mp3"},"region":c["region"],"source_title":c["heading"],"source_url":c["source_url"],
               "source_credit":c["source"],"status":"ready","published_at":datetime.now(timezone.utc).isoformat(),
               "cover":f"books/{slug}/cover.webp","pages":pages}
         (tmp/"manifest.json").write_text(json.dumps(meta,ensure_ascii=False,indent=2),"utf-8")
