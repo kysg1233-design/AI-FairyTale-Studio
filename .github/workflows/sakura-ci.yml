@@ -20,7 +20,15 @@ jobs:
         with:
           python-version: '3.12'
       - name: Check Python syntax
-        run: python -m py_compile sakura/publish_weekly.py sakura/create_bgm.py sakura/check_site.py
+        run: python -m py_compile sakura/publish_weekly.py sakura/create_bgm.py sakura/create_mood_music.py sakura/check_site.py
+      - name: Install audio encoder and compose the five original music tracks
+        shell: bash
+        run: |
+          if ! command -v ffmpeg >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y ffmpeg
+          fi
+          python sakura/create_mood_music.py
       - name: Check website safety and ready book files
         run: python sakura/check_site.py
       - name: Validate folktale candidates and source provenance
