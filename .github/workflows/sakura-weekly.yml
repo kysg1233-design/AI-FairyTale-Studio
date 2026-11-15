@@ -4,7 +4,7 @@ on:
     branches: [main]
     paths: ['.github/workflows/sakura-weekly.yml']
   schedule:
-    - cron: "5 0 * * 1"
+    - cron: "5 0 * * *" # Daily until 40 complete books; Python switches to weekly afterward
   workflow_dispatch:
 concurrency:
   group: sakura-pages
@@ -23,7 +23,7 @@ jobs:
     env:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       PYTHONUNBUFFERED: "1"
-      SAKURA_BATCH_SIZE: "4" # Initial multi-book expansion; all books require valid images and two voices
+      SAKURA_BATCH_SIZE: "3" # 36 TTS generations per daily full batch, below the known 100/day model quota
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -70,6 +70,22 @@ jobs:
       - id: generate
         name: Generate and check a complete book
         run: python sakura/publish_weekly.py
+      - name: Save staged media if daily Gemini quota interrupts production
+        if: steps.generate.outcome == 'failure'
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ ! -d sakura/books/_staging ]; then
+            echo "No reusable staged assets"
+            exit 0
+          fi
+          git add -A sakura/books/_staging/
+          if git diff --cached --quiet; then exit 0; fi
+          git config user.name "sakura-story-bot"
+          git config user.email "sakura-story-bot@users.noreply.github.com"
+          git commit -m "Preserve partially generated book assets for quota-reset resume"
+          git pull --rebase origin main
+          git push origin HEAD:main
       - id: validate
         name: Verify reader and all published books
         run: python sakura/check_site.py
@@ -109,6 +125,7 @@ jobs:
           git config user.name "sakura-story-bot"
           git config user.email "sakura-story-bot@users.noreply.github.com"
           git commit -m "Publish complete weekly storybook (illustrations and both voices)"
+          git pull --rebase origin main
           git push origin HEAD:main
       - name: Configure Pages
         uses: actions/configure-pages@v5
@@ -168,5 +185,6 @@ jobs:
           git add sakura/build-status.json
           if ! git diff --cached --quiet; then
             git commit -m "Record public Sakura build diagnostics"
+            git pull --rebase origin main
             git push origin HEAD:main
           fi
