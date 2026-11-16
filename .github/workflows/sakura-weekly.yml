@@ -25,7 +25,7 @@ jobs:
     env:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       PYTHONUNBUFFERED: "1"
-      SAKURA_BATCH_SIZE: "3" # 36 TTS generations per daily full batch, below the known 100/day model quota
+      SAKURA_BATCH_SIZE: "1" # Prioritize publishing one fully validated book per run; avoid losing a release to later batch errors
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
