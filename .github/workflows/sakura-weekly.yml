@@ -1,4 +1,4 @@
-name: Weekly complete Sakura storybook publishing
+name: Daily complete Sakura storybook publishing
 on:
   push:
     branches: [main]
@@ -6,7 +6,7 @@ on:
       - '.github/workflows/sakura-weekly.yml'
       - 'sakura/publish_weekly.py'
   schedule:
-    - cron: "5 0 * * *" # Daily until 40 complete books; Python switches to weekly afterward
+    - cron: "5 0 * * *" # Publish one new complete book every day
   workflow_dispatch:
 concurrency:
   group: sakura-story-production
@@ -25,7 +25,7 @@ jobs:
     env:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       PYTHONUNBUFFERED: "1"
-      SAKURA_BATCH_SIZE: "1" # Prioritize publishing one fully validated book per run; avoid losing a release to later batch errors
+      SAKURA_BATCH_SIZE: "1" # Publish one fully validated book per day
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
