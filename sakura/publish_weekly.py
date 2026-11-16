@@ -317,12 +317,8 @@ def publish_one():
     print("SUCCESS: complete verified book published",slug)
 if __name__=="__main__":
     existing_books=len(json.loads(INDEX.read_text("utf-8")).get("books",[])) if INDEX.exists() else 0
-    # Seed several fully preproduced books daily until the 40-book library is established.
-    # After that, only the Monday scheduled run publishes one new book.
-    if existing_books>=40 and os.getenv("GITHUB_EVENT_NAME")=="schedule" and datetime.now(timezone.utc).weekday()!=0:
-        print("40-book seed reached: weekly-only publishing is active")
-        sys.exit(0)
-    target=max(1,min(int(os.getenv("SAKURA_BATCH_SIZE","3")),3)) if existing_books<40 else 1
+    # Publish one fully validated new storybook on every daily scheduled run, regardless of library size.
+    target=1
     completed=0
     for n in range(target):
         before=len(json.loads(INDEX.read_text("utf-8")).get("books",[])) if INDEX.exists() else 0
