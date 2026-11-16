@@ -118,18 +118,35 @@ def story_plan(item,excerpt):
     # Plans saved from earlier interrupted batches may not contain the new field.
     return data
 def ensure_parent_moral(plan):
+    """Finish the parent-read closing page; never fail on one truncated JSON response."""
     moral=clean(plan.get("parent_moral",""))
-    if not (30<=len(moral)<=150 and len(re.findall("[가-힣]",moral))>=20 and not re.search("[A-Za-z]{3,}",moral)):
-        excerpts="\\n".join(p["heading"]+": "+p["text"] for p in plan["pages"])
-        instruction=("다음 동화의 사건과 마지막 결말을 근거로, 부모가 아이에게 읽어주는 교훈 단 하나만 한국어로 작성하세요. "
-                     "아이에게 따뜻한 말투로 40~110자, 주어진 사건에서 알 수 없는 내용을 추가하지 마세요. "
-                     "JSON 객체 하나만 작성하세요: {\\\"parent_moral\\\":\\\"...\\\"}\\n"+excerpts)
-        output=google(TEXT_MODEL,{"contents":[{"parts":[{"text":instruction}]}],
-                  "generationConfig":{"responseMimeType":"application/json","temperature":0.3,"maxOutputTokens":250}})
-        raw="".join(p.get("text","") for p in output.get("candidates",[{}])[0].get("content",{}).get("parts",[]))
-        moral=clean(json.loads(raw).get("parent_moral",""))
-    if not (30<=len(moral)<=150 and len(re.findall("[가-힣]",moral))>=20 and not re.search("[A-Za-z]{3,}",moral)):
-        fail("Parent moral missing, invalid or too short; refuse to publish")
+    valid=lambda m: 30<=len(m)<=150 and len(re.findall("[가-힣]",m))>=20 and not re.search("[A-Za-z]{3,}",m)
+    if not valid(moral):
+        excerpts="\n".join(p["heading"]+": "+p["text"] for p in plan["pages"])
+        instruction=(
+            "다음 동화의 사건과 마지막 결말을 근거로 부모가 아이에게 직접 읽어주는 "
+            "교훈 한 문단을 작성하세요. 한국어로 50~105자, 따뜻하고 구체적으로, "
+            "이야기에 없는 내용을 덧붙이지 마세요. JSON 객체 형식으로 응답하세요. "
+            '예시: {"parent_moral":"작은 친구의 도움도 소중해요. 서로를 존중하고 도와주어요."}' +
+            "\n동화 본문:\n" + excerpts
+        )
+        failures=[]
+        for attempt in range(3):
+            output=google(TEXT_MODEL,{"contents":[{"parts":[{"text":instruction}]}],
+                 "generationConfig":{"responseMimeType":"application/json","temperature":0.2,
+                                     "maxOutputTokens":700+attempt*300}})
+            raw="".join(p.get("text","") for p in output.get("candidates",[{}])[0].get("content",{}).get("parts",[]))
+            try:
+                parsed=json.loads(raw)
+                moral=clean(parsed.get("parent_moral",""))
+            except (ValueError,TypeError,AttributeError) as exc:
+                failures.append(f"attempt {attempt+1}: {type(exc).__name__}")
+                continue
+            if valid(moral):
+                break
+            failures.append(f"attempt {attempt+1}: invalid moral")
+    if not valid(moral):
+        fail("Parent moral not generated after retries; preserve staged story: "+", ".join(failures))
     plan["parent_moral"]=moral
     return moral
 def save_image(data,output):
