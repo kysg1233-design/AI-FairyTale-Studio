@@ -65,7 +65,11 @@
           }
         }
       ],
-      "parent_moral": "원하는 것을 얻지 못했을 때 속상할 수 있어. 그렇다고 그것이 나쁜 것이라고 말하기보다, 내 마음을 솔직하게 인정하고 다음에 어떻게 해 볼지 생각해 보자."
+      "parent_moral": "원하는 것을 얻지 못했을 때 속상할 수 있어. 그렇다고 그것이 나쁜 것이라고 말하기보다, 내 마음을 솔직하게 인정하고 다음에 어떻게 해 볼지 생각해 보자.",
+      "title_audio": {
+        "male": "books/story-c91cd3e70d00/male-title.mp3",
+        "female": "books/story-c91cd3e70d00/female-title.mp3"
+      }
     }
   ]
 }
