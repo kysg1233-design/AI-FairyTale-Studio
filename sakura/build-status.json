@@ -1,19 +1,19 @@
 {
-  "status": "success",
+  "status": "failure",
   "workflow": "weekly",
-  "run_id": "43869325841",
-  "commit": "4e0d3fd513bce935415998b77bc3d247db7377ad",
-  "time_utc": "2026-11-16T12:49:52.294485+00:00",
+  "run_id": "43885848784",
+  "commit": "14fea4db6649674001d72347adfc59a05927a376",
+  "time_utc": "2026-11-16T14:27:46.676843+00:00",
   "stage": {
     "SECRET": "success",
     "MODELS": "success",
-    "GENERATE": "success",
+    "GENERATE": "failure",
     "TITLES": "success",
-    "VALIDATE": "success",
-    "COMMIT": "success",
-    "PAGES": "success",
-    "BROWSER": "success",
-    "PUBLIC": "success"
+    "VALIDATE": "skipped",
+    "COMMIT": "skipped",
+    "PAGES": "skipped",
+    "BROWSER": "skipped",
+    "PUBLIC": "skipped"
   },
   "completed_books": 2,
   "titles": [
