@@ -1,14 +1,14 @@
 {
   "status": "failure",
   "workflow": "weekly",
-  "run_id": "43683158434",
-  "commit": "fd670f0a2d8f15dfcb724c59cb785c47ac227590",
-  "time_utc": "2026-11-15T05:56:18.168355+00:00",
+  "run_id": "43815056794",
+  "commit": "c76b3c695625425c5fa547c99d76b5929f8d6384",
+  "time_utc": "2026-11-16T06:11:58.674860+00:00",
   "stage": {
     "SECRET": "success",
     "MODELS": "success",
     "GENERATE": "failure",
-    "TITLES": "failure",
+    "TITLES": "success",
     "VALIDATE": "skipped",
     "COMMIT": "skipped",
     "PAGES": "skipped",
