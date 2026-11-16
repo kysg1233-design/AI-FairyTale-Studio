@@ -29,7 +29,17 @@ def http_json(url,body=None,retries=4,extra_headers=None):
     raw=None if body is None else json.dumps(body,ensure_ascii=False).encode("utf-8")
     for attempt in range(retries):
         try:
-            with urlopen(Request(url,data=raw,headers=headers),timeout=125) as r: return json.loads(r.read().decode("utf-8"))
+            with urlopen(Request(url,data=raw,headers=headers),timeout=125) as r:
+                response_text=r.read().decode("utf-8","replace")
+                try:
+                    return json.loads(response_text)
+                except json.JSONDecodeError as e:
+                    # Gemini occasionally returns a truncated JSON envelope (especially
+                    # image responses). Retry the identical request instead of losing
+                    # the entire book batch and its already-staged assets.
+                    if attempt==retries-1:
+                        fail(f"Malformed Gemini HTTP JSON after {retries} attempts: {e.msg} at char {e.pos}; response prefix={response_text[:180]!r}")
+                    print(f"Malformed Gemini response JSON ({attempt+1}/{retries}); retrying: {e.msg} at char {e.pos}",flush=True)
         except HTTPError as e:
             msg=e.read().decode("utf8","replace")[:550]
             if e.code==429 and ("per_day" in msg or "per day" in msg or "daily" in msg.lower()):
