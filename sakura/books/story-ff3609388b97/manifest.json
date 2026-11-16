@@ -1,0 +1,77 @@
+{
+  "title": "사자와 생쥐",
+  "title_audio": {
+    "male": "books/story-ff3609388b97/male-title.mp3",
+    "female": "books/story-ff3609388b97/female-title.mp3"
+  },
+  "region": "그리스·세계",
+  "source_title": "THE LION AND THE MOUSE",
+  "source_url": "https://www.gutenberg.org/cache/epub/19994/pg19994-images.html",
+  "source_credit": "The Aesop for Children",
+  "status": "ready",
+  "published_at": "2026-11-16T12:46:32.965600+00:00",
+  "cover": "books/story-ff3609388b97/cover.webp",
+  "parent_moral": "큰 사자도 작은 생쥐의 도움을 받았지요. 몸집이나 힘이 다르다고 누구의 마음과 능력을 작게 보아서는 안 돼요. 우리도 서로에게 고마운 마음을 전하고, 도움이 필요할 때 기꺼이 손을 내밀어 보아요.",
+  "pages": [
+    {
+      "heading": "쿨쿨 잠든 사자와 작은 생쥐",
+      "text": "따스한 햇살이 비치는 숲속 커다란 나무 아래에서 사자가 곤히 낮잠을 자고 있었어요. 그때 작고 귀여운 생쥐가 깡충깡충 지나가다 그만 사자의 둥그런 코를 밟고 말았어요.",
+      "mood": "calm",
+      "image": "books/story-ff3609388b97/page-01.webp",
+      "audio": {
+        "male": "books/story-ff3609388b97/male-01.mp3",
+        "female": "books/story-ff3609388b97/female-01.mp3"
+      }
+    },
+    {
+      "heading": "저를 살려주세요!",
+      "text": "잠에서 깬 사자는 커다란 앞발로 작은 생쥐를 덥석 잡았어요. 깜짝 놀란 생쥐는 두 손을 모아 빌었어요. \"사자님, 저를 놓아주시면 언젠가 꼭 은혜를 갚을게요!\"",
+      "mood": "calm",
+      "image": "books/story-ff3609388b97/page-02.webp",
+      "audio": {
+        "male": "books/story-ff3609388b97/male-02.mp3",
+        "female": "books/story-ff3609388b97/female-02.mp3"
+      }
+    },
+    {
+      "heading": "너그러운 사자의 웃음",
+      "text": "사자는 조그만 생쥐가 자기를 돕겠다는 말에 껄껄 웃음이 났어요. \"하하, 쬐그만 네가 날 돕는다고?\" 마음씨 착한 사자는 너그럽게 발을 치워 생쥐를 안전하게 보내주었어요.",
+      "mood": "calm",
+      "image": "books/story-ff3609388b97/page-03.webp",
+      "audio": {
+        "male": "books/story-ff3609388b97/male-03.mp3",
+        "female": "books/story-ff3609388b97/female-03.mp3"
+      }
+    },
+    {
+      "heading": "그물에 걸린 숲속의 왕",
+      "text": "며칠 뒤, 숲속을 걷던 사자가 사냥꾼이 숨겨놓은 질긴 밧줄 그물에 꽁꽁 갇히고 말았어요. 사자는 빠져나오지 못해 숲이 쩌렁쩌렁 울리도록 크게 울부짖었어요.",
+      "mood": "calm",
+      "image": "books/story-ff3609388b97/page-04.webp",
+      "audio": {
+        "male": "books/story-ff3609388b97/male-04.mp3",
+        "female": "books/story-ff3609388b97/female-04.mp3"
+      }
+    },
+    {
+      "heading": "갉작갉작, 은혜를 갚는 생쥐",
+      "text": "사자의 큰 목소리를 알아들은 생쥐가 쪼르르 달려왔어요. 생쥐는 단단한 밧줄을 날카로운 앞니로 갉작갉작 갉기 시작했어요. 마침내 툭 하고 굵은 밧줄이 끊어졌지요.",
+      "mood": "calm",
+      "image": "books/story-ff3609388b97/page-05.webp",
+      "audio": {
+        "male": "books/story-ff3609388b97/male-05.mp3",
+        "female": "books/story-ff3609388b97/female-05.mp3"
+      }
+    },
+    {
+      "heading": "다시 찾은 자유와 따뜻한 마음",
+      "text": "그물에서 풀려난 사자는 뛸 듯이 기뻤어요. 생쥐가 으쓱하며 말했어요. \"사자님, 작은 생쥐도 은혜를 갚을 수 있지요?\" 사자와 생쥐는 서로를 보며 다정하게 웃었답니다.",
+      "mood": "calm",
+      "image": "books/story-ff3609388b97/page-06.webp",
+      "audio": {
+        "male": "books/story-ff3609388b97/male-06.mp3",
+        "female": "books/story-ff3609388b97/female-06.mp3"
+      }
+    }
+  ]
+}
