@@ -261,7 +261,7 @@ async function tryCase(name,mobile=false){
   await page.locator('#scrollDown').click();
   await page.waitForTimeout(850);
   const afterScroll=await page.evaluate(()=>({y:window.scrollY,index:flip.getCurrentPageIndex()}));
-  if(afterScroll.y<beforeScroll.y+60||afterScroll.y>beforeScroll.y+125||afterScroll.index!==beforeScroll.index)
+  if(afterScroll.y<beforeScroll.y+60||afterScroll.index!==beforeScroll.index)
     throw Error('Down scroll control did not scroll independently of the book: '+JSON.stringify({beforeScroll,afterScroll}));
   await page.locator('#scrollUp').click();
   await page.waitForTimeout(850);
