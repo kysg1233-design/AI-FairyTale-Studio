@@ -219,7 +219,11 @@
             "female": "books/story-4d40e01d7a3f/female-06.mp3"
           }
         }
-      ]
+      ],
+      "title_audio": {
+        "male": "books/story-4d40e01d7a3f/male-title.mp3",
+        "female": "books/story-4d40e01d7a3f/female-title.mp3"
+      }
     }
   ]
 }
