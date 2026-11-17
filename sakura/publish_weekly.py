@@ -54,35 +54,62 @@ def google(model,payload):
     return http_json(BASE+model+":generateContent",payload,extra_headers={"x-goog-api-key":KEY})
 def clean(t): return re.sub(r"\s+"," ",str(t)).strip()
 def source_excerpt(candidate):
-    """Ground adaptation in source text, not a title-only guess. Refuse unidentified sources."""
-    url=candidate["source_url"]
-    if not url.startswith("https://www.gutenberg.org/"): fail("Unapproved source domain")
-    # Project Gutenberg may briefly return HTTP 503/502. Retry source retrieval too;
-    # the previous implementation retried Gemini calls but failed immediately here.
-    html=None
-    for attempt in range(5):
-        try:
-            with urlopen(Request(url,headers={"User-Agent":"SakuraStoryTheater/1.0"}),timeout=70) as response:
-                html=response.read(6_000_000).decode("utf-8","replace")
-            break
-        except HTTPError as e:
-            if e.code not in (408,429,500,502,503,504) or attempt==4:
-                fail(f"Source retrieval HTTP {e.code} after {attempt+1} attempt(s): {url}")
-            print(f"Source server HTTP {e.code} ({attempt+1}/5); retrying in {min(30,5*(attempt+1))}s",flush=True)
-        except (URLError,TimeoutError) as e:
-            if attempt==4: fail(f"Source retrieval network error after 5 attempts: {e}")
-            print(f"Source network error ({attempt+1}/5); retrying: {e}",flush=True)
-        time.sleep(min(30,5*(attempt+1)))
-    if html is None: fail("Source retrieval failed after retries")
-    soup=BeautifulSoup(html,"html.parser")
-    def norm_head(v):
-        return clean(re.sub(r"[^a-z0-9]+"," ",str(v).casefold()))
-    heading=norm_head(candidate["heading"])
-    # Gutenberg eBooks use both TOC and actual headings. The last full match is normally the story.
-    matches=[]
-    for h in soup.find_all(re.compile("^h[1-6]$")):
-        if norm_head(h.get_text(" ",strip=True))==heading:matches.append(h)
-    if matches:
+    """Retrieve the exact cited Gutenberg work, with independent URL and mirror fallbacks."""
+    from urllib.parse import urlparse
+    original=candidate["source_url"]
+    parsed=urlparse(original)
+    match=re.search(r"/(?:cache/epub|ebooks)/(\\d+)",parsed.path)
+    if parsed.hostname not in ("www.gutenberg.org","gutenberg.org") or not match:
+        fail("Unapproved or unrecognized Project Gutenberg source URL")
+    book_id=match.group(1)
+    prefix="/".join(book_id[:-1])
+    urls=list(dict.fromkeys([
+        original,
+        f"https://www.gutenberg.org/files/{book_id}/{book_id}-h/{book_id}-h.htm",
+        f"https://www.gutenberg.org/ebooks/{book_id}.html.images",
+        f"https://mirror.fi.ossplanet.net/gutenberg/{prefix}/{book_id}/{book_id}-h/{book_id}-h.htm",
+    ]))
+    allowed_hosts={"www.gutenberg.org","gutenberg.org","mirror.fi.ossplanet.net"}
+    heading=clean(re.sub(r"[^a-z0-9]+"," ",str(candidate["heading"]).casefold()))
+    last_error="no source URL succeeded"
+    for source_url in urls:
+        if urlparse(source_url).hostname not in allowed_hosts:
+            continue
+        html=None
+        for attempt in range(3):
+            try:
+                request=Request(source_url,headers={
+                    "User-Agent":"Mozilla/5.0 (compatible; Sakura-StoryTheater/1.0; +https://github.com/kysg1233-design/AI-FairyTale-Studio)",
+                    "Accept":"text/html,application/xhtml+xml,*/*"
+                })
+                with urlopen(request,timeout=70) as response:
+                    html=response.read(6_000_000).decode("utf-8","replace")
+                break
+            except HTTPError as e:
+                last_error=f"HTTP {e.code} from {source_url}"
+                if e.code not in (408,429,500,502,503,504):
+                    break
+                if attempt<2:
+                    print(f"Source endpoint HTTP {e.code} ({attempt+1}/3); retrying {source_url}",flush=True)
+                    time.sleep(3*(attempt+1))
+            except (URLError,TimeoutError) as e:
+                last_error=f"Network error from {source_url}: {e}"
+                if attempt<2:
+                    print(f"Source endpoint network error ({attempt+1}/3); retrying {source_url}: {e}",flush=True)
+                    time.sleep(3*(attempt+1))
+        if html is None:
+            print(f"Source endpoint unavailable; trying independent fallback: {source_url} ({last_error})",flush=True)
+            continue
+        soup=BeautifulSoup(html,"html.parser")
+        matches=[]
+        for h in soup.find_all(re.compile("^h[1-6]$")):
+            normalized=clean(re.sub(r"[^a-z0-9]+"," ",h.get_text(" ",strip=True).casefold()))
+            if normalized==heading:
+                matches.append(h)
+        if not matches:
+            last_error=f"Expected source heading not found at {source_url}"
+            print(last_error+"; trying next verified copy",flush=True)
+            continue
         h=matches[-1]
         fragments=[]
         for elem in h.next_elements:
@@ -90,14 +117,18 @@ def source_excerpt(candidate):
                 break
             if getattr(elem,"name",None)=="p":
                 sentence=clean(elem.get_text(" ",strip=True))
-                if len(sentence)>18: fragments.append(sentence)
-                if len(" ".join(fragments))>60_000: break
+                if len(sentence)>18:
+                    fragments.append(sentence)
+                if len(" ".join(fragments))>60_000:
+                    break
         excerpt=" ".join(dict.fromkeys(fragments))
-    else:
-        # Failure is safer than inventing a different story from a TOC title.
-        fail(f"Source heading not found: {candidate['heading']}")
-    if len(excerpt)<170: fail(f"Source extract too short ({len(excerpt)}): {candidate['heading']}")
-    return excerpt[:60000]
+        if len(excerpt)>=170:
+            print(f"Verified source retrieved from: {source_url}",flush=True)
+            return excerpt[:60000]
+        last_error=f"Source extract too short ({len(excerpt)}) at {source_url}"
+        print(last_error+"; trying next verified copy",flush=True)
+    fail(f"Could not retrieve exact source after official and mirror fallbacks: {last_error}")
+
 def textual_prompt(item,excerpt):
     return (
       "당신은 어린이를 위한 한국어 옛이야기 작가입니다. 제공한 고전 원전만을 근거로 이야기의 "
