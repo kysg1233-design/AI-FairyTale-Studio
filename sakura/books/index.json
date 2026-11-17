@@ -147,6 +147,79 @@
           }
         }
       ]
+    },
+    {
+      "title": "까마귀와 물병",
+      "region": "그리스·세계",
+      "source_title": "THE CROW AND THE PITCHER",
+      "source_url": "https://www.gutenberg.org/cache/epub/19994/pg19994-images.html",
+      "source_credit": "The Aesop for Children",
+      "status": "ready",
+      "published_at": "2026-11-17T05:04:14.104976+00:00",
+      "cover": "books/story-4d40e01d7a3f/cover.webp",
+      "parent_moral": "어려운 일이 생겼을 때 포기하지 않고 차근차근 생각을 모으면, 까마귀처럼 지혜롭게 길을 찾아낼 수 있단다.",
+      "pages": [
+        {
+          "heading": "목마른 까마귀의 여행",
+          "text": "오랫동안 비가 내리지 않아 시냇물과 웅덩이가 바짝 말랐어요. 목이 몹시 마른 까마귀는 물 한 모금을 찾아 마른 들판 위를 날아다녔지요.",
+          "mood": "tender",
+          "image": "books/story-4d40e01d7a3f/page-01.webp",
+          "audio": {
+            "male": "books/story-4d40e01d7a3f/male-01.mp3",
+            "female": "books/story-4d40e01d7a3f/female-01.mp3"
+          }
+        },
+        {
+          "heading": "마침내 발견한 물병",
+          "text": "까마귀는 마른 풀숲 사이에서 커다란 흙 물병 하나를 발견했어요. 안을 살짝 들여다보니 깊은 바닥에 맑은 물이 조금 담겨 있었답니다.",
+          "mood": "mystery",
+          "image": "books/story-4d40e01d7a3f/page-02.webp",
+          "audio": {
+            "male": "books/story-4d40e01d7a3f/male-02.mp3",
+            "female": "books/story-4d40e01d7a3f/female-02.mp3"
+          }
+        },
+        {
+          "heading": "닿지 않는 부리",
+          "text": "하지만 물병의 목은 좁고 너무나 길었어요. 까마귀가 아무리 부리를 길게 뻗어 보아도 물은 조금도 닿지 않아 가슴이 답답했어요.",
+          "mood": "tender",
+          "image": "books/story-4d40e01d7a3f/page-03.webp",
+          "audio": {
+            "male": "books/story-4d40e01d7a3f/male-03.mp3",
+            "female": "books/story-4d40e01d7a3f/female-03.mp3"
+          }
+        },
+        {
+          "heading": "반짝이는 좋은 생각",
+          "text": "‘어떻게 하면 저 물을 마실 수 있을까?’ 곰곰이 생각하던 까마귀는 발밑에 널려 있는 작고 둥근 조약돌들을 보고 좋은 생각을 떠올렸어요.",
+          "mood": "calm",
+          "image": "books/story-4d40e01d7a3f/page-04.webp",
+          "audio": {
+            "male": "books/story-4d40e01d7a3f/male-04.mp3",
+            "female": "books/story-4d40e01d7a3f/female-04.mp3"
+          }
+        },
+        {
+          "heading": "차오르는 물",
+          "text": "까마귀는 부리로 조약돌을 하나씩 물어 병 속에 퐁당퐁당 떨어뜨렸어요. 돌이 쌓일 때마다 바닥의 물이 한 뼘씩 위로 솟아올랐지요.",
+          "mood": "adventure",
+          "image": "books/story-4d40e01d7a3f/page-05.webp",
+          "audio": {
+            "male": "books/story-4d40e01d7a3f/male-05.mp3",
+            "female": "books/story-4d40e01d7a3f/female-05.mp3"
+          }
+        },
+        {
+          "heading": "시원하고 달콤한 물 한 모금",
+          "text": "마침내 물이 병 입구까지 찰랑찰랑 차올랐어요. 스스로 지혜를 발휘한 까마귀는 시원하고 달콤한 물을 기분 좋게 꿀꺽꿀꺽 마셨답니다.",
+          "mood": "joyful",
+          "image": "books/story-4d40e01d7a3f/page-06.webp",
+          "audio": {
+            "male": "books/story-4d40e01d7a3f/male-06.mp3",
+            "female": "books/story-4d40e01d7a3f/female-06.mp3"
+          }
+        }
+      ]
     }
   ]
 }
