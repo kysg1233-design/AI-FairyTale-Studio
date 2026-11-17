@@ -58,7 +58,7 @@ def source_excerpt(candidate):
     from urllib.parse import urlparse
     original=candidate["source_url"]
     parsed=urlparse(original)
-    match=re.search(r"/(?:cache/epub|ebooks)/(\\d+)",parsed.path)
+        match=re.search(r"/(?:cache/epub|ebooks)/(\d+)",parsed.path)
     if parsed.hostname not in ("www.gutenberg.org","gutenberg.org") or not match:
         fail("Unapproved or unrecognized Project Gutenberg source URL")
     book_id=match.group(1)
