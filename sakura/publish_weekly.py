@@ -57,8 +57,23 @@ def source_excerpt(candidate):
     """Ground adaptation in source text, not a title-only guess. Refuse unidentified sources."""
     url=candidate["source_url"]
     if not url.startswith("https://www.gutenberg.org/"): fail("Unapproved source domain")
-    with urlopen(Request(url,headers={"User-Agent":"SakuraStoryTheater/1.0"}),timeout=70) as response:
-        html=response.read(6_000_000).decode("utf-8","replace")
+    # Project Gutenberg may briefly return HTTP 503/502. Retry source retrieval too;
+    # the previous implementation retried Gemini calls but failed immediately here.
+    html=None
+    for attempt in range(5):
+        try:
+            with urlopen(Request(url,headers={"User-Agent":"SakuraStoryTheater/1.0"}),timeout=70) as response:
+                html=response.read(6_000_000).decode("utf-8","replace")
+            break
+        except HTTPError as e:
+            if e.code not in (408,429,500,502,503,504) or attempt==4:
+                fail(f"Source retrieval HTTP {e.code} after {attempt+1} attempt(s): {url}")
+            print(f"Source server HTTP {e.code} ({attempt+1}/5); retrying in {min(30,5*(attempt+1))}s",flush=True)
+        except (URLError,TimeoutError) as e:
+            if attempt==4: fail(f"Source retrieval network error after 5 attempts: {e}")
+            print(f"Source network error ({attempt+1}/5); retrying: {e}",flush=True)
+        time.sleep(min(30,5*(attempt+1)))
+    if html is None: fail("Source retrieval failed after retries")
     soup=BeautifulSoup(html,"html.parser")
     def norm_head(v):
         return clean(re.sub(r"[^a-z0-9]+"," ",str(v).casefold()))
