@@ -159,7 +159,7 @@ def story_plan(item,excerpt):
         prompt=base_prompt
         if attempt:
             prompt += (
-                "\\nRETRY "+str(attempt+1)+": Your previous response was invalid or truncated. "
+                "\nRETRY "+str(attempt+1)+": Your previous response was invalid or truncated. "
                 "Keep character_bible concise (under 700 Korean characters), each scene_prompt under 450 characters, "
                 "and output a complete valid JSON object only. Do not stop mid-string."
             )
@@ -169,7 +169,11 @@ def story_plan(item,excerpt):
         raw="".join(p.get("text","") for p in out.get("candidates",[{}])[0].get("content",{}).get("parts",[])).strip()
         try:
             candidate=raw
-            if candidate.startswith("```"):\n                candidate=candidate[3:].strip()\n                if candidate.lower().startswith("json"): candidate=candidate[4:].strip()\n                if candidate.endswith("```"): candidate=candidate[:-3].strip()\n            if not candidate.startswith("{"):
+            if candidate.startswith("```"):
+                candidate=candidate[3:].strip()
+                if candidate.lower().startswith("json"): candidate=candidate[4:].strip()
+                if candidate.endswith("```"): candidate=candidate[:-3].strip()
+            if not candidate.startswith("{"):
                 start=candidate.find("{")
                 if start>=0: candidate=candidate[start:]
             if not candidate.endswith("}"):
