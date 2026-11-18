@@ -20,7 +20,9 @@ TEXT_MODEL=os.getenv("GEMINI_TEXT_MODEL","gemini-3.8-flash")
 IMAGE_MODEL=os.getenv("GEMINI_IMAGE_MODEL","gemini-3.1-flash-image")
 VOICE_MODEL=os.getenv("GEMINI_VOICE_MODEL","gemini-3.8-flash-lite-tts")
 BASE="https://generativelanguage.googleapis.com/v1beta/models/"
-DEFAULT_PAGES=6
+DEFAULT_PAGES=12
+MIN_NARRATION_CHARS=90
+MAX_NARRATION_CHARS=180
 def fail(msg): raise RuntimeError(msg)
 def slugify(s): return re.sub(r"[^a-z0-9-]+","-",s.lower()).strip("-")
 def http_json(url,body=None,retries=4,extra_headers=None):
@@ -135,13 +137,13 @@ def textual_prompt(item,excerpt):
       "원인-전개-해결을 충실히 유지하세요. 원전에 없는 인물/마법/반전을 추가하지 마세요. "
       "5세~8세가 이해할 수 있는 아름다운 한국어로 새롭게 각색하세요. "
       "기존 번역문을 문장 단위로 복제하지 마세요. 무섭거나 폭력적인 장면은 부드럽게 표현하세요. "
-      f"정확히 {DEFAULT_PAGES}개 장면으로 나누고 1장면당 2~4문장, 대략 60~130 한국어 글자로 작성하세요. "
+      f"정확히 {DEFAULT_PAGES}개 장면으로 나누고 1장면당 3~5문장, 대략 100~160 한국어 글자로 작성하세요. "
       "각 장면마다 그림용 scene_prompt를 영어로 자세하게 작성하고, character_bible은 등장인물의 "
       "얼굴/의상/체형/털색 등의 공통 고정값을 자세히 정의하세요. "
       "각 장면은 반드시 이전 장면과 시각적 구도, 장소 또는 행동이 달라야 합니다. "
       "각 장면에 mood를 반드시 하나 선택하세요: calm(평온), joyful(기쁨), adventure(모험), mystery(긴장·신비), tender(슬픔·따뜻한 위로). "
       "어린이에게 과도하게 무서운 음악은 사용하지 않으므로 사건의 감정을 과장하지 마세요. "
-      "원전의 핵심 교훈을 담은 parent_moral 한 문단도 작성하세요. 부모가 아이에게 직접 읽어줄 말투로, "
+      "각 장면은 하나의 사건에 집중하고, 사건 사이의 원인·감정·행동·결과를 충분히 연결하세요. 요약문처럼 사건을 건너뛰지 말고 대화와 구체적인 행동을 자연스럽게 넣으세요. 같은 내용을 반복해 분량만 늘리지 마세요. " "원전의 핵심 교훈을 담은 parent_moral 한 문단도 작성하세요. 부모가 아이에게 직접 읽어줄 말투로, "
       "어린이에게 따뜻하고 구체적이며 이해하기 쉬운 한국어 30~125자로 작성하세요. "
       "사건과 무관한 상투적 교훈이나 무리한 훈계를 금지합니다. "
       "아래 JSON 스키마 형태의 JSON 객체만 출력하세요. "
@@ -180,7 +182,7 @@ def story_plan(item,excerpt):
             prompt += (
                 "\nRETRY "+str(attempt+1)+": The previous output was invalid or incomplete. "
                 "Keep character_bible under 700 Korean characters, each scene_prompt under 450 characters, "
-                "and return one complete JSON object with exactly six pages. No Markdown fences or extra prose."
+                "and return one complete JSON object with exactly twelve pages. No Markdown fences or extra prose."
             )
         out=google(TEXT_MODEL,{"contents":[{"parts":[{"text":prompt}]}],
             "generationConfig":{"responseMimeType":"application/json","temperature":0.2,
@@ -201,9 +203,9 @@ def story_plan(item,excerpt):
                 if not isinstance(p,dict):
                     raise ValueError(f"Page {page_no} is not an object")
                 h=clean(p.get("heading")); t=clean(p.get("text")); art=clean(p.get("scene_prompt"))
-                if not (4<=len(h)<=40 and 35<=len(t)<=240 and 60<=len(art)<=1200):
+                if not (4<=len(h)<=40 and MIN_NARRATION_CHARS<=len(t)<=MAX_NARRATION_CHARS and 60<=len(art)<=1200):
                     raise ValueError(f"Page {page_no} content length invalid")
-                if len(re.findall("[가-힣]",t))<25 or re.search("[A-Za-z]{3,}",t):
+                if len(re.findall("[가-힣]",t))<70 or re.search("[A-Za-z]{3,}",t):
                     raise ValueError(f"Page {page_no} narration is not Korean")
                 if t in prior:
                     raise ValueError("Duplicate narration page")
@@ -319,7 +321,8 @@ def verify_package(path,meta):
     assets=[meta["cover"]]
     for p in meta["pages"]:assets.extend([p["image"],p["audio"]["male"],p["audio"]["female"]])
     if meta.get("title_audio"):assets.extend(meta["title_audio"].values())
-    if len(assets)!=1+3*DEFAULT_PAGES+(2 if meta.get("title_audio") else 0):fail("Missing asset references")
+    if len(meta.get("pages",[]))<1:fail("Package has no pages")
+    if len(assets)!=1+3*len(meta["pages"])+(2 if meta.get("title_audio") else 0):fail("Missing asset references")
     for rel in assets:
         filename=ROOT/rel
         if not filename.is_file() or filename.stat().st_size<4000:fail("Asset missing or invalid: "+rel)
@@ -433,7 +436,7 @@ def publish_one():
     plan_file=staging/"story-plan.json"
     if plan_file.exists():
         plan=json.loads(plan_file.read_text("utf-8"))
-        if len(plan.get("pages",[]))!=DEFAULT_PAGES:fail("Staged story plan is invalid")
+        if len(plan.get("pages",[]))!=DEFAULT_PAGES:fail("Staged story plan is invalid; old six-page staging must be regenerated")
         print("Resuming staged source-backed story:",c["title"])
     else:
         plan=story_plan(c,excerpt)
@@ -511,10 +514,70 @@ def publish_one():
     pending.write_text(json.dumps(existing,ensure_ascii=False,indent=2),"utf-8")
     pending.replace(INDEX)
     print("SUCCESS: complete verified book published",slug)
+
+def upgrade_existing_one():
+    """Expand one legacy six-page book to twelve scenes; publish only after all new media pass validation."""
+    catalog=json.loads(INDEX.read_text("utf-8"))
+    old=next((b for b in catalog.get("books",[]) if b.get("status")=="ready" and len(b.get("pages",[]))<DEFAULT_PAGES),None)
+    if old is None:
+        return False
+    candidates=json.loads(QUEUE.read_text("utf-8"))
+    item=next((c for c in candidates if c.get("source_url")==old.get("source_url") and c.get("heading")==old.get("source_title")),None)
+    if item is None:
+        fail("Cannot safely upgrade legacy book: verified source candidate missing for "+old.get("title","unknown"))
+    excerpt=source_excerpt(item)
+    plan=story_plan(item,excerpt)
+    ensure_parent_moral(plan)
+    slug=pathlib.Path(old["cover"]).parent.name
+    destination=BOOK_DIR/slug
+    staging=BOOK_DIR/"_staging"/(slug+"-upgrade")
+    staging.mkdir(parents=True,exist_ok=True)
+    prior=[]
+    for i,p in enumerate(plan["pages"]):
+        image_file=staging/f"page-{i+1:02d}.webp"
+        previous=staging/f"page-{i:02d}.webp" if i else None
+        small=image_generate(item,plan,i,image_file,previous)
+        if any(visual_difference(small,x)<0.045 for x in prior):
+            image_file.unlink(missing_ok=True)
+            p["scene_prompt"] += " Make the scene composition, action, camera angle and background clearly distinct from every previous page."
+            small=image_generate(item,plan,i,image_file,previous)
+        if any(visual_difference(small,x)<0.045 for x in prior):
+            fail(f"Upgrade image {i+1} is too similar to another page")
+        prior.append(small)
+        for person in ("male","female"):
+            create_audio(p["heading"]+". "+p["text"],person,staging/f"{person}-{i+1:02d}.mp3")
+    for person in ("male","female"):
+        create_audio(old["title"]+". 오늘의 이야기를 시작할게요.",person,staging/f"{person}-title.mp3")
+    shutil.copyfile(staging/"page-01.webp",staging/"cover.webp")
+    new_pages=[]
+    for i,p in enumerate(plan["pages"]):
+        new_pages.append({"heading":p["heading"],"text":p["text"],"mood":p.get("mood","calm"),
+            "image":f"books/{slug}/page-{i+1:02d}.webp",
+            "audio":{"male":f"books/{slug}/male-{i+1:02d}.mp3","female":f"books/{slug}/female-{i+1:02d}.mp3"}})
+    updated=dict(old)
+    updated["pages"]=new_pages
+    updated["parent_moral"]=plan["parent_moral"]
+    updated["published_at"]=datetime.now(timezone.utc).isoformat()
+    updated["title_audio"]={"male":f"books/{slug}/male-title.mp3","female":f"books/{slug}/female-title.mp3"}
+    # Replace old media only after the complete 12-page replacement is generated.
+    for file in staging.iterdir():
+        shutil.copy2(file,destination/file.name)
+    (destination/"manifest.json").write_text(json.dumps(updated,ensure_ascii=False,indent=2)+"\n","utf-8")
+    verify_package(destination,updated)
+    catalog["books"]=[updated if b.get("title")==old.get("title") and b.get("source_url")==old.get("source_url") else b for b in catalog["books"]]
+    pending=INDEX.with_suffix(".json.tmp")
+    pending.write_text(json.dumps(catalog,ensure_ascii=False,indent=2)+"\n","utf-8")
+    pending.replace(INDEX)
+    shutil.rmtree(staging,ignore_errors=True)
+    print("UPGRADED: "+old["title"]+" now has twelve fully validated pages",flush=True)
+    return True
+
 if __name__=="__main__":
     catalog=json.loads(INDEX.read_text("utf-8")) if INDEX.exists() else {"books":[]}
     existing_books=sum(1 for b in catalog.get("books",[]) if b.get("status")=="ready")
     target_books=max(1,min(100,int(os.getenv("SAKURA_TARGET_BOOKS","40"))))
+    if upgrade_existing_one():
+        sys.exit(0)
     if existing_books>=target_books:
         print(f"TARGET REACHED: {existing_books}/{target_books} verified complete storybooks")
         sys.exit(0)
