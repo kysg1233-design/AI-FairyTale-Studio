@@ -305,8 +305,9 @@ def create_audio(text,person,output):
     # Fall back to Google's documented full Flash TTS, then the 3.1 preview,
     # without changing the requested speaker or narration text.
     voice_models=list(dict.fromkeys([VOICE_MODEL,
-        os.getenv("GEMINI_VOICE_FALLBACK_MODEL","gemini-3.8-flash-tts"),
-        "gemini-3.1-flash-tts-preview"]))
+        "gemini-2.5-flash-preview-tts",
+        "gemini-3.1-flash-tts-preview",
+        os.getenv("GEMINI_VOICE_FALLBACK_MODEL","gemini-3.8-flash-tts")]))
     last_voice_error=None
     for voice_model in voice_models:
         try:
@@ -317,7 +318,7 @@ def create_audio(text,person,output):
         except RuntimeError as e:
             last_voice_error=e
             msg=str(e).lower()
-            if ("quota exceeded" in msg or "http 404" in msg or "http 403" in msg) and voice_model!=voice_models[-1]:
+            if ("quota exceeded" in msg or "http 404" in msg or "http 403" in msg or "http 402" in msg) and voice_model!=voice_models[-1]:
                 print(f"TTS model unavailable or quota exhausted ({voice_model}); trying fallback",flush=True)
                 continue
             raise
