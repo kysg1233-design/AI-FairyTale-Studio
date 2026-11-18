@@ -512,9 +512,15 @@ def publish_one():
     pending.replace(INDEX)
     print("SUCCESS: complete verified book published",slug)
 if __name__=="__main__":
-    existing_books=len(json.loads(INDEX.read_text("utf-8")).get("books",[])) if INDEX.exists() else 0
-    # Publish a bounded number of fully validated new storybooks on each scheduled run.
-    target=max(1,min(5,int(os.getenv("SAKURA_BATCH_SIZE","1"))))
+    catalog=json.loads(INDEX.read_text("utf-8")) if INDEX.exists() else {"books":[]}
+    existing_books=sum(1 for b in catalog.get("books",[]) if b.get("status")=="ready")
+    target_books=max(1,min(100,int(os.getenv("SAKURA_TARGET_BOOKS","40"))))
+    if existing_books>=target_books:
+        print(f"TARGET REACHED: {existing_books}/{target_books} verified complete storybooks")
+        sys.exit(0)
+    # Publish up to five fully verified books per hourly run, stopping exactly at the target.
+    batch_size=max(1,min(5,int(os.getenv("SAKURA_BATCH_SIZE","5"))))
+    target=min(batch_size,target_books-existing_books)
     completed=0
     for n in range(target):
         before=len(json.loads(INDEX.read_text("utf-8")).get("books",[])) if INDEX.exists() else 0
@@ -526,6 +532,9 @@ if __name__=="__main__":
             if completed==0:sys.exit(1)
             break
         after=len(json.loads(INDEX.read_text("utf-8")).get("books",[])) if INDEX.exists() else 0
-        if after==before:break
+        if after==before:
+            if after<target_books:
+                print(f"No new complete book; target remains {after}/{target_books}",file=sys.stderr)
+            break
         completed+=1
-    print(f"BATCH RESULT: {completed} newly verified complete storybooks")
+    print(f"BATCH RESULT: {completed} newly verified complete storybooks; catalog={existing_books+completed}/{target_books}")

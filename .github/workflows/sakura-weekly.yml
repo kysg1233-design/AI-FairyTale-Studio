@@ -1,8 +1,8 @@
-name: Daily Sakura storybook production
+name: Sakura storybook production
 on:
   schedule:
-    # 09:15 Korea Standard Time (UTC+9), once per day.
-    - cron: "15 0 * * *"
+    # Run at 15 minutes past every hour (Korea Standard Time).
+    - cron: "15 * * * *"
   workflow_dispatch:
 
 # One writer only. Never cancel a production run midway through image/audio generation.
@@ -20,7 +20,8 @@ jobs:
     env:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       PYTHONUNBUFFERED: "1"
-      SAKURA_BATCH_SIZE: "1"
+      SAKURA_BATCH_SIZE: "5"
+      SAKURA_TARGET_BOOKS: "40"
     steps:
       - name: Checkout main
         uses: actions/checkout@v4
@@ -84,7 +85,7 @@ jobs:
             echo "Available: $model"
           done
 
-      - name: Generate one complete storybook
+      - name: Generate up to five complete storybooks
         id: generate
         run: python sakura/publish_weekly.py
 
@@ -192,9 +193,9 @@ jobs:
             echo "## Sakura daily publishing"
             echo "- Result: **$RESULT**"
             echo "- Run: $RUN_ID"
-            echo "- Schedule: 09:15 KST daily"
+            echo "- Schedule: hourly at :15 KST; target: 40 complete books"
             if [ "$RESULT" = success ]; then
-              echo "- A complete book passed validation and browser QA before the single publication commit."
+              echo "- Every complete book passed media validation and browser QA before publication."
             else
               echo "- No incomplete book was added to the public catalog. Any partial media was cached for retry."
             fi
