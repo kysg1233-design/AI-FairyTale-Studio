@@ -718,6 +718,17 @@ function musicVolume(){return narrationOn?musicGain:.52}
 // Each pending play() promise and fade timer also checks the generation token.
 // Exactly ONE audio player may run at any time. There is no crossfade or second player.
 function cancelMusicFade(){if(musicFadeTimer){clearInterval(musicFadeTimer);musicFadeTimer=null}}
+function fadeMusicIn(player,serial){
+ cancelMusicFade();
+ const target=musicVolume(),started=performance.now(),duration=650;
+ player.volume=0;
+ musicFadeTimer=setInterval(()=>{
+  if(serial!==musicSwitchId||player!==musicTrack){cancelMusicFade();return}
+  const progress=Math.min(1,(performance.now()-started)/duration);
+  player.volume=target*progress;
+  if(progress>=1)cancelMusicFade();
+ },35);
+}
 function pauseEveryMusicTrack(){
  for(const player of musicCache.values()){
   try{player.pause();player.volume=0;player.currentTime=0}catch(e){}
@@ -750,7 +761,7 @@ function playMusic(mood){
  Promise.resolve(player.play()).then(()=>{
   if(serial!==musicSwitchId)return;
   if(!musicOn||!active){player.pause();player.volume=0;return}
-  player.volume=musicVolume();
+  fadeMusicIn(player,serial);
  }).catch(e=>{
   if(serial!==musicSwitchId)return;
   player.pause();player.volume=0;musicTheme=null;
