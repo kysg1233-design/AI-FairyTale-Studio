@@ -16,7 +16,7 @@ permissions:
   id-token: write
   statuses: write
 concurrency:
-  group: sakura-pages-deploy-v3
+  group: sakura-pages-deploy-v4
   cancel-in-progress: false
 jobs:
   deploy:
@@ -29,14 +29,16 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install FFmpeg required for pre-rendered mood soundtracks
+      - name: Install portable FFmpeg for pre-rendered mood soundtracks
         shell: bash
         run: |
           set -euo pipefail
-          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
-            sudo apt-get update -qq
-            sudo apt-get install -y ffmpeg
-          fi
+          python -m pip install "imageio-ffmpeg==0.6.0"
+          FFMPEG_BIN="$(python -c 'import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())')"
+          mkdir -p "$RUNNER_TEMP/ffmpeg-bin"
+          ln -sf "$FFMPEG_BIN" "$RUNNER_TEMP/ffmpeg-bin/ffmpeg"
+          echo "$RUNNER_TEMP/ffmpeg-bin" >> "$GITHUB_PATH"
+          export PATH="$RUNNER_TEMP/ffmpeg-bin:$PATH"
           ffmpeg -version | head -n 1
       - name: Compose the five pre-rendered mood soundtracks
         run: python sakura/create_mood_music.py
