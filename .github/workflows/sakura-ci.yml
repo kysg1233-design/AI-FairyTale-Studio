@@ -19,6 +19,8 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Validate daily workflow YAML syntax
+        run: ruby -e 'require "yaml"; YAML.load_file(".github/workflows/sakura-weekly.yml"); puts "Daily workflow YAML syntax passed"'
       - name: Install Python test dependencies
         run: python -m pip install "beautifulsoup4==4.13.4" "Pillow==11.3.0"
       - name: Check Python syntax and parser regression tests
