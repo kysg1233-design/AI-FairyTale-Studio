@@ -1,8 +1,5 @@
 name: Daily Sakura storybook production
 on:
-  push:
-    paths:
-      - '.github/workflows/sakura-weekly.yml'
   schedule:
     # 09:15 Korea Standard Time (UTC+9), once per day.
     - cron: "15 0 * * *"
@@ -146,6 +143,7 @@ jobs:
           set -euo pipefail
           git config user.name "sakura-story-bot"
           git config user.email "sakura-story-bot@users.noreply.github.com"
+          rm -rf sakura/books/_staging
           git add -A sakura/books/
           git reset -q -- sakura/books/_staging/ || true
           git add sakura/build-status.json
