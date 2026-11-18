@@ -150,55 +150,75 @@ def textual_prompt(item,excerpt):
       '"mood":"calm","scene_prompt":"English image direction"}]}. '
       f"\n제목: {item['title']}\n원전 제목: {item['heading']}\n원전 내용:\n{excerpt}"
     )
+def parse_json_object(raw):
+    """Parse a model JSON object despite harmless Markdown fences or surrounding prose."""
+    if not isinstance(raw, str) or not raw.strip():
+        raise ValueError("Model returned an empty story plan")
+    candidate=raw.strip().lstrip("\\ufeff")
+    if candidate.startswith("```"):
+        lines=candidate.splitlines()
+        if lines and lines[0].strip().startswith("```"):
+            lines=lines[1:]
+        if lines and lines[-1].strip()=="```":
+            lines=lines[:-1]
+        candidate="\\n".join(lines).strip()
+    first=candidate.find("{")
+    last=candidate.rfind("}")
+    if first<0 or last<=first:
+        raise ValueError("No complete JSON object in model response")
+    parsed=json.loads(candidate[first:last+1])
+    if not isinstance(parsed,dict):
+        raise ValueError("Story plan JSON root must be an object")
+    return parsed
+
 def story_plan(item,excerpt):
-    # Model JSON occasionally truncates long character bibles. Retry generation and
-    # parse common fenced/extra-text responses before treating the story as failed.
     base_prompt=textual_prompt(item,excerpt)
     last_error="unknown story-plan error"
     for attempt in range(4):
         prompt=base_prompt
         if attempt:
             prompt += (
-                "\nRETRY "+str(attempt+1)+": Your previous response was invalid or truncated. "
-                "Keep character_bible concise (under 700 Korean characters), each scene_prompt under 450 characters, "
-                "and output a complete valid JSON object only. Do not stop mid-string."
+                "\\nRETRY "+str(attempt+1)+": The previous output was invalid or incomplete. "
+                "Keep character_bible under 700 Korean characters, each scene_prompt under 450 characters, "
+                "and return one complete JSON object with exactly six pages. No Markdown fences or extra prose."
             )
         out=google(TEXT_MODEL,{"contents":[{"parts":[{"text":prompt}]}],
-            "generationConfig":{"responseMimeType":"application/json","temperature":0.25,
-                               "maxOutputTokens":5200}})
-        raw="".join(p.get("text","") for p in out.get("candidates",[{}])[0].get("content",{}).get("parts",[])).strip()
+            "generationConfig":{"responseMimeType":"application/json","temperature":0.2,
+                               "maxOutputTokens":8192}})
+        candidates=out.get("candidates") or []
+        raw="".join(p.get("text","") for p in (candidates[0].get("content",{}).get("parts",[]) if candidates else [])).strip()
         try:
-            candidate=raw
-            if candidate.startswith("```"):
-                candidate=candidate[3:].strip()
-                if candidate.lower().startswith("json"): candidate=candidate[4:].strip()
-                if candidate.endswith("```"): candidate=candidate[:-3].strip()
-            if not candidate.startswith("{"):
-                start=candidate.find("{")
-                if start>=0: candidate=candidate[start:]
-            if not candidate.endswith("}"):
-                end=candidate.rfind("}")
-                if end>=0: candidate=candidate[:end+1]
-            data=json.loads(candidate)
+            data=parse_json_object(raw)
             pages=data.get("pages",[])
-            if len(pages)!=DEFAULT_PAGES: raise ValueError(f"Expected {DEFAULT_PAGES} pages, received {len(pages)}")
-            if len(data.get("character_bible",""))<35: raise ValueError("Character bible absent")
+            if len(pages)!=DEFAULT_PAGES:
+                raise ValueError(f"Expected {DEFAULT_PAGES} pages, received {len(pages)}")
+            if len(data.get("character_bible",""))<35:
+                raise ValueError("Character bible absent or too short")
+            if not isinstance(data.get("parent_moral",""),str):
+                raise ValueError("Parent moral must be a string")
             prior=set()
-            for p in pages:
-                h=clean(p.get("heading"));t=clean(p.get("text"));art=clean(p.get("scene_prompt"))
-                if not (4<=len(h)<=40 and 35<=len(t)<=240 and len(art)>60): raise ValueError("Page content length invalid")
-                if len(re.findall("[가-힣]",t))<25 or re.search("[A-Za-z]{3,}",t): raise ValueError("Non-Korean narration detected")
-                if t in prior: raise ValueError("Duplicate narration page")
+            for page_no,p in enumerate(pages,1):
+                if not isinstance(p,dict):
+                    raise ValueError(f"Page {page_no} is not an object")
+                h=clean(p.get("heading")); t=clean(p.get("text")); art=clean(p.get("scene_prompt"))
+                if not (4<=len(h)<=40 and 35<=len(t)<=240 and 60<=len(art)<=1200):
+                    raise ValueError(f"Page {page_no} content length invalid")
+                if len(re.findall("[가-힣]",t))<25 or re.search("[A-Za-z]{3,}",t):
+                    raise ValueError(f"Page {page_no} narration is not Korean")
+                if t in prior:
+                    raise ValueError("Duplicate narration page")
                 prior.add(t)
                 mood=p.get("mood","calm")
-                if mood not in ("calm","joyful","adventure","mystery","tender"): mood="calm"
+                if mood not in ("calm","joyful","adventure","mystery","tender"):
+                    mood="calm"
                 p.update(heading=h,text=t,scene_prompt=art,mood=mood)
             print(f"Story plan accepted on attempt {attempt+1}/4",flush=True)
             return data
         except (ValueError,TypeError,AttributeError,KeyError) as exc:
             last_error=f"{type(exc).__name__}: {exc}; response prefix={raw[:240]!r}"
             print(f"Story-plan response invalid ({attempt+1}/4): {last_error}",flush=True)
-            if attempt<3: time.sleep(2*(attempt+1))
+            if attempt<3:
+                time.sleep(2*(attempt+1))
     fail("Story plan generation failed after 4 attempts: "+last_error)
 def ensure_parent_moral(plan):
     """Finish the parent-read closing page; never fail on one truncated JSON response."""
@@ -406,15 +426,21 @@ def publish_one():
                 else:
                     create_audio(p["heading"]+". "+p["text"],person,recorded)
             print(f"Completed {i+1}/{DEFAULT_PAGES}: unique image, male voice, female voice")
-        # Title narration is optional: the first page's complete narration starts immediately.
-        # This avoids withholding an otherwise complete book when the TTS daily quota is exhausted.
+        # Title clips are part of the package contract. Reuse staged files after a quota/network interruption.
+        for person in ("male","female"):
+            title_clip=tmp/f"{person}-title.mp3"
+            if title_clip.is_file() and title_clip.stat().st_size>=4000:
+                print("Reused staged title narration:",person,flush=True)
+            else:
+                create_audio(c["title"]+". 오늘의 이야기를 시작할게요.",person,title_clip)
         shutil.copyfile(tmp/"page-01.webp",tmp/"cover.webp")
         pages=[{"heading":p["heading"],"text":p["text"],"mood":p.get("mood","calm"),"image":f"books/{slug}/page-{i+1:02d}.webp",
                 "audio":{"male":f"books/{slug}/male-{i+1:02d}.mp3","female":f"books/{slug}/female-{i+1:02d}.mp3"}}
                for i,p in enumerate(plan["pages"])]
         meta={"title":c["title"],"region":c["region"],"source_title":c["heading"],"source_url":c["source_url"],
               "source_credit":c["source"],"status":"ready","published_at":datetime.now(timezone.utc).isoformat(),
-              "cover":f"books/{slug}/cover.webp","parent_moral":plan["parent_moral"],"pages":pages}
+              "cover":f"books/{slug}/cover.webp","parent_moral":plan["parent_moral"],"pages":pages,
+              "title_audio":{"male":f"books/{slug}/male-title.mp3","female":f"books/{slug}/female-title.mp3"}}
         (tmp/"manifest.json").write_text(json.dumps(meta,ensure_ascii=False,indent=2),"utf-8")
         shutil.copytree(tmp,destination,ignore=shutil.ignore_patterns("story-plan.json"))
         try: verify_package(destination,meta)

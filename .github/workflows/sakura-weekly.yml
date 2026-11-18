@@ -1,196 +1,199 @@
-name: Daily complete Sakura storybook publishing
+name: Daily Sakura storybook production
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/sakura-weekly.yml'
-      - 'sakura/publish_weekly.py'
   schedule:
-    - cron: "5 0,12 * * *" # Twice daily; up to two complete books per run
+    # 09:15 Korea Standard Time (UTC+9), once per day.
+    - cron: "15 0 * * *"
   workflow_dispatch:
+
+# One writer only. Never cancel a production run midway through image/audio generation.
 concurrency:
-  group: sakura-story-production
+  group: sakura-production-main
   cancel-in-progress: false
+
 permissions:
   contents: write
-  pages: write
-  id-token: write
+
 jobs:
   publish:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}sakura/
     runs-on: ubuntu-latest
     timeout-minutes: 180
     env:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       PYTHONUNBUFFERED: "1"
-      SAKURA_BATCH_SIZE: "2" # Publish up to two complete books per run; incomplete assets remain staged
+      SAKURA_BATCH_SIZE: "1"
     steps:
-      - name: Check out repository
+      - name: Checkout main
         uses: actions/checkout@v4
         with:
+          ref: main
           persist-credentials: true
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Install dependencies
-        run: python -m pip install --upgrade "beautifulsoup4>=4.12,<5" "Pillow>=11,<13"
-      - name: Install FFmpeg used to produce all narration MP3s
-        shell: bash
+          cache: pip
+
+      - name: Install pinned dependencies
+        run: python -m pip install "beautifulsoup4==4.13.4" "Pillow==11.3.0"
+
+      - name: Install audio tools
         run: |
           set -euo pipefail
-          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
-            sudo apt-get update -qq
-            sudo apt-get install -y ffmpeg
-          fi
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
           ffmpeg -version | head -n 1
-      - id: secretcheck
-        name: Verify audio tooling and secret
-        shell: bash
+          ffprobe -version | head -n 1
+
+      - name: Verify required secret
         run: |
-          command -v ffmpeg
-          command -v ffprobe
-          if [ -z "$GEMINI_API_KEY" ]; then
-            echo "::error::GEMINI_API_KEY secret is missing. No book was published."
-            exit 1
-          fi
-      - id: models
-        name: Confirm configured Gemini models (without exposing key)
+          test -n "$GEMINI_API_KEY" || { echo "::error::GEMINI_API_KEY is missing"; exit 1; }
+
+      - name: Restore interrupted story generation
+        uses: actions/cache/restore@v4
+        with:
+          path: sakura/books/_staging
+          key: sakura-staging-v2-${{ github.ref_name }}-${{ github.run_id }}
+          restore-keys: |
+            sakura-staging-v2-${{ github.ref_name }}-
+
+      - name: Check source and generation code syntax
+        run: |
+          python -m py_compile sakura/publish_weekly.py sakura/prepare_title_audio.py
+          python - <<'PY'
+          from sakura.publish_weekly import parse_json_object
+          assert parse_json_object('{"pages": []}') == {"pages": []}
+          assert parse_json_object('```json\\n{"pages": []}\\n```') == {"pages": []}
+          assert parse_json_object('Here is the result:\\n{"pages": []}\\nDone') == {"pages": []}
+          print("Story JSON parser self-test passed")
+          PY
+
+      - name: Verify Gemini models
         shell: bash
         run: |
           set -euo pipefail
           for model in gemini-3.8-flash gemini-3.1-flash-image gemini-3.8-flash-lite-tts; do
-            status=$(curl -sS -o /dev/null -w "%{http_code}" -H "x-goog-api-key: $GEMINI_API_KEY" "https://generativelanguage.googleapis.com/v1beta/models/$model")
+            status=$(curl --retry 3 --retry-all-errors --retry-delay 2 -sS -o /dev/null -w "%{http_code}" \
+              -H "x-goog-api-key: $GEMINI_API_KEY" \
+              "https://generativelanguage.googleapis.com/v1beta/models/$model")
             if [ "$status" != "200" ]; then
-              echo "::error::Gemini model $model was not accessible (HTTP $status). Check API validity, model availability and quota."
+              echo "::error::Gemini model $model unavailable (HTTP $status)"
               exit 1
             fi
-            echo "Model accessible: $model"
+            echo "Available: $model"
           done
-      - id: titleintro
-        name: Prepare male and female spoken book titles for existing books
-        continue-on-error: true
-        run: python sakura/prepare_title_audio.py
-      - id: generate
-        name: Generate and check a complete book
+
+      - name: Generate one complete storybook
+        id: generate
         run: python sakura/publish_weekly.py
-      - name: Save staged media if daily Gemini quota interrupts production
-        if: always() && (steps.titleintro.outcome == 'failure' || steps.generate.outcome == 'failure')
-        shell: bash
+
+      - name: Compose background music and validate every asset
+        run: |
+          python sakura/create_mood_music.py
+          python sakura/check_site.py
+          test -s sakura/book-turn.js
+
+      - name: Install pinned Chromium for real browser QA
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.55.1
+          npx playwright install --with-deps chromium
+
+      - name: Test desktop and Galaxy touch navigation with audio
+        id: browserqa
         run: |
           set -euo pipefail
-          if [ ! -d sakura/books/_staging ]; then
-            echo "No reusable staged assets"
-            exit 0
-          fi
-          git add -A sakura/books/_staging/
-          if git diff --cached --quiet; then exit 0; fi
-          git config user.name "sakura-story-bot"
-          git config user.email "sakura-story-bot@users.noreply.github.com"
-          git commit -m "Preserve partially generated book assets for quota-reset resume"
-          git pull --rebase origin main
-          git push origin HEAD:main
-      - name: Compose original prebuilt lullaby soundtrack
-        run: python sakura/create_mood_music.py
-      - id: validate
-        name: Verify reader and all published books
-        run: python sakura/check_site.py
-      - name: Verify bundled independent book turn engine
-        run: test -s sakura/book-turn.js
-      - name: Install Chromium browser QA environment
-        shell: bash
-        run: |
-          npm install --no-save playwright
-          npx playwright install --with-deps chromium
-      - id: browserqa
-        name: Exercise desktop and Galaxy touch-page flip with real audio
-        shell: bash
-        run: |
           python -m http.server 8777 --bind 127.0.0.1 > /tmp/sakura-http.log 2>&1 &
           echo $! > /tmp/sakura-http.pid
-          sleep 2
+          for i in {1..20}; do
+            curl -fsS http://127.0.0.1:8777/sakura/ >/dev/null && break
+            sleep 1
+          done
           SAKURA_URL=http://127.0.0.1:8777/sakura/ node sakura/qa_smoke.cjs
-      - id: commitbook
-        name: Commit verified and fully complete book only
-        shell: bash
-        run: |
-          git status --short
-          git add sakura/books/
-          if git diff --cached --quiet; then
-            echo "No new complete book to publish."
-            exit 0
-          fi
-          git config user.name "sakura-story-bot"
-          git config user.email "sakura-story-bot@users.noreply.github.com"
-          git commit -m "Publish complete weekly storybook (illustrations and both voices)"
-          git pull --rebase origin main
-          git push origin HEAD:main
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-        with:
-          enablement: true
-      - name: Upload complete site
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: '.'
-      - id: deployment
-        name: Publish completed books to GitHub Pages
-        uses: actions/deploy-pages@v4
-      - id: liveqa
-        name: Verify the public GitHub Pages site in desktop and mobile Chrome
-        shell: bash
+
+      - name: Write successful build receipt
+        if: success()
         env:
-          SAKURA_URL: ${{ steps.deployment.outputs.page_url }}sakura/
-        run: |
-          echo "Testing deployed site in Chrome"
-          node sakura/qa_smoke.cjs
-      - name: Keep browser QA evidence in GitHub Actions artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: sakura-browser-qa
-          path: |
-            sakura/qa-result.json
-            sakura/qa-desktop.png
-            sakura/qa-galaxy-mobile.png
-          if-no-files-found: ignore
-      - name: Save build status for automatic troubleshooting
-        if: always()
-        shell: bash
-        env:
-          STEP_SECRET: ${{ steps.secretcheck.outcome }}
-          STEP_MODELS: ${{ steps.models.outcome }}
-          STEP_GENERATE: ${{ steps.generate.outcome }}
-          STEP_TITLES: ${{ steps.titleintro.outcome }}
-          STEP_VALIDATE: ${{ steps.validate.outcome }}
-          STEP_COMMIT: ${{ steps.commitbook.outcome }}
-          STEP_PAGES: ${{ steps.deployment.outcome }}
-          STEP_BROWSER: ${{ steps.browserqa.outcome }}
-          STEP_PUBLIC: ${{ steps.liveqa.outcome }}
+          RUN_ID: ${{ github.run_id }}
+          COMMIT_SHA: ${{ github.sha }}
         run: |
           python - <<'PY'
           import json, os, pathlib, datetime
-          stage = {k:os.getenv("STEP_"+k,"unknown") for k in ("SECRET","MODELS","GENERATE","TITLES","VALIDATE","COMMIT","PAGES","BROWSER","PUBLIC")}
-          books = json.loads(pathlib.Path("sakura/books/index.json").read_text("utf-8")).get("books",[])
-          outcome = "success" if all(stage[k]=="success" for k in stage) else "failure"
-          result = {"status":outcome,"workflow":"weekly","run_id":os.getenv("GITHUB_RUN_ID"),
-             "commit":os.getenv("GITHUB_SHA"),"time_utc":datetime.datetime.now(datetime.timezone.utc).isoformat(),
-             "stage":stage,"completed_books":len(books),"titles":[b["title"] for b in books]}
-          pathlib.Path("sakura/build-status.json").write_text(json.dumps(result,ensure_ascii=False,indent=2)+"\n","utf-8")
-          print("Sakura build status:",json.dumps(result,ensure_ascii=False))
+          books=json.loads(pathlib.Path("sakura/books/index.json").read_text("utf-8"))["books"]
+          receipt={
+            "status":"success",
+            "workflow":"daily",
+            "run_id":os.environ["RUN_ID"],
+            "source_commit":os.environ["COMMIT_SHA"],
+            "time_utc":datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "completed_books":len(books),
+            "newest_book":books[-1]["title"] if books else None,
+            "titles":[b["title"] for b in books],
+            "integrity_verified":True,
+            "checks":["python_syntax","source_and_model_access","complete_media_validation","desktop_browser_qa","galaxy_touch_qa"]
+          }
+          pathlib.Path("sakura/build-status.json").write_text(json.dumps(receipt,ensure_ascii=False,indent=2)+"\\n","utf-8")
+          print(json.dumps(receipt,ensure_ascii=False))
           PY
+
+      - name: Commit and push once, after all checks pass
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
           git config user.name "sakura-story-bot"
           git config user.email "sakura-story-bot@users.noreply.github.com"
-          # Preserve restartable partial media, but never publish a ready book
-          # unless every static, interactive and live-site QA stage has passed.
-          git add sakura/build-status.json sakura/books/_staging/
-          if ! git diff --cached --quiet; then
-            git commit -m "Record Sakura build diagnostics and preserve staged media"
-            git pull --rebase origin main
-            git push origin HEAD:main
+          git add -A sakura/books/
+          git reset -q -- sakura/books/_staging/ || true
+          git add sakura/build-status.json
+          if git diff --cached --quiet; then
+            echo "::error::No validated publication changes were staged"
+            exit 1
           fi
-          # Discard any unvalidated story directory/index edits from this runner.
-          git reset --hard origin/main
-          git clean -fd sakura/books/
+          git commit -m "Publish daily verified Sakura storybook"
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then
+              echo "Published verified storybook commit"
+              exit 0
+            fi
+            echo "Push attempt $attempt failed; checking whether main advanced"
+            git fetch origin main
+            git rebase origin/main || { git rebase --abort; exit 1; }
+            sleep $((attempt * 3))
+          done
+          echo "::error::Could not push validated publication after three attempts"
+          exit 1
+
+      - name: Save restartable partial media for the next daily run
+        if: always() && hashFiles('sakura/books/_staging/**') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: sakura/books/_staging
+          key: sakura-staging-v2-${{ github.ref_name }}-${{ github.run_id }}
+
+      - name: Upload failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: sakura-failed-run-${{ github.run_id }}
+          path: |
+            sakura/books/_staging/
+            /tmp/sakura-http.log
+          if-no-files-found: ignore
+
+      - name: Write run summary
+        if: always()
+        env:
+          RESULT: ${{ job.status }}
+          RUN_ID: ${{ github.run_id }}
+        run: |
+          {
+            echo "## Sakura daily publishing"
+            echo "- Result: **$RESULT**"
+            echo "- Run: $RUN_ID"
+            echo "- Schedule: 09:15 KST daily"
+            if [ "$RESULT" = success ]; then
+              echo "- A complete book passed validation and browser QA before the single publication commit."
+            else
+              echo "- No incomplete book was added to the public catalog. Any partial media was cached for retry."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

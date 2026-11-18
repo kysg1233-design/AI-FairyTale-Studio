@@ -20,7 +20,7 @@ jobs:
         with:
           python-version: '3.12'
       - name: Check Python syntax
-        run: python -m py_compile sakura/publish_weekly.py sakura/create_bgm.py sakura/create_mood_music.py sakura/check_site.py
+        run: python -m py_compile sakura/publish_weekly.py sakura/prepare_title_audio.py sakura/create_bgm.py sakura/create_mood_music.py sakura/check_site.py
       - name: Install audio encoder and compose the five original music tracks
         shell: bash
         run: |
