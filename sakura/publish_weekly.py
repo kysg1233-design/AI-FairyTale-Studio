@@ -178,7 +178,7 @@ def story_plan(item,excerpt):
         prompt=base_prompt
         if attempt:
             prompt += (
-                "\\nRETRY "+str(attempt+1)+": The previous output was invalid or incomplete. "
+                "\nRETRY "+str(attempt+1)+": The previous output was invalid or incomplete. "
                 "Keep character_bible under 700 Korean characters, each scene_prompt under 450 characters, "
                 "and return one complete JSON object with exactly six pages. No Markdown fences or extra prose."
             )
