@@ -224,6 +224,79 @@
         "male": "books/story-4d40e01d7a3f/male-title.mp3",
         "female": "books/story-4d40e01d7a3f/female-title.mp3"
       }
+    },
+    {
+      "title": "흥부와 놀부",
+      "region": "한국",
+      "source_title": "Hyung Bo and Nahl Bo",
+      "source_url": "https://www.gutenberg.org/cache/epub/55539/pg55539-images.html",
+      "source_credit": "Korean Tales (Horace Newton Allen, 1889)",
+      "status": "ready",
+      "published_at": "2026-11-18T10:01:49.754497+00:00",
+      "cover": "books/story-f694825c3625/cover.webp",
+      "parent_moral": "어려운 상황에서도 다친 작은 생명을 소중히 여기고 사랑을 베풀면, 그 착한 마음은 언젠가 큰 기쁨과 행복이 되어 우리에게 따뜻하게 되돌아온단다.",
+      "pages": [
+        {
+          "heading": "가난하지만 착한 흥부네",
+          "text": "옛날 어느 마을에 마음씨 착한 동생 흥부가 살았어요. 욕심 많은 형에게 쫓겨나 다 쓰러져 가는 초가집에서 살았지만, 흥부 부부는 서로를 아끼며 부지런히 일했답니다.",
+          "mood": "tender",
+          "image": "books/story-f694825c3625/page-01.webp",
+          "audio": {
+            "male": "books/story-f694825c3625/male-01.mp3",
+            "female": "books/story-f694825c3625/female-01.mp3"
+          }
+        },
+        {
+          "heading": "다친 아기 제비를 구해요",
+          "text": "따뜻한 봄날, 흥부네 처마 밑에 둥지를 튼 아기 제비가 떨어져 다리를 다치고 말았어요. 깜짝 놀란 흥부는 물고기 껍질로 부러진 다리를 정성껏 감싸 따뜻하게 돌봐주었지요.",
+          "mood": "adventure",
+          "image": "books/story-f694825c3625/page-02.webp",
+          "audio": {
+            "male": "books/story-f694825c3625/male-02.mp3",
+            "female": "books/story-f694825c3625/female-02.mp3"
+          }
+        },
+        {
+          "heading": "은혜 갚은 제비의 선물",
+          "text": "건강해진 제비는 강남으로 날아갔다가 이듬해 봄에 다시 찾아왔어요. 제비는 은혜를 갚으려고 입에 물고 온 금빛 글씨가 새겨진 작은 박씨 하나를 마당에 톡 떨어뜨렸답니다.",
+          "mood": "joyful",
+          "image": "books/story-f694825c3625/page-03.webp",
+          "audio": {
+            "male": "books/story-f694825c3625/male-03.mp3",
+            "female": "books/story-f694825c3625/female-03.mp3"
+          }
+        },
+        {
+          "heading": "지붕 위에 열린 커다란 박",
+          "text": "흥부가 박씨를 심고 정성껏 물을 주자, 넝쿨이 초가지붕을 온통 뒤덮었어요. 가을이 되자 지붕 위에는 달덩이처럼 커다랗고 둥근 박 네 덩이가 탐스럽게 주렁주렁 열렸지요.",
+          "mood": "calm",
+          "image": "books/story-f694825c3625/page-04.webp",
+          "audio": {
+            "male": "books/story-f694825c3625/male-04.mp3",
+            "female": "books/story-f694825c3625/female-04.mp3"
+          }
+        },
+        {
+          "heading": "박 속에서 나온 신비로운 보물",
+          "text": "흥부 부부가 첫 번째와 두 번째 박을 슬근슬근 톱질하자, 예쁜 동자들이 나타나 아픈 곳을 낫게 하는 신비한 호리병을 건넸어요. 이어 고운 비단과 귀한 옷감들이 쏟아져 나왔답니다.",
+          "mood": "mystery",
+          "image": "books/story-f694825c3625/page-05.webp",
+          "audio": {
+            "male": "books/story-f694825c3625/male-05.mp3",
+            "female": "books/story-f694825c3625/female-05.mp3"
+          }
+        },
+        {
+          "heading": "따뜻하고 풍요로워진 흥부네",
+          "text": "세 번째 박을 열자 목수들이 나타나 순식간에 튼튼하고 으리으리한 기와집을 지어 주었어요. 쌀과 곡식이 곳간마다 가득 차서, 흥부네 가족은 마침내 배고픔 없이 행복해졌답니다.",
+          "mood": "joyful",
+          "image": "books/story-f694825c3625/page-06.webp",
+          "audio": {
+            "male": "books/story-f694825c3625/male-06.mp3",
+            "female": "books/story-f694825c3625/female-06.mp3"
+          }
+        }
+      ]
     }
   ]
 }
