@@ -1,5 +1,9 @@
 name: Sakura storybook production
 on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/sakura-weekly.yml'
   schedule:
     # Run at 15 minutes past every hour (Korea Standard Time).
     - cron: "15 * * * *"
