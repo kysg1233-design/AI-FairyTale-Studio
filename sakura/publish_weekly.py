@@ -630,7 +630,13 @@ if __name__=="__main__":
     catalog=json.loads(INDEX.read_text("utf-8")) if INDEX.exists() else {"books":[]}
     existing_books=sum(1 for b in catalog.get("books",[]) if b.get("status")=="ready")
     target_books=max(1,min(100,int(os.getenv("SAKURA_TARGET_BOOKS","40"))))
-    if upgrade_existing_one():
+    upgraded_count=0
+    upgrade_limit=max(1,min(5,int(os.getenv("SAKURA_UPGRADE_BATCH_SIZE","5"))))
+    while upgraded_count<upgrade_limit and upgrade_existing_one():
+        upgraded_count+=1
+        print(f"LEGACY UPGRADE PROGRESS: {upgraded_count}/{upgrade_limit}",flush=True)
+    if upgraded_count:
+        print(f"LEGACY UPGRADE RESULT: {upgraded_count} existing storybooks expanded to twelve scenes",flush=True)
         sys.exit(0)
     if existing_books>=target_books:
         print(f"TARGET REACHED: {existing_books}/{target_books} verified complete storybooks")
