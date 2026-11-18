@@ -10,6 +10,7 @@ from urllib.request import Request, urlopen
 from urllib.error import HTTPError, URLError
 from bs4 import BeautifulSoup
 from PIL import Image, ImageStat
+from mutagen.mp3 import MP3
 
 ROOT=pathlib.Path(__file__).resolve().parent
 BOOK_DIR=ROOT/"books"
@@ -337,8 +338,8 @@ def create_audio(text,person,output):
     subprocess.run(["ffmpeg","-y","-loglevel","error","-i",str(temp),"-codec:a","libmp3lame","-qscale:a","4",str(output)],check=True)
     temp.unlink()
     if output.stat().st_size<4000:fail(f"{person} MP3 suspiciously small")
-    check=subprocess.run(["ffprobe","-v","error","-show_entries","format=duration","-of","default=nw=1:nk=1",str(output)],capture_output=True,text=True,check=True)
-    if float(check.stdout.strip())<2.0:fail(f"{person} audio too short")
+    duration=float(MP3(output).info.length)
+    if duration<2.0:fail(f"{person} audio too short")
 def verify_package(path,meta):
     assets=[meta["cover"]]
     for p in meta["pages"]:assets.extend([p["image"],p["audio"]["male"],p["audio"]["female"]])
