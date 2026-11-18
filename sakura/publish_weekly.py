@@ -186,7 +186,7 @@ def story_plan(item,excerpt):
             )
         out=google(TEXT_MODEL,{"contents":[{"parts":[{"text":prompt}]}],
             "generationConfig":{"responseMimeType":"application/json","temperature":0.2,
-                               "maxOutputTokens":8192}})
+                               "maxOutputTokens":16384}})
         candidates=out.get("candidates") or []
         raw="".join(p.get("text","") for p in (candidates[0].get("content",{}).get("parts",[]) if candidates else [])).strip()
         try:
