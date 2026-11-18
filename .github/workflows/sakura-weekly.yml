@@ -89,7 +89,7 @@ jobs:
             echo "Available: $model"
           done
 
-      - name: Generate up to five complete storybooks
+      - name: Generate one complete storybook per daily run
         id: generate
         run: python sakura/publish_weekly.py
 
@@ -197,7 +197,7 @@ jobs:
             echo "## Sakura daily publishing"
             echo "- Result: **$RESULT**"
             echo "- Run: $RUN_ID"
-            echo "- Schedule: hourly at :15 KST; target: 40 complete books"
+            echo "- Schedule: daily at 09:15 KST; target: 40 complete books; batch: one verified book per run"
             if [ "$RESULT" = success ]; then
               echo "- Every complete book passed media validation and browser QA before publication."
             else
