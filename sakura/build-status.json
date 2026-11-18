@@ -23,5 +23,7 @@
     "흥부와 놀부",
     "쌀자루 장군",
     "황금 새"
-  ]
+  ],
+  "integrity_verified": true,
+  "note": "Index contains only books with all required image, audio, cover, and manifest assets."
 }
