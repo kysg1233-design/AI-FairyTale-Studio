@@ -1,8 +1,5 @@
 name: Daily Sakura storybook production
 on:
-  push:
-    paths:
-      - '.github/workflows/sakura-weekly.yml'
   schedule:
     # 09:15 Korea Standard Time (UTC+9), once per day.
     - cron: "15 0 * * *"

@@ -6,6 +6,10 @@ on:
       - 'sakura/**'
       - '.github/workflows/sakura-pages.yml'
   workflow_dispatch:
+  workflow_run:
+    workflows: ["Daily Sakura storybook production"]
+    types: [completed]
+    branches: [main]
 permissions:
   contents: read
   pages: write
@@ -16,6 +20,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   deploy:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}sakura/
