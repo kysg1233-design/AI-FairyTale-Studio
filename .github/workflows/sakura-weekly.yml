@@ -132,7 +132,7 @@ jobs:
             "integrity_verified":True,
             "checks":["python_syntax","source_and_model_access","complete_media_validation","desktop_browser_qa","galaxy_touch_qa"]
           }
-          pathlib.Path("sakura/build-status.json").write_text(json.dumps(receipt,ensure_ascii=False,indent=2)+"\\n","utf-8")
+          pathlib.Path("sakura/build-status.json").write_text(json.dumps(receipt,ensure_ascii=False,indent=2)+"\n","utf-8")
           print(json.dumps(receipt,ensure_ascii=False))
           PY
 
