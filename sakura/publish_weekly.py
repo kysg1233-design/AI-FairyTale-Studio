@@ -405,7 +405,7 @@ def publish_one():
 if __name__=="__main__":
     existing_books=len(json.loads(INDEX.read_text("utf-8")).get("books",[])) if INDEX.exists() else 0
     # Publish one fully validated new storybook on every daily scheduled run, regardless of library size.
-    target=1
+    target=max(1,min(5,int(os.getenv("SAKURA_BATCH_SIZE","1"))))
     completed=0
     for n in range(target):
         before=len(json.loads(INDEX.read_text("utf-8")).get("books",[])) if INDEX.exists() else 0
