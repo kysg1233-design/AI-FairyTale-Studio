@@ -7,7 +7,7 @@ on:
       - '.github/workflows/sakura-pages.yml'
   workflow_dispatch:
   workflow_run:
-    workflows: ["Sakura storybook production"]
+    workflows: ["Daily Sakura storybook production", "Sakura storybook production"]
     types: [completed]
     branches: [main]
 permissions:
