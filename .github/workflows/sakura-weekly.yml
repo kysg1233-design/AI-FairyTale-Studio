@@ -6,7 +6,7 @@ on:
       - '.github/workflows/sakura-weekly.yml'
       - 'sakura/publish_weekly.py'
   schedule:
-    - cron: "5 0 * * *" # Publish one new complete book every day
+    - cron: "5 0,12 * * *" # Twice daily; up to two complete books per run
   workflow_dispatch:
 concurrency:
   group: sakura-story-production
@@ -25,7 +25,7 @@ jobs:
     env:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       PYTHONUNBUFFERED: "1"
-      SAKURA_BATCH_SIZE: "1" # Publish one fully validated book per day
+      SAKURA_BATCH_SIZE: "2" # Publish up to two complete books per run; incomplete assets remain staged
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
