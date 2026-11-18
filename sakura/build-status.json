@@ -1,9 +1,9 @@
 {
   "status": "failure",
   "workflow": "weekly",
-  "run_id": "44041161698",
-  "commit": "1855976eadb93fb711d85ed6ef7a5407a7e23dc2",
-  "time_utc": "2026-11-17T07:46:36.733731+00:00",
+  "run_id": "44256915864",
+  "commit": "d0725946f6e5ebe9b2d1ebaf9db9794f345bca5e",
+  "time_utc": "2026-11-18T07:12:15.506531+00:00",
   "stage": {
     "SECRET": "success",
     "MODELS": "success",
