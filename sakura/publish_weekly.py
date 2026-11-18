@@ -151,28 +151,53 @@ def textual_prompt(item,excerpt):
       f"\n제목: {item['title']}\n원전 제목: {item['heading']}\n원전 내용:\n{excerpt}"
     )
 def story_plan(item,excerpt):
-    out=google(TEXT_MODEL,{"contents":[{"parts":[{"text":textual_prompt(item,excerpt)}]}],
-        "generationConfig":{"responseMimeType":"application/json","temperature":0.5,"maxOutputTokens":3400}})
-    raw="".join(p.get("text","") for p in out.get("candidates",[{}])[0].get("content",{}).get("parts",[]))
-    try: data=json.loads(raw)
-    except Exception as e: fail(f"Story plan JSON malformed: {e} {raw[:200]}")
-    pages=data.get("pages",[])
-    if len(pages)!=DEFAULT_PAGES: fail(f"Expected {DEFAULT_PAGES} pages, received {len(pages)}")
-    if len(data.get("character_bible",""))<35: fail("Character bible absent")
-    prior=set()
-    for p in pages:
-        h=clean(p.get("heading"));t=clean(p.get("text"));art=clean(p.get("scene_prompt"))
-        if not (4<=len(h)<=40 and 35<=len(t)<=240 and len(art)>60): fail("Page content length invalid")
-        if len(re.findall("[가-힣]",t))<25 or re.search("[A-Za-z]{3,}",t): fail("Non-Korean narration detected")
-        if t in prior: fail("Duplicate narration page")
-        prior.add(t)
-        mood=p.get("mood","calm")
-        if mood not in ("calm","joyful","adventure","mystery","tender"):
-            # Future model variants may omit mood: the browser has conservative text heuristics.
-            mood="calm"
-        p.update(heading=h,text=t,scene_prompt=art,mood=mood)
-    # Plans saved from earlier interrupted batches may not contain the new field.
-    return data
+    # Model JSON occasionally truncates long character bibles. Retry generation and
+    # parse common fenced/extra-text responses before treating the story as failed.
+    base_prompt=textual_prompt(item,excerpt)
+    last_error="unknown story-plan error"
+    for attempt in range(4):
+        prompt=base_prompt
+        if attempt:
+            prompt += (
+                "\\nRETRY "+str(attempt+1)+": Your previous response was invalid or truncated. "
+                "Keep character_bible concise (under 700 Korean characters), each scene_prompt under 450 characters, "
+                "and output a complete valid JSON object only. Do not stop mid-string."
+            )
+        out=google(TEXT_MODEL,{"contents":[{"parts":[{"text":prompt}]}],
+            "generationConfig":{"responseMimeType":"application/json","temperature":0.25,
+                               "maxOutputTokens":5200}})
+        raw="".join(p.get("text","") for p in out.get("candidates",[{}])[0].get("content",{}).get("parts",[])).strip()
+        try:
+            candidate=raw
+            if candidate.startswith("```"):
+                candidate=re.sub(r"^\\```(?:json)?\\s*|\\s*\\```$","",candidate,flags=re.I)
+            if not candidate.startswith("{"):
+                start=candidate.find("{")
+                if start>=0: candidate=candidate[start:]
+            if not candidate.endswith("}"):
+                end=candidate.rfind("}")
+                if end>=0: candidate=candidate[:end+1]
+            data=json.loads(candidate)
+            pages=data.get("pages",[])
+            if len(pages)!=DEFAULT_PAGES: raise ValueError(f"Expected {DEFAULT_PAGES} pages, received {len(pages)}")
+            if len(data.get("character_bible",""))<35: raise ValueError("Character bible absent")
+            prior=set()
+            for p in pages:
+                h=clean(p.get("heading"));t=clean(p.get("text"));art=clean(p.get("scene_prompt"))
+                if not (4<=len(h)<=40 and 35<=len(t)<=240 and len(art)>60): raise ValueError("Page content length invalid")
+                if len(re.findall("[가-힣]",t))<25 or re.search("[A-Za-z]{3,}",t): raise ValueError("Non-Korean narration detected")
+                if t in prior: raise ValueError("Duplicate narration page")
+                prior.add(t)
+                mood=p.get("mood","calm")
+                if mood not in ("calm","joyful","adventure","mystery","tender"): mood="calm"
+                p.update(heading=h,text=t,scene_prompt=art,mood=mood)
+            print(f"Story plan accepted on attempt {attempt+1}/4",flush=True)
+            return data
+        except (ValueError,TypeError,AttributeError,KeyError) as exc:
+            last_error=f"{type(exc).__name__}: {exc}; response prefix={raw[:240]!r}"
+            print(f"Story-plan response invalid ({attempt+1}/4): {last_error}",flush=True)
+            if attempt<3: time.sleep(2*(attempt+1))
+    fail("Story plan generation failed after 4 attempts: "+last_error)
 def ensure_parent_moral(plan):
     """Finish the parent-read closing page; never fail on one truncated JSON response."""
     moral=clean(plan.get("parent_moral",""))
