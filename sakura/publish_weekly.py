@@ -366,10 +366,40 @@ def publish_one():
         fail(f"All {len(tried_sources)} independent candidate sources failed; no book published.")
     slug="story-"+hashlib.sha256((c["source_url"]+"#"+c["heading"]).encode("utf-8")).hexdigest()[:12]
     destination=BOOK_DIR/slug
-    if destination.exists():fail("Destination already exists; manual recovery required")
+    staging=BOOK_DIR/"_staging"/slug
+    if destination.exists():
+        # Recover a complete package left on disk by an older interrupted run.
+        # Never fail just because media exists outside index.json.
+        manifest_file=destination/"manifest.json"
+        if manifest_file.is_file():
+            recovered=json.loads(manifest_file.read_text("utf-8"))
+            if recovered.get("source_url")!=c["source_url"] or recovered.get("source_title")!=c["heading"]:
+                fail("Existing package source identity does not match selected candidate: "+slug)
+            if not recovered.get("title_audio"):
+                for person in ("male","female"):
+                    clip=destination/f"{person}-title.mp3"
+                    if not clip.is_file() or clip.stat().st_size<4000:
+                        create_audio(c["title"]+". 오늘의 이야기를 시작할게요.",person,clip)
+                recovered["title_audio"]={person:f"books/{slug}/{person}-title.mp3" for person in ("male","female")}
+                manifest_file.write_text(json.dumps(recovered,ensure_ascii=False,indent=2)+"\\n","utf-8")
+            verify_package(destination,recovered)
+            existing["books"].append(recovered)
+            pending=INDEX.with_suffix(".json.tmp")
+            pending.write_text(json.dumps(existing,ensure_ascii=False,indent=2)+"\\n","utf-8")
+            pending.replace(INDEX)
+            print("RECOVERED: adopted complete orphaned story package into public index",slug,flush=True)
+            return
+        # If only part of the package exists, move valid files into resumable staging.
+        staging.mkdir(parents=True,exist_ok=True)
+        for source_file in destination.iterdir():
+            if source_file.is_file():
+                staged_file=staging/source_file.name
+                if not staged_file.exists() or staged_file.stat().st_size<4000:
+                    shutil.copy2(source_file,staged_file)
+        shutil.rmtree(destination)
+        print("Recovered partial package files into staging:",slug,flush=True)
     print("Producing:",c["region"],c["title"],c["heading"])
     # Persist unfinished media across quota resets. The browser only reads verified books/index.json.
-    staging=BOOK_DIR/"_staging"/slug
     staging.mkdir(parents=True,exist_ok=True)
     plan_file=staging/"story-plan.json"
     if plan_file.exists():
