@@ -550,12 +550,26 @@ def upgrade_existing_one():
                 small=saved.convert("RGB");small.thumbnail((90,90))
         else:
             small=image_generate(item,plan,i,image_file,previous)
-        if any(visual_difference(small,x)<0.045 for x in prior):
+        # Similarity is a quality warning, not a reason to abandon an otherwise
+        # complete book after a single regeneration. Retry with materially
+        # different staging, camera and composition; omit the prior-frame
+        # reference on retries so the model does not reproduce that layout.
+        base_scene=plan["pages"][i]["scene_prompt"]
+        for attempt in range(5):
+            if not any(visual_difference(small,x)<0.045 for x in prior):
+                break
             image_file.unlink(missing_ok=True)
-            plan["pages"][i]["scene_prompt"] += " Make the scene composition, action, camera angle and background clearly distinct from every previous page."
-            small=image_generate(item,plan,i,image_file,previous)
+            variations=[
+                " Wide establishing shot, distant camera, show the full environment and several background details.",
+                " Low-angle close action shot, strong diagonal composition, characters positioned on opposite sides of the frame.",
+                " Overhead bird's-eye view, clearly different spatial layout, visible paths and props.",
+                " Side-on cinematic view, foreground and background layers, a different physical action and character pose.",
+                " Medium shot from behind the characters looking toward the setting, distinct lighting and object placement."
+            ]
+            plan["pages"][i]["scene_prompt"]=base_scene+" "+variations[attempt]
+            small=image_generate(item,plan,i,image_file,previous if attempt==0 else None)
         if any(visual_difference(small,x)<0.045 for x in prior):
-            fail(f"Upgrade image {i+1} is too similar to another page")
+            fail(f"Upgrade image {i+1} remained too similar after five distinct composition attempts")
         prior.append(small)
         for person in ("male","female"):
             audio_file=staging/f"{person}-{i+1:02d}.mp3"
