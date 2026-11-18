@@ -145,7 +145,7 @@ jobs:
           git config user.name "sakura-story-bot"
           git config user.email "sakura-story-bot@users.noreply.github.com"
           rm -rf sakura/books/_staging
-          git add -A sakura/books/
+          git add -A sakura/books/ sakura/assets/
           git reset -q -- sakura/books/_staging/ || true
           git add sakura/build-status.json
           if git diff --cached --quiet; then
