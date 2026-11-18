@@ -55,6 +55,18 @@ jobs:
           python -m http.server 8777 --bind 127.0.0.1 > /tmp/sakura-http.log 2>&1 &
           sleep 2
           SAKURA_URL=http://127.0.0.1:8777/sakura/ node sakura/qa_smoke.cjs
+      - name: Refuse to deploy a superseded commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          current=$(git rev-parse HEAD)
+          latest=$(git rev-parse FETCH_HEAD)
+          if [ "$current" != "$latest" ]; then
+            echo "::error::Refusing stale deployment: checked out $current, main is $latest"
+            exit 1
+          fi
+          echo "Fresh main commit confirmed: $current"
       - name: Configure Pages
         uses: actions/configure-pages@v5
         with:
