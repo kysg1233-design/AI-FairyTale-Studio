@@ -301,6 +301,152 @@
         "male": "books/story-f694825c3625/male-title.mp3",
         "female": "books/story-f694825c3625/female-title.mp3"
       }
+    },
+    {
+      "title": "쌀자루 장군",
+      "region": "일본",
+      "source_title": "My Lord Bag of Rice",
+      "source_url": "https://www.gutenberg.org/cache/epub/4018/pg4018-images.html",
+      "source_credit": "Japanese Fairy Tales (Yei Theodora Ozaki)",
+      "status": "ready",
+      "published_at": "2026-11-18T11:40:31.262874+00:00",
+      "cover": "books/story-454a1e731561/cover.webp",
+      "parent_moral": "어려움에 처한 이웃을 보았을 때 무서워하지 않고 용기를 내면, 모두를 지키는 큰 힘이 된단다. 따뜻한 마음으로 남을 돕는 착한 용기는 언제나 커다란 기쁨과 행복으로 돌아온단다.",
+      "pages": [
+        {
+          "heading": "다리 위의 거대한 만남",
+          "text": "용감한 무사 히데사토는 다리 위에서 커다란 용을 만났어요. 무서워하지 않고 뚜벅뚜벅 다가가자, 용은 붉은 머리를 한 용왕님으로 변했어요. \"저희를 괴롭히는 괴물을 물리쳐 주세요.\" 용왕님이 부탁했어요.",
+          "mood": "adventure",
+          "image": "books/story-454a1e731561/page-01.webp",
+          "audio": {
+            "male": "books/story-454a1e731561/male-01.mp3",
+            "female": "books/story-454a1e731561/female-01.mp3"
+          }
+        },
+        {
+          "heading": "눈부신 호수 궁전",
+          "text": "물길이 스르륵 열리며 호수 아래 눈부신 하얀 궁전이 나타났어요. 반짝이는 금붕어 요정들이 고운 춤을 추고 맛있는 음식이 차려졌지요. 히데사토는 떨고 있는 물속 가족들을 보며 꼭 지켜 주겠다고 다정하게 약속했어요.",
+          "mood": "calm",
+          "image": "books/story-454a1e731561/page-02.webp",
+          "audio": {
+            "male": "books/story-454a1e731561/male-02.mp3",
+            "female": "books/story-454a1e731561/female-02.mp3"
+          }
+        },
+        {
+          "heading": "밤하늘에 번쩍인 두 눈",
+          "text": "어두운 밤이 되자 쿵쾅쿵쾅 소리와 함께 온 궁전이 흔들렸어요. 산 너머에서 수많은 등불처럼 빛나는 발을 가진 거대한 지네가 기어오고 있었어요. 불꽃 같은 두 눈을 번뜩이며 다가오자 모두 숨을 죽였어요.",
+          "mood": "mystery",
+          "image": "books/story-454a1e731561/page-03.webp",
+          "audio": {
+            "male": "books/story-454a1e731561/male-03.mp3",
+            "female": "books/story-454a1e731561/female-03.mp3"
+          }
+        },
+        {
+          "heading": "용기와 지혜의 화살",
+          "text": "히데사토는 침착하게 마지막 남은 화살에 온 힘을 모았어요. 시위를 힘껏 당겨 슝 날리자, 화살이 지네의 이마에 정확히 닿았어요! 거대한 지네는 힘을 잃고 스르륵 쓰러져 호수에는 다시 평화가 찾아왔답니다.",
+          "mood": "adventure",
+          "image": "books/story-454a1e731561/page-04.webp",
+          "audio": {
+            "male": "books/story-454a1e731561/male-04.mp3",
+            "female": "books/story-454a1e731561/female-04.mp3"
+          }
+        },
+        {
+          "heading": "기쁨 넘치는 호수의 아침",
+          "text": "아침 햇살이 비치자 호수는 보석처럼 반짝였어요. 용왕님과 물고기 친구들은 히데사토의 손을 잡으며 진심으로 고마워했어요. 모두가 활짝 웃으며 용감한 영웅을 위해 따뜻하고 정성스러운 잔치를 열었답니다.",
+          "mood": "tender",
+          "image": "books/story-454a1e731561/page-05.webp",
+          "audio": {
+            "male": "books/story-454a1e731561/male-05.mp3",
+            "female": "books/story-454a1e731561/female-05.mp3"
+          }
+        },
+        {
+          "heading": "마르지 않는 신비한 쌀자루",
+          "text": "용왕님은 아무리 먹어도 줄지 않는 신비한 쌀자루를 선물했어요. 집으로 돌아온 장군은 많은 이들에게 따뜻한 쌀밥을 넉넉히 베풀었지요. 사람들은 그를 다정하고 고마운 '쌀자루 장군님'이라고 불렀답니다.",
+          "mood": "joyful",
+          "image": "books/story-454a1e731561/page-06.webp",
+          "audio": {
+            "male": "books/story-454a1e731561/male-06.mp3",
+            "female": "books/story-454a1e731561/female-06.mp3"
+          }
+        }
+      ]
+    },
+    {
+      "title": "황금 새",
+      "region": "독일",
+      "source_title": "The golden bird",
+      "source_url": "https://www.gutenberg.org/cache/epub/2591/pg2591-images.html",
+      "source_credit": "Grimms' Fairy Tales",
+      "status": "ready",
+      "published_at": "2026-11-18T11:43:15.412808+00:00",
+      "cover": "books/story-2528f37892f1/cover.webp",
+      "parent_moral": "지혜로운 친구의 다정한 충고에 귀를 기울이면 어려움도 슬기롭게 헤쳐 나갈 수 있단다. 눈앞의 화려함에 흔들리지 않고 착한 마음을 지키면 언제나 따뜻한 행복이 찾아온단다.",
+      "pages": [
+        {
+          "heading": "한밤중의 황금 새",
+          "text": "깊은 밤, 막내 아들이 황금 사과나무 아래를 지키고 있었어요. 달빛 사이로 눈부시게 빛나는 황금 새가 날아와 사과를 쪼았지요. 화살을 쏘자 황금 새는 눈부신 깃털 하나를 남기고 밤하늘로 날아갔어요.",
+          "mood": "mystery",
+          "image": "books/story-2528f37892f1/page-01.webp",
+          "audio": {
+            "male": "books/story-2528f37892f1/male-01.mp3",
+            "female": "books/story-2528f37892f1/female-01.mp3"
+          }
+        },
+        {
+          "heading": "여우와의 신비로운 만남",
+          "text": "황금 새를 찾아 나선 막내는 숲속에서 붉은 여우를 만났어요. 형들과 달리 여우의 말을 귀담아들은 막내는 여우의 복슬복슬한 꼬리에 올라탔어요. 둘은 바람을 가르며 들판과 언덕을 씽씽 달렸답니다.",
+          "mood": "adventure",
+          "image": "books/story-2528f37892f1/page-02.webp",
+          "audio": {
+            "male": "books/story-2528f37892f1/male-02.mp3",
+            "female": "books/story-2528f37892f1/female-02.mp3"
+          }
+        },
+        {
+          "heading": "세 가지 보물",
+          "text": "여우의 도움으로 막내는 신비로운 황금 새와 바람처럼 빠른 황금 말을 얻었어요. 아름다운 성에서 다정한 공주님도 만났지요. 막내와 공주님은 황금 말을 타고 행복하게 고향으로 향했답니다.",
+          "mood": "joyful",
+          "image": "books/story-2528f37892f1/page-03.webp",
+          "audio": {
+            "male": "books/story-2528f37892f1/male-03.mp3",
+            "female": "books/story-2528f37892f1/female-03.mp3"
+          }
+        },
+        {
+          "heading": "잊어버린 약속",
+          "text": "집으로 가던 길에 막내는 어려움에 처한 형들을 구해주었어요. 하지만 여우의 경고를 잊고 강가 언덕에 앉아 쉬다가, 심술궂은 형들의 장난에 가파른 강바닥으로 미끄러지고 말았답니다.",
+          "mood": "tender",
+          "image": "books/story-2528f37892f1/page-04.webp",
+          "audio": {
+            "male": "books/story-2528f37892f1/male-04.mp3",
+            "female": "books/story-2528f37892f1/female-04.mp3"
+          }
+        },
+        {
+          "heading": "성으로 돌아온 막내",
+          "text": "여우가 꼬리를 뻗어 막내를 강에서 끌어올려 주었어요. 막내가 허름한 옷을 입고 궁전에 들어서자, 울던 공주님이 방긋 웃고 황금 새도 맑은 목소리로 노래했어요. 왕은 막내를 따뜻하게 맞아주었지요.",
+          "mood": "joyful",
+          "image": "books/story-2528f37892f1/page-05.webp",
+          "audio": {
+            "male": "books/story-2528f37892f1/male-05.mp3",
+            "female": "books/story-2528f37892f1/female-05.mp3"
+          }
+        },
+        {
+          "heading": "행복한 마법의 풀림",
+          "text": "숲으로 산책을 나간 막내는 여우의 오랜 부탁을 들어주었어요. 마법이 풀리자 여우는 공주님의 잃어버렸던 오빠 왕자님으로 변했답니다. 모두가 평화롭고 다정하게 오래오래 행복을 누렸어요.",
+          "mood": "calm",
+          "image": "books/story-2528f37892f1/page-06.webp",
+          "audio": {
+            "male": "books/story-2528f37892f1/male-06.mp3",
+            "female": "books/story-2528f37892f1/female-06.mp3"
+          }
+        }
+      ]
     }
   ]
 }
