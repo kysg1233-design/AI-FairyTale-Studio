@@ -69,5 +69,9 @@
         "female": "books/story-454a1e731561/female-06.mp3"
       }
     }
-  ]
+  ],
+  "title_audio": {
+    "male": "books/story-454a1e731561/male-title.mp3",
+    "female": "books/story-454a1e731561/female-title.mp3"
+  }
 }

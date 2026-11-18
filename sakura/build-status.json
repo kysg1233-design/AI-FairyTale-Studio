@@ -1,27 +1,24 @@
 {
   "status": "success",
-  "workflow": "weekly",
-  "run_id": "44296431686",
-  "commit": "8fca14d3764375291aa6816861ecd4b95bc05928",
-  "time_utc": "2026-11-18T11:46:53.701878+00:00",
-  "stage": {
-    "SECRET": "success",
-    "MODELS": "success",
-    "GENERATE": "success",
-    "TITLES": "success",
-    "VALIDATE": "success",
-    "COMMIT": "success",
-    "PAGES": "success",
-    "BROWSER": "success",
-    "PUBLIC": "success"
-  },
-  "completed_books": 4,
+  "workflow": "daily",
+  "run_id": "44307422160",
+  "source_commit": "db90dbc4c5699457024a4ccb6b3caf5ad85bd840",
+  "time_utc": "2026-11-18T12:51:03.838226+00:00",
+  "completed_books": 5,
+  "newest_book": "쌀자루 장군",
   "titles": [
     "여우와 포도",
     "사자와 생쥐",
     "까마귀와 물병",
-    "흥부와 놀부"
+    "흥부와 놀부",
+    "쌀자루 장군"
   ],
   "integrity_verified": true,
-  "note": "Exactly four fully verified storybooks are published in the public index."
-}
+  "checks": [
+    "python_syntax",
+    "source_and_model_access",
+    "complete_media_validation",
+    "desktop_browser_qa",
+    "galaxy_touch_qa"
+  ]
+}\n
