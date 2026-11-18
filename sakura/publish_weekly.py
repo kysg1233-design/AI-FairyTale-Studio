@@ -539,6 +539,29 @@ def publish_one():
     pending.replace(INDEX)
     print("SUCCESS: complete verified book published",slug)
 
+def commit_upgrade_progress(title):
+    """Persist each finished legacy upgrade before starting the next one."""
+    subprocess.run(["git","config","user.name","sakura-story-bot"],cwd=ROOT,check=True)
+    subprocess.run(["git","config","user.email","sakura-story-bot@users.noreply.github.com"],cwd=ROOT,check=True)
+    subprocess.run(["git","add","-A","sakura/books/"],cwd=ROOT,check=True)
+    subprocess.run(["git","reset","-q","--","sakura/books/_staging/"],cwd=ROOT,check=True)
+    if subprocess.run(["git","diff","--cached","--quiet"],cwd=ROOT).returncode==0:
+        fail("Legacy upgrade produced no files to commit")
+    subprocess.run(["git","commit","-m",f"Upgrade verified storybook: {title}"],cwd=ROOT,check=True)
+    for attempt in range(3):
+        pushed=subprocess.run(["git","push","origin","HEAD:main"],cwd=ROOT,capture_output=True,text=True)
+        if pushed.returncode==0:
+            print("PERSISTED UPGRADE: "+title,flush=True)
+            return
+        print(f"Upgrade push attempt {attempt+1} failed; reconciling main",flush=True)
+        subprocess.run(["git","fetch","origin","main"],cwd=ROOT,check=True)
+        rebased=subprocess.run(["git","rebase","origin/main"],cwd=ROOT,capture_output=True,text=True)
+        if rebased.returncode:
+            subprocess.run(["git","rebase","--abort"],cwd=ROOT,check=False)
+            fail("Could not safely rebase the completed legacy upgrade: "+rebased.stderr[-500:])
+        time.sleep(2*(attempt+1))
+    fail("Could not persist completed legacy upgrade after three attempts")
+
 def upgrade_existing_one():
     """Expand one legacy six-page book to twelve scenes; publish only after all new media pass validation."""
     catalog=json.loads(INDEX.read_text("utf-8"))
@@ -624,6 +647,7 @@ def upgrade_existing_one():
     pending.write_text(json.dumps(catalog,ensure_ascii=False,indent=2)+"\n","utf-8")
     pending.replace(INDEX)
     shutil.rmtree(staging,ignore_errors=True)
+    commit_upgrade_progress(old["title"])
     print("UPGRADED: "+old["title"]+" now has twelve fully validated pages",flush=True)
     return True
 
