@@ -32,7 +32,6 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-          cache: pip
 
       - name: Install pinned dependencies
         run: python -m pip install "beautifulsoup4==4.13.4" "Pillow==11.3.0"
@@ -60,11 +59,16 @@ jobs:
       - name: Check source and generation code syntax
         run: |
           python -m py_compile sakura/publish_weekly.py sakura/prepare_title_audio.py
+          python -m unittest sakura.test_publish_pipeline
           python - <<'PY'
           from sakura.publish_weekly import parse_json_object
           assert parse_json_object('{"pages": []}') == {"pages": []}
-          assert parse_json_object('```json\\n{"pages": []}\\n```') == {"pages": []}
-          assert parse_json_object('Here is the result:\\n{"pages": []}\\nDone') == {"pages": []}
+          assert parse_json_object("""```json
+{"pages": []}
+```""") == {"pages": []}
+          assert parse_json_object("""Here is the result:
+{"pages": []}
+Done""") == {"pages": []}
           print("Story JSON parser self-test passed")
           PY
 

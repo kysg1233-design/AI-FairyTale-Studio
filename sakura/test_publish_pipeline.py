@@ -6,10 +6,16 @@ class StoryPlanParserTests(unittest.TestCase):
         self.assertEqual(parse_json_object('{"pages": []}'), {"pages": []})
 
     def test_markdown_fence(self):
-        self.assertEqual(parse_json_object('\\`\\`\\`json\\n{"pages": []}\\n\\`\\`\\`'), {"pages": []})
+        raw = """```json
+{"pages": []}
+```"""
+        self.assertEqual(parse_json_object(raw), {"pages": []})
 
     def test_surrounding_prose(self):
-        self.assertEqual(parse_json_object('Here is JSON:\\n{"pages": []}\\nDone'), {"pages": []})
+        raw = """Here is JSON:
+{"pages": []}
+Done"""
+        self.assertEqual(parse_json_object(raw), {"pages": []})
 
     def test_truncated_json_rejected(self):
         with self.assertRaises(ValueError):
