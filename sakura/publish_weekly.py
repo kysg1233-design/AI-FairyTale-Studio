@@ -381,11 +381,11 @@ def publish_one():
                     if not clip.is_file() or clip.stat().st_size<4000:
                         create_audio(c["title"]+". 오늘의 이야기를 시작할게요.",person,clip)
                 recovered["title_audio"]={person:f"books/{slug}/{person}-title.mp3" for person in ("male","female")}
-                manifest_file.write_text(json.dumps(recovered,ensure_ascii=False,indent=2)+"\\n","utf-8")
+                manifest_file.write_text(json.dumps(recovered,ensure_ascii=False,indent=2)+"\n","utf-8")
             verify_package(destination,recovered)
             existing["books"].append(recovered)
             pending=INDEX.with_suffix(".json.tmp")
-            pending.write_text(json.dumps(existing,ensure_ascii=False,indent=2)+"\\n","utf-8")
+            pending.write_text(json.dumps(existing,ensure_ascii=False,indent=2)+"\n","utf-8")
             pending.replace(INDEX)
             print("RECOVERED: adopted complete orphaned story package into public index",slug,flush=True)
             return
