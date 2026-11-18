@@ -73,7 +73,6 @@ jobs:
           assert parse_json_object('Here is the result:' + nl + '{"pages": []}' + nl + 'Done') == {"pages": []}
           print("Story JSON parser self-test passed")
           PY
-          PY
 
       - name: Verify Gemini models
         shell: bash
