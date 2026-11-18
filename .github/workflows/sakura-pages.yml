@@ -29,6 +29,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Install FFmpeg required for pre-rendered mood soundtracks
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v ffmpeg >/dev/null || ! command -v ffprobe >/dev/null; then
+            sudo apt-get update -qq
+            sudo apt-get install -y ffmpeg
+          fi
+          ffmpeg -version | head -n 1
+      - name: Compose the five pre-rendered mood soundtracks
+        run: python sakura/create_mood_music.py
       - name: Verify independently implemented touch book engine
         run: test -s sakura/book-turn.js
       - name: Validate Sakura site and complete books
