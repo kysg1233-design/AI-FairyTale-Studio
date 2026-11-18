@@ -154,14 +154,14 @@ def parse_json_object(raw):
     """Parse a model JSON object despite harmless Markdown fences or surrounding prose."""
     if not isinstance(raw, str) or not raw.strip():
         raise ValueError("Model returned an empty story plan")
-    candidate=raw.strip().lstrip("\\ufeff")
+    candidate=raw.strip().lstrip("\ufeff")
     if candidate.startswith("```"):
         lines=candidate.splitlines()
         if lines and lines[0].strip().startswith("```"):
             lines=lines[1:]
         if lines and lines[-1].strip()=="```":
             lines=lines[:-1]
-        candidate="\\n".join(lines).strip()
+        candidate="\n".join(lines).strip()
     first=candidate.find("{")
     last=candidate.rfind("}")
     if first<0 or last<=first:
