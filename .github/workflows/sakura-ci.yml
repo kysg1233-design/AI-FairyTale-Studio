@@ -22,7 +22,7 @@ jobs:
       - name: Validate daily workflow YAML syntax
         run: ruby -e 'require "yaml"; YAML.load_file(".github/workflows/sakura-weekly.yml"); puts "Daily workflow YAML syntax passed"'
       - name: Install Python test dependencies
-        run: python -m pip install "beautifulsoup4==4.13.4" "Pillow==11.3.0"
+        run: python -m pip install "beautifulsoup4==4.13.4" "Pillow==11.3.0" "mutagen==1.47.0" "imageio-ffmpeg==0.6.0"
       - name: Check Python syntax and parser regression tests
         run: |
           python -m py_compile sakura/publish_weekly.py sakura/prepare_title_audio.py sakura/create_bgm.py sakura/create_mood_music.py sakura/check_site.py
@@ -30,10 +30,11 @@ jobs:
       - name: Install audio encoder and compose the five original music tracks
         shell: bash
         run: |
-          if ! command -v ffmpeg >/dev/null; then
-            sudo apt-get update -qq
-            sudo apt-get install -y ffmpeg
-          fi
+          FFMPEG_BIN="$(python -c 'import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())')"
+          mkdir -p "$RUNNER_TEMP/ffmpeg-bin"
+          ln -sf "$FFMPEG_BIN" "$RUNNER_TEMP/ffmpeg-bin/ffmpeg"
+          echo "$RUNNER_TEMP/ffmpeg-bin" >> "$GITHUB_PATH"
+          export PATH="$RUNNER_TEMP/ffmpeg-bin:$PATH"
           python sakura/create_mood_music.py
       - name: Check website safety and ready book files
         run: python sakura/check_site.py
