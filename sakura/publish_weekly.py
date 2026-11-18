@@ -518,8 +518,8 @@ if __name__=="__main__":
     if existing_books>=target_books:
         print(f"TARGET REACHED: {existing_books}/{target_books} verified complete storybooks")
         sys.exit(0)
-    # Publish up to five fully verified books per hourly run, stopping exactly at the target.
-    batch_size=max(1,min(5,int(os.getenv("SAKURA_BATCH_SIZE","5"))))
+    # Publish one fully verified book per daily run, stopping exactly at the target.
+    batch_size=max(1,min(5,int(os.getenv("SAKURA_BATCH_SIZE","1"))))
     target=min(batch_size,target_books-existing_books)
     completed=0
     for n in range(target):

@@ -1,12 +1,8 @@
-name: Sakura storybook production
+name: Daily Sakura storybook production
 on:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/sakura-weekly.yml'
   schedule:
-    # Run at 15 minutes past every hour (Korea Standard Time).
-    - cron: "15 * * * *"
+    # 09:15 Korea Standard Time (UTC+9), once per day.
+    - cron: "15 0 * * *"
   workflow_dispatch:
 
 # One writer only. Never cancel a production run midway through image/audio generation.
@@ -24,7 +20,7 @@ jobs:
     env:
       GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       PYTHONUNBUFFERED: "1"
-      SAKURA_BATCH_SIZE: "5"
+      SAKURA_BATCH_SIZE: "1"
       SAKURA_TARGET_BOOKS: "40"
     steps:
       - name: Checkout main
