@@ -169,9 +169,7 @@ def story_plan(item,excerpt):
         raw="".join(p.get("text","") for p in out.get("candidates",[{}])[0].get("content",{}).get("parts",[])).strip()
         try:
             candidate=raw
-            if candidate.startswith("```"):
-                candidate=re.sub(r"^\\```(?:json)?\\s*|\\s*\\```$","",candidate,flags=re.I)
-            if not candidate.startswith("{"):
+            if candidate.startswith("```"):\n                candidate=candidate[3:].strip()\n                if candidate.lower().startswith("json"): candidate=candidate[4:].strip()\n                if candidate.endswith("```"): candidate=candidate[:-3].strip()\n            if not candidate.startswith("{"):
                 start=candidate.find("{")
                 if start>=0: candidate=candidate[start:]
             if not candidate.endswith("}"):
