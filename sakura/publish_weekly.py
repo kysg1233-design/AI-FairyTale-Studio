@@ -525,29 +525,46 @@ def upgrade_existing_one():
     item=next((c for c in candidates if c.get("source_url")==old.get("source_url") and c.get("heading")==old.get("source_title")),None)
     if item is None:
         fail("Cannot safely upgrade legacy book: verified source candidate missing for "+old.get("title","unknown"))
-    excerpt=source_excerpt(item)
-    plan=story_plan(item,excerpt)
-    ensure_parent_moral(plan)
     slug=pathlib.Path(old["cover"]).parent.name
     destination=BOOK_DIR/slug
     staging=BOOK_DIR/"_staging"/(slug+"-upgrade")
     staging.mkdir(parents=True,exist_ok=True)
+    plan_file=staging/"story-plan.json"
+    if plan_file.is_file():
+        plan=json.loads(plan_file.read_text("utf-8"))
+        if len(plan.get("pages",[]))!=DEFAULT_PAGES:
+            fail("Saved upgrade plan is not twelve scenes")
+    else:
+        excerpt=source_excerpt(item)
+        plan=story_plan(item,excerpt)
+        ensure_parent_moral(plan)
+        plan_file.write_text(json.dumps(plan,ensure_ascii=False,indent=2),"utf-8")
+    ensure_parent_moral(plan)
+    plan_file.write_text(json.dumps(plan,ensure_ascii=False,indent=2),"utf-8")
     prior=[]
     for i,p in enumerate(plan["pages"]):
         image_file=staging/f"page-{i+1:02d}.webp"
         previous=staging/f"page-{i:02d}.webp" if i else None
-        small=image_generate(item,plan,i,image_file,previous)
+        if image_file.is_file() and image_file.stat().st_size>4000:
+            with Image.open(image_file) as saved:
+                small=saved.convert("RGB");small.thumbnail((90,90))
+        else:
+            small=image_generate(item,plan,i,image_file,previous)
         if any(visual_difference(small,x)<0.045 for x in prior):
             image_file.unlink(missing_ok=True)
-            p["scene_prompt"] += " Make the scene composition, action, camera angle and background clearly distinct from every previous page."
+            plan["pages"][i]["scene_prompt"] += " Make the scene composition, action, camera angle and background clearly distinct from every previous page."
             small=image_generate(item,plan,i,image_file,previous)
         if any(visual_difference(small,x)<0.045 for x in prior):
             fail(f"Upgrade image {i+1} is too similar to another page")
         prior.append(small)
         for person in ("male","female"):
-            create_audio(p["heading"]+". "+p["text"],person,staging/f"{person}-{i+1:02d}.mp3")
+            audio_file=staging/f"{person}-{i+1:02d}.mp3"
+            if not audio_file.is_file() or audio_file.stat().st_size<4000:
+                create_audio(p["heading"]+". "+p["text"],person,audio_file)
     for person in ("male","female"):
-        create_audio(old["title"]+". 오늘의 이야기를 시작할게요.",person,staging/f"{person}-title.mp3")
+        title_file=staging/f"{person}-title.mp3"
+        if not title_file.is_file() or title_file.stat().st_size<4000:
+            create_audio(old["title"]+". 오늘의 이야기를 시작할게요.",person,title_file)
     shutil.copyfile(staging/"page-01.webp",staging/"cover.webp")
     new_pages=[]
     for i,p in enumerate(plan["pages"]):
