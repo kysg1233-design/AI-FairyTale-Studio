@@ -5,6 +5,8 @@ on:
     paths:
       - 'sakura/**'
       - '.github/workflows/sakura-ci.yml'
+      - '.github/workflows/sakura-weekly.yml'
+      - '.github/workflows/sakura-pages.yml'
   pull_request:
     paths:
       - 'sakura/**'
