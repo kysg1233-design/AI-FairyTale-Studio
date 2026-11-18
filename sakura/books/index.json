@@ -296,7 +296,11 @@
             "female": "books/story-f694825c3625/female-06.mp3"
           }
         }
-      ]
+      ],
+      "title_audio": {
+        "male": "books/story-f694825c3625/male-title.mp3",
+        "female": "books/story-f694825c3625/female-title.mp3"
+      }
     }
   ]
 }
