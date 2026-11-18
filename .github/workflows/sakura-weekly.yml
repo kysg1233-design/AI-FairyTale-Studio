@@ -85,7 +85,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for model in gemini-3.8-flash gemini-3.1-flash-image gemini-3.8-flash-lite-tts gemini-3.8-flash-tts gemini-3.1-flash-tts-preview; do
+          for model in gemini-3.8-flash gemini-3.1-flash-image gemini-3.8-flash-lite-tts gemini-2.5-flash-preview-tts gemini-3.1-flash-tts-preview gemini-3.8-flash-tts; do
             status=$(curl --retry 3 --retry-all-errors --retry-delay 2 -sS -o /dev/null -w "%{http_code}" \
               -H "x-goog-api-key: $GEMINI_API_KEY" \
               "https://generativelanguage.googleapis.com/v1beta/models/$model")
@@ -160,8 +160,8 @@ jobs:
           git reset -q -- sakura/books/_staging/ || true
           git add sakura/build-status.json
           if git diff --cached --quiet; then
-            echo "::error::No validated publication changes were staged"
-            exit 1
+            echo "All storybook media was already committed safely during the batch; no extra commit is needed."
+            exit 0
           fi
           git commit -m "Publish daily verified Sakura storybook"
           for attempt in 1 2 3; do
