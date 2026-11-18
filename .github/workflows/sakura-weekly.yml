@@ -73,18 +73,6 @@ jobs:
         name: Prepare male and female spoken book titles for existing books
         continue-on-error: true
         run: python sakura/prepare_title_audio.py
-      - name: Publish prepared title clips separately
-        if: steps.titleintro.outcome == 'success'
-        shell: bash
-        run: |
-          set -euo pipefail
-          git add -A sakura/books/
-          if git diff --cached --quiet; then exit 0; fi
-          git config user.name "sakura-story-bot"
-          git config user.email "sakura-story-bot@users.noreply.github.com"
-          git commit -m "Publish pre-recorded male and female book title narration"
-          git pull --rebase origin main
-          git push origin HEAD:main
       - id: generate
         name: Generate and check a complete book
         run: python sakura/publish_weekly.py

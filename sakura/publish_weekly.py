@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Publish exactly one complete public-domain-based fairy-tale package per run.
+"""Publish complete public-domain-based fairy-tale packages in bounded batches.
 Requires GEMINI_API_KEY in GitHub Actions secrets. Incomplete books never enter index.json.
 No user API key is ever sent to the static website; all generation happens before publication.
 """
@@ -366,14 +366,38 @@ def publish_one():
         earlier=[]
         for i in range(DEFAULT_PAGES):
             p=plan["pages"][i];filename=tmp/f"page-{i+1:02d}.webp"
+            previous_ref=tmp/f"page-{i:02d}.webp" if i else None
+            base_scene_prompt=p["scene_prompt"]
+            small=None
             if filename.is_file() and filename.stat().st_size>=4000:
                 with Image.open(filename) as previously_generated:
                     small=previously_generated.convert("RGB")
                     small.thumbnail((90,90))
                 print("Reused staged illustration",i+1)
             else:
-                small=image_generate(c,plan,i,filename,tmp/f"page-{i:02d}.webp" if i else None)
-            if any(visual_difference(small,prev)<0.045 for prev in earlier):fail("Too-similar adjacent illustration; refuse publication")
+                print("Generating illustration",i+1)
+            def too_similar(image):
+                return any(visual_difference(image,prev)<0.045 for prev in earlier)
+            if small is None:
+                small=image_generate(c,plan,i,filename,previous_ref)
+            # Regenerate a visually repetitive frame instead of discarding the
+            # entire staged book. Keep all completed narration and prior artwork.
+            for retry in range(1,4):
+                if not too_similar(small):
+                    break
+                print(f"Illustration {i+1} too similar; regenerating distinct composition ({retry}/3)",flush=True)
+                filename.unlink(missing_ok=True)
+                p["scene_prompt"]=(
+                    base_scene_prompt
+                    + " IMPORTANT DIFFERENCE REQUIREMENT: create a clearly different event, "
+                    + "camera angle, character pose, foreground arrangement, and background "
+                    + "from every previous page. Do not repeat the previous composition or "
+                    + "reuse the same framing. The story characters must remain consistent."
+                )
+                small=image_generate(c,plan,i,filename,previous_ref)
+            p["scene_prompt"]=base_scene_prompt
+            if too_similar(small):
+                fail(f"Illustration {i+1} remained too similar after 3 targeted regenerations")
             earlier.append(small)
             for person in ("male","female"):
                 recorded=tmp/f"{person}-{i+1:02d}.mp3"
@@ -404,7 +428,7 @@ def publish_one():
     print("SUCCESS: complete verified book published",slug)
 if __name__=="__main__":
     existing_books=len(json.loads(INDEX.read_text("utf-8")).get("books",[])) if INDEX.exists() else 0
-    # Publish one fully validated new storybook on every daily scheduled run, regardless of library size.
+    # Publish a bounded number of fully validated new storybooks on each scheduled run.
     target=max(1,min(5,int(os.getenv("SAKURA_BATCH_SIZE","1"))))
     completed=0
     for n in range(target):
