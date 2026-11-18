@@ -19,7 +19,7 @@ async function tryCase(name,mobile=false){
   if(!resp||resp.status()!==200)throw Error('Homepage HTTP '+(resp?.status()||'unreachable'));
   await page.waitForFunction(()=>document.querySelector('#bookCount')?.textContent.includes('권'),null,{timeout:20000});
   await page.waitForTimeout(1800);
-  const reported=Number((await page.locator('#bookCount').textContent()).replace(/\\D/g,'')),cards=await page.locator('#library .tile').count();
+  const reported=Number((await page.locator('#bookCount').textContent()).replace(/\D/g,'')),cards=await page.locator('#library .tile').count();
   const liveCatalog=await page.evaluate(async()=>{const r=await fetch('./books/index.json?qa='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('Live catalogue HTTP '+r.status);return (await r.json()).books.filter(b=>b.status==='ready')});
   if(cards!==reported||reported!==liveCatalog.length)throw Error('Live book count mismatch: tiles='+cards+', UI='+reported+', live catalog='+liveCatalog.length);
   if(liveCatalog.length<expected)throw Error('Live catalogue is stale: expected at least '+expected+' books, found '+liveCatalog.length);
