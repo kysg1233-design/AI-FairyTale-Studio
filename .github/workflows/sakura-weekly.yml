@@ -62,14 +62,12 @@ jobs:
           python -m unittest sakura.test_publish_pipeline
           python - <<'PY'
           from sakura.publish_weekly import parse_json_object
+          nl = chr(10)
           assert parse_json_object('{"pages": []}') == {"pages": []}
-          assert parse_json_object("""```json
-{"pages": []}
-```""") == {"pages": []}
-          assert parse_json_object("""Here is the result:
-{"pages": []}
-Done""") == {"pages": []}
+          assert parse_json_object('```json' + nl + '{"pages": []}' + nl + '```') == {"pages": []}
+          assert parse_json_object('Here is the result:' + nl + '{"pages": []}' + nl + 'Done') == {"pages": []}
           print("Story JSON parser self-test passed")
+          PY
           PY
 
       - name: Verify Gemini models
