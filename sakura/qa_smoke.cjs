@@ -19,14 +19,34 @@ async function tryCase(name,mobile=false){
   if(!resp||resp.status()!==200)throw Error('Homepage HTTP '+(resp?.status()||'unreachable'));
   await page.waitForFunction(()=>document.querySelector('#bookCount')?.textContent.includes('권'),null,{timeout:20000});
   await page.waitForTimeout(1800);
-  const reported=Number((await page.locator('#bookCount').textContent()).replace(/\D/g,'')),cards=await page.locator('#library .tile').count();
-  if(cards!==expected||reported!==expected)throw Error('Book count mismatch: actual='+cards+', UI='+reported+', catalog='+expected);
-  result.checks.book_count=cards;
-  const sourceCount=await page.evaluate(async()=>{const r=await fetch('./books/candidates.json');if(!r.ok)throw Error('Story queue unavailable');return (await r.json()).length});
+  const reported=Number((await page.locator('#bookCount').textContent()).replace(/\\D/g,'')),cards=await page.locator('#library .tile').count();
+  const liveCatalog=await page.evaluate(async()=>{const r=await fetch('./books/index.json?qa='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('Live catalogue HTTP '+r.status);return (await r.json()).books.filter(b=>b.status==='ready')});
+  if(cards!==reported||reported!==liveCatalog.length)throw Error('Live book count mismatch: tiles='+cards+', UI='+reported+', live catalog='+liveCatalog.length);
+  if(liveCatalog.length<expected)throw Error('Live catalogue is stale: expected at least '+expected+' books, found '+liveCatalog.length);
+  result.checks.book_count={live:liveCatalog.length,source_commit_minimum:expected};
+  const sourceCount=await page.evaluate(async()=>{const r=await fetch('./books/candidates.json?qa='+Date.now(),{cache:'no-store'});if(!r.ok)throw Error('Story queue unavailable');return (await r.json()).length});
   if(sourceCount<100)throw Error('Production queue has fewer than 100 sourced candidates');
   result.checks.source_backed_candidates=sourceCount;
   if(expected<1)throw Error('No complete books in release catalog');
-  const cover=page.locator('#library .tile img').first();
+  if(!mobile){
+    const publicAssetAudit=await page.evaluate(async books=>{
+      const refs=books.flatMap(b=>[b.cover,...(b.pages||[]).flatMap(p=>[p.image,p.audio?.male,p.audio?.female]),...(b.title_audio?Object.values(b.title_audio):[])])
+        .filter(Boolean).filter((p,i,a)=>a.indexOf(p)===i);
+      const missing=[];
+      for(let i=0;i<refs.length;i+=24){
+        const batch=refs.slice(i,i+24);
+        const checks=await Promise.all(batch.map(async path=>{
+          try{const r=await fetch('./'+path,{method:'HEAD',cache:'no-store'});const size=Number(r.headers.get('content-length')||0);const type=r.headers.get('content-type')||'';return {path,status:r.status,size,type}}
+          catch(e){return {path,status:0,size:0,type:'',error:String(e)}}
+        }));
+        for(const x of checks)if(x.status!==200||(x.size&&x.size<4000)||(!x.type.startsWith('image/')&&!x.type.startsWith('audio/')))missing.push(x);
+      }
+      return {books:books.length,assets:refs.length,missing};
+    },liveCatalog);
+    if(publicAssetAudit.missing.length)throw Error('Public media audit failed: '+JSON.stringify(publicAssetAudit.missing.slice(0,10)));
+    result.checks.public_asset_audit={books:publicAssetAudit.books,assets:publicAssetAudit.assets,missing:0};
+  }
+    const cover=page.locator('#library .tile img').first();
   await cover.evaluate(img=>img.decode());result.checks.cover_decoded=true;
   const names=await page.locator('#library .tile strong').allTextContents();
   const filter=page.locator('[data-cat="이솝"]');await filter.click();await page.waitForTimeout(200);
