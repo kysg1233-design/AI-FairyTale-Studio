@@ -291,14 +291,32 @@ def publish_one():
     counts={r:0 for r in dict.fromkeys(x['region'] for x in candidates)}
     for b in existing.get('books',[]):
         if b.get('status')=='ready':counts[b.get('region')]=counts.get(b.get('region'),0)+1
-    # Begin with the Gutenberg Aesop chapter whose source heading has been independently verified.
-    # Thereafter balance the catalogue across Korean, Japanese, European and Aesop stories.
+    # Prefer the original launch queue, but recover from an unavailable source by
+    # trying another independently hosted public-domain work in the candidate list.
     first=next((x for x in unpublished if x['heading']=='THE FOX AND THE GRAPES'),None)
-    # The first launch should give readers several illustrated books, not a single title.
-    # Prefer headings previously validated against Aesop; the weekly runs can expand into other regions.
     aesop_queue=['THE LION AND THE MOUSE','THE CROW AND THE PITCHER','THE TORTOISE AND THE HARE','THE FOX AND THE CROW','THE FOX AND THE GRAPES']
     preferred=next((x for heading in aesop_queue for x in unpublished if x['heading']==heading),None)
-    c=first if not existing.get('books') and first else (preferred if len(existing.get('books',[]))<5 and preferred else min(unpublished,key=lambda x:(counts.get(x['region'],0),candidates.index(x))))
+    primary=first if not existing.get('books') and first else (preferred if len(existing.get('books',[]))<5 and preferred else min(unpublished,key=lambda x:(counts.get(x['region'],0),candidates.index(x))))
+    ordered=[primary]+[x for x in sorted(unpublished,key=lambda x:(counts.get(x['region'],0),candidates.index(x))) if x is not primary]
+    # Only one candidate per source URL is attempted in a run; a source outage
+    # should not waste the whole daily build on many headings from the same server.
+    c=None
+    excerpt=None
+    tried_sources=set()
+    for candidate in ordered:
+        source=candidate.get("source_url","")
+        if source in tried_sources:
+            continue
+        tried_sources.add(source)
+        try:
+            excerpt=source_excerpt(candidate)
+            c=candidate
+            print("Selected verified source after failover:",c["title"],flush=True)
+            break
+        except RuntimeError as exc:
+            print(f"Source unavailable; skipping candidate {candidate['title']}: {exc}",flush=True)
+    if c is None or excerpt is None:
+        fail(f"All {len(tried_sources)} independent candidate sources failed; no book published.")
     slug="story-"+hashlib.sha256((c["source_url"]+"#"+c["heading"]).encode("utf-8")).hexdigest()[:12]
     destination=BOOK_DIR/slug
     if destination.exists():fail("Destination already exists; manual recovery required")
@@ -312,7 +330,6 @@ def publish_one():
         if len(plan.get("pages",[]))!=DEFAULT_PAGES:fail("Staged story plan is invalid")
         print("Resuming staged source-backed story:",c["title"])
     else:
-        excerpt=source_excerpt(c)
         plan=story_plan(c,excerpt)
         plan_file.write_text(json.dumps(plan,ensure_ascii=False,indent=2),"utf-8")
     ensure_parent_moral(plan)
