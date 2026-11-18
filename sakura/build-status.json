@@ -1,24 +1,25 @@
 {
-  "status": "failure",
+  "status": "success",
   "workflow": "weekly",
-  "run_id": "44279780293",
-  "commit": "2c82a0b26fcd54a473dd65b2af668cf57b2834cc",
-  "time_utc": "2026-11-18T09:53:02.117888+00:00",
+  "run_id": "44280728480",
+  "commit": "c2e514bb5b1482d22d07c63c2b3ba670003642bf",
+  "time_utc": "2026-11-18T10:05:09.148090+00:00",
   "stage": {
     "SECRET": "success",
     "MODELS": "success",
-    "GENERATE": "failure",
+    "GENERATE": "success",
     "TITLES": "success",
-    "VALIDATE": "skipped",
-    "COMMIT": "skipped",
-    "PAGES": "skipped",
-    "BROWSER": "skipped",
-    "PUBLIC": "skipped"
+    "VALIDATE": "success",
+    "COMMIT": "success",
+    "PAGES": "success",
+    "BROWSER": "success",
+    "PUBLIC": "success"
   },
-  "completed_books": 3,
+  "completed_books": 4,
   "titles": [
     "여우와 포도",
     "사자와 생쥐",
-    "까마귀와 물병"
+    "까마귀와 물병",
+    "흥부와 놀부"
   ]
 }
