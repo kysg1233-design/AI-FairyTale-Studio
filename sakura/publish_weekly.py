@@ -298,8 +298,30 @@ def create_audio(text,person,output):
     if re.search("[A-Za-z]",text) or len(re.findall("[가-힣]",text))<7:fail("Non-Korean or empty spoken narration")
     voice={"male":"Charon","female":"Leda"}[person]
     # IMPORTANT: no English prompting in the spoken contents; earlier version read it aloud.
-    result=google(VOICE_MODEL,{"contents":[{"parts":[{"text":text}]}],
-      "generationConfig":{"responseModalities":["AUDIO"],"speechConfig":{"voiceConfig":{"prebuiltVoiceConfig":{"voiceName":voice}}}}})
+    payload={"contents":[{"parts":[{"text":text}]}],
+      "generationConfig":{"responseModalities":["AUDIO"],"speechConfig":{"voiceConfig":{"prebuiltVoiceConfig":{"voiceName":voice}}}}}
+    # Lite TTS can hit its per-model daily free-tier cap during a full book.
+    # Fall back to Google's documented full Flash TTS, then the 3.1 preview,
+    # without changing the requested speaker or narration text.
+    voice_models=list(dict.fromkeys([VOICE_MODEL,
+        os.getenv("GEMINI_VOICE_FALLBACK_MODEL","gemini-3.8-flash-tts"),
+        "gemini-3.1-flash-tts-preview"]))
+    last_voice_error=None
+    for voice_model in voice_models:
+        try:
+            result=google(voice_model,payload)
+            if voice_model!=VOICE_MODEL:
+                print(f"TTS fallback selected: {voice_model}",flush=True)
+            break
+        except RuntimeError as e:
+            last_voice_error=e
+            msg=str(e).lower()
+            if ("quota exceeded" in msg or "http 404" in msg or "http 403" in msg) and voice_model!=voice_models[-1]:
+                print(f"TTS model unavailable or quota exhausted ({voice_model}); trying fallback",flush=True)
+                continue
+            raise
+    else:
+        fail(f"All configured TTS models failed: {last_voice_error}")
     part=next((p["inlineData"] for c in result.get("candidates",[]) for p in c.get("content",{}).get("parts",[]) if p.get("inlineData",{}).get("data")),None)
     if not part:fail(f"Empty {person} audio")
     content=base64.b64decode(part["data"]);mime=part.get("mimeType","audio/L16;rate=24000")
