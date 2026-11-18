@@ -1,5 +1,12 @@
 name: Daily Sakura storybook production
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'sakura/publish_weekly.py'
+      - 'sakura/create_mood_music.py'
+      - 'sakura/index.html'
+      - '.github/workflows/sakura-weekly.yml'
   schedule:
     # 09:15 Korea Standard Time (UTC+9), once per day.
     - cron: "15 0 * * *"
@@ -197,7 +204,7 @@ jobs:
             echo "## Sakura daily publishing"
             echo "- Result: **$RESULT**"
             echo "- Run: $RUN_ID"
-            echo "- Schedule: daily at 09:15 KST; target: 40 complete books; batch: one verified book per run"
+            echo "- Schedule: code-change run plus daily 09:15 KST; target: 40 complete books; batch: one verified book per run"
             if [ "$RESULT" = success ]; then
               echo "- Every complete book passed media validation and browser QA before publication."
             else
