@@ -15,15 +15,13 @@
     "BROWSER": "success",
     "PUBLIC": "success"
   },
-  "completed_books": 6,
+  "completed_books": 4,
   "titles": [
     "여우와 포도",
     "사자와 생쥐",
     "까마귀와 물병",
-    "흥부와 놀부",
-    "쌀자루 장군",
-    "황금 새"
+    "흥부와 놀부"
   ],
   "integrity_verified": true,
-  "note": "Index contains only books with all required image, audio, cover, and manifest assets."
+  "note": "Exactly four fully verified storybooks are published in the public index."
 }
