@@ -345,6 +345,35 @@ def publish_one():
     preferred=next((x for heading in aesop_queue for x in unpublished if x['heading']==heading),None)
     primary=first if not existing.get('books') and first else (preferred if len(existing.get('books',[]))<5 and preferred else min(unpublished,key=lambda x:(counts.get(x['region'],0),candidates.index(x))))
     ordered=[primary]+[x for x in sorted(unpublished,key=lambda x:(counts.get(x['region'],0),candidates.index(x))) if x is not primary]
+    # First recover a complete orphaned package from the repository. This path
+    # must not depend on Project Gutenberg being online again.
+    for candidate in ordered:
+        orphan_slug="story-"+hashlib.sha256((candidate["source_url"]+"#"+candidate["heading"]).encode("utf-8")).hexdigest()[:12]
+        orphan_dir=BOOK_DIR/orphan_slug
+        orphan_manifest=orphan_dir/"manifest.json"
+        if not orphan_manifest.is_file():
+            continue
+        recovered=json.loads(orphan_manifest.read_text("utf-8"))
+        if recovered.get("source_url")!=candidate["source_url"] or recovered.get("source_title")!=candidate["heading"]:
+            continue
+        staging_dir=BOOK_DIR/"_staging"/orphan_slug
+        staging_dir.mkdir(parents=True,exist_ok=True)
+        for person in ("male","female"):
+            final_clip=orphan_dir/f"{person}-title.mp3"
+            staged_clip=staging_dir/f"{person}-title.mp3"
+            if not final_clip.is_file() or final_clip.stat().st_size<4000:
+                if not staged_clip.is_file() or staged_clip.stat().st_size<4000:
+                    create_audio(candidate["title"]+". 오늘의 이야기를 시작할게요.",person,staged_clip)
+                shutil.copy2(staged_clip,final_clip)
+        recovered["title_audio"]={person:f"books/{orphan_slug}/{person}-title.mp3" for person in ("male","female")}
+        orphan_manifest.write_text(json.dumps(recovered,ensure_ascii=False,indent=2)+"\n","utf-8")
+        verify_package(orphan_dir,recovered)
+        existing["books"].append(recovered)
+        pending=INDEX.with_suffix(".json.tmp")
+        pending.write_text(json.dumps(existing,ensure_ascii=False,indent=2)+"\n","utf-8")
+        pending.replace(INDEX)
+        print("RECOVERED: complete orphaned package indexed without source re-download",orphan_slug,flush=True)
+        return
     # Only one candidate per source URL is attempted in a run; a source outage
     # should not waste the whole daily build on many headings from the same server.
     c=None

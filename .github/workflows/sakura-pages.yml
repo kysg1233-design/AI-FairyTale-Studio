@@ -24,7 +24,7 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}sakura/
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -46,7 +46,7 @@ jobs:
       - name: Install Chromium for interactive browser QA
         shell: bash
         run: |
-          npm install --no-save playwright
+          npm install --no-save --no-audit --no-fund playwright@1.55.1
           npx playwright install --with-deps chromium
       - name: Run real Galaxy touch, audio and desktop book flip checks
         shell: bash
