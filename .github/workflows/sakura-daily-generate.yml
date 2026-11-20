@@ -68,7 +68,7 @@ jobs:
       - name: Import only the complete validated book
         run: |
           python sakura/import_packages.py
-          find sakura/incoming -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} +
+          if [ -d sakura/incoming ]; then find sakura/incoming -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} +; fi
           python sakura/check_site.py
       - name: Install browser QA
         run: |
