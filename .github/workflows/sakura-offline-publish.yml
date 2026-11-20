@@ -25,6 +25,16 @@ jobs:
           python-version: '3.12'
       - name: Install local validation dependencies
         run: python -m pip install "Pillow==11.3.0" "mutagen==1.47.0" "beautifulsoup4==4.13.4" "imageio-ffmpeg==0.6.0"
+      - name: Install portable FFmpeg for pre-rendered mood soundtracks
+        shell: bash
+        run: |
+          set -euo pipefail
+          FFMPEG_BIN="$(python -c 'import imageio_ffmpeg; print(imageio_ffmpeg.get_ffmpeg_exe())')"
+          mkdir -p "$RUNNER_TEMP/ffmpeg-bin"
+          ln -sf "$FFMPEG_BIN" "$RUNNER_TEMP/ffmpeg-bin/ffmpeg"
+          echo "$RUNNER_TEMP/ffmpeg-bin" >> "$GITHUB_PATH"
+          export PATH="$RUNNER_TEMP/ffmpeg-bin:$PATH"
+          ffmpeg -version | head -n 1
       - name: Import complete prebuilt packages (no Gemini/API key)
         run: python sakura/import_packages.py
       - name: Validate all published media and site assets
