@@ -20,7 +20,7 @@
 - 워크플로: `.github/workflows/sakura-daily-generate.yml`
 - 매일 20:30 UTC (한국시간 다음 날 05:30) 실행
 - `workflow_dispatch` 수동 실행 지원
-- 최초 코드 반영 시 1회 실행하여 첫 자동 생성 테스트
+- 코드 반영 후 첫 자동 생성 실행을 확인해야 실제 운영 시작으로 간주합니다. 현재 상태는 첫 생성 성공 미확인입니다.
 - 공개 저장소 표준 Ubuntu runner는 4 vCPU / 16 GB RAM이며 GitHub 문서상 표준 runner 사용은 무료·무제한입니다. 비공개 저장소의 사양·사용량 과금은 다릅니다.
 - 모델 다운로드 캐시는 GitHub Actions cache에 보관합니다.
 - 실행 제한시간은 6시간입니다. CPU 추론이 제한시간을 넘거나 모델 다운로드·원전 추출이 실패하면 해당 날짜의 도서는 게시되지 않으며 다음 스케줄에서 재시도합니다.
@@ -30,7 +30,7 @@
 - DreamShaper 8은 SD 1.5 계열 모델로, 생성 해상도는 512×768입니다. '고품질' 목표로 구성했지만 GPU 기반 SDXL급 결과를 보장하지 않습니다.
 - Qwen 3B는 로컬 경량 모델이므로 원전 각색에 오류가 있을 수 있습니다. 자동 검수는 길이·구조·파일 무결성 검사이며 사람의 문학적 편집 검수를 대체하지 않습니다.
 - 생성 결과가 기준에 미달하면 불완전한 패키지를 공개 책장에 올리지 않습니다.
-- Supertonic 소스 코드는 MIT, 동봉 모델 가중치는 OpenRAIL-M 조건을 따릅니다. DreamShaper 모델은 CreativeML OpenRAIL-M, Qwen2.5 모델은 해당 모델 저장소의 라이선스 조건을 따릅니다. 모델 사용 전 각 라이선스의 제한사항을 준수합니다.
+- Supertonic 소스 코드와 가중치는 현재 공개 아카이브 상태이며 추가 개발·공식 지원이 종료되었습니다. 코드(MIT)와 모델(OpenRAIL-M) 라이선스 조건을 따릅니다. DreamShaper 모델은 CreativeML OpenRAIL-M, Qwen2.5 모델은 해당 모델 저장소의 라이선스 조건을 따릅니다. 모델 사용 전 각 라이선스의 제한사항을 준수합니다.
 
 ## 패키지 구조
 ```
@@ -51,3 +51,6 @@ sakura/incoming/<daily-package>/
 
 ## 홈페이지
 https://kysg1233-design.github.io/AI-FairyTale-Studio/sakura/
+
+## 현재 검증 상태
+`books/index.json`에는 기존 완성 도서 5권이 있습니다. 자동 생성 코드는 main에 반영됐지만, `build-status.json`의 `configured_pending_first_generation` 상태가 성공 영수증으로 바뀌기 전까지는 매일 생성이 실제로 성공한다고 간주하지 않습니다.
