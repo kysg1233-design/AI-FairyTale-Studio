@@ -28,7 +28,7 @@ STYLE = (
 NEGATIVE = "text, letters, typography, watermark, logo, blurry, low quality, photorealistic, 3d render, extra limbs, malformed hands, duplicate character"
 
 def normalize(value: str) -> str:
-    value = unicodedata.normalize("NFKD", value).casefold()
+    value = unicodedata.normalize("NFC", value).casefold()
     return re.sub(r"[^a-z0-9가-힣]+", "", value)
 
 def read_json(path: pathlib.Path):
