@@ -11,7 +11,7 @@ permissions:
   contents: write
 concurrency:
   group: sakura-daily-local-generation
-  cancel-in-progress: false
+  cancel-in-progress: true
 jobs:
   generate-and-publish:
     if: github.repository == 'kysg1233-design/AI-FairyTale-Studio'
@@ -37,6 +37,13 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends build-essential cmake ffmpeg fonts-noto-cjk
+      - name: Restore story generation checkpoints
+        uses: actions/cache/restore@v4
+        with:
+          path: sakura/.generation-cache
+          key: sakura-generation-v2-${{ runner.os }}-${{ github.run_id }}
+          restore-keys: |
+            sakura-generation-v2-${{ runner.os }}-
       - name: Restore public model-weight cache
         uses: actions/cache@v4
         with:
@@ -72,6 +79,12 @@ jobs:
           test -s "$SUPERTONIC_HOME/py/requirements.txt"
       - name: Generate one long-form story, six illustrations and fourteen voice files
         run: python -u sakura/generate_daily_book.py
+      - name: Save partial generation checkpoints even after failure
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: sakura/.generation-cache
+          key: sakura-generation-v2-${{ runner.os }}-${{ github.run_id }}
       - name: Import only the complete validated book
         run: |
           python sakura/import_packages.py
