@@ -51,6 +51,10 @@ jobs:
           python -m pip install numpy==1.26.4 Pillow==11.3.0 requests==2.32.5 beautifulsoup4==4.13.4 soundfile==0.13.1
           python -m pip install torch==2.5.1+cpu torchvision==0.20.1+cpu --index-url https://download.pytorch.org/whl/cpu
           python -m pip install diffusers==0.32.2 transformers==4.46.3 accelerate==1.1.1 safetensors==0.4.5 huggingface_hub==0.26.2 onnxruntime==1.20.1 mutagen==1.47.0
+      - name: Run local generator unit tests and syntax checks
+        run: |
+          python -m py_compile sakura/generate_daily_book.py sakura/import_packages.py
+          cd sakura && python -m unittest -v test_generation_pipeline.py
       - name: Build local GGUF inference runtime (CPU only)
         env:
           CMAKE_ARGS: "-DGGML_NATIVE=OFF -DGGML_OPENMP=ON"
