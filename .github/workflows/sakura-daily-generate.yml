@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 360
     env:
-      HF_HOME: ~/.cache/huggingface
+      HF_HOME: /home/runner/.cache/huggingface
       SUPERTONIC_HOME: /tmp/supertonic
       SUPERTONIC_ASSETS: /tmp/supertonic-assets
       OMP_NUM_THREADS: "4"
@@ -43,7 +43,7 @@ jobs:
       - name: Restore public model-weight cache
         uses: actions/cache@v4
         with:
-          path: ~/.cache/huggingface/hub
+          path: /home/runner/.cache/huggingface/hub
           key: sakura-models-v1-\${{ runner.os }}-sd15-qwen3b-supertonic3
       - name: Install pinned CPU inference stack
         run: |
@@ -66,6 +66,7 @@ jobs:
       - name: Import only the complete validated book
         run: |
           python sakura/import_packages.py
+          find sakura/incoming -mindepth 1 -maxdepth 1 -type d -exec rm -rf {} +
           python sakura/check_site.py
       - name: Install browser QA
         run: |
@@ -109,7 +110,7 @@ jobs:
         run: |
           git config user.name "sakura-story-bot"
           git config user.email "sakura-story-bot@users.noreply.github.com"
-          git add sakura/books/ sakura/incoming/ sakura/assets/ sakura/build-status.json
+          git add sakura/books/ sakura/assets/ sakura/build-status.json
           if ! git diff --cached --quiet; then
             git commit -m "Publish daily locally generated Sakura storybook"
             git push origin HEAD:main
