@@ -1,0 +1,74 @@
+name: Publish prebuilt Sakura storybooks (no generation API)
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'sakura/incoming/**'
+      - '.github/workflows/sakura-offline-publish.yml'
+permissions:
+  contents: write
+concurrency:
+  group: sakura-production-main
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install local validation dependencies
+        run: python -m pip install "Pillow==11.3.0" "mutagen==1.47.0" "beautifulsoup4==4.13.4" "imageio-ffmpeg==0.6.0"
+      - name: Import complete prebuilt packages (no Gemini/API key)
+        run: python sakura/import_packages.py
+      - name: Validate all published media and site assets
+        run: |
+          python sakura/create_mood_music.py
+          python sakura/check_site.py
+          test -s sakura/book-turn.js
+      - name: Install browser QA
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.55.1
+          npx playwright install --with-deps chromium
+      - name: Test desktop and Galaxy touch navigation
+        run: |
+          python -m http.server 8777 --bind 127.0.0.1 > /tmp/sakura-http.log 2>&1 &
+          for i in {1..20}; do
+            curl -fsS http://127.0.0.1:8777/sakura/ >/dev/null && break
+            sleep 1
+          done
+          SAKURA_URL=http://127.0.0.1:8777/sakura/ node sakura/qa_smoke.cjs
+      - name: Write build receipt only after all checks pass
+        if: success()
+        env:
+          RUN_ID: ${{ github.run_id }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          python - <<'PY'
+          import json, os, pathlib, datetime
+          books=json.loads(pathlib.Path("sakura/books/index.json").read_text("utf-8"))["books"]
+          ready=[b for b in books if b.get("status")=="ready"]
+          receipt={"status":"success","workflow":"offline-package-import",
+            "run_id":os.environ["RUN_ID"],"source_commit":os.environ["COMMIT_SHA"],
+            "time_utc":datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "completed_books":len(ready),"titles":[b["title"] for b in ready],
+            "integrity_verified":True,
+            "checks":["offline_package_validation","complete_media_validation","desktop_browser_qa","galaxy_touch_qa"]}
+          pathlib.Path("sakura/build-status.json").write_text(json.dumps(receipt,ensure_ascii=False,indent=2)+"\n","utf-8")
+          PY
+      - name: Commit verified catalog and media
+        if: success()
+        run: |
+          git config user.name "sakura-story-bot"
+          git config user.email "sakura-story-bot@users.noreply.github.com"
+          git add sakura/books/ sakura/assets/ sakura/build-status.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish verified offline Sakura storybooks"
+            git push origin HEAD:main
+          fi
