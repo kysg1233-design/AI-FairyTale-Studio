@@ -1,6 +1,7 @@
 import unittest
+from pathlib import Path
 
-from generate_daily_book import choose_candidate, normalize, parse_model_json, validate_story
+from generate_daily_book import ROOT, choose_candidate, extract_story, normalize, parse_model_json, validate_story
 
 
 class StoryPipelineTests(unittest.TestCase):
@@ -20,6 +21,31 @@ class StoryPipelineTests(unittest.TestCase):
         selected = list(choose_candidate(candidates, books))
         self.assertEqual(len(selected), 1)
         self.assertEqual(selected[0]["title"], "심청 이야기")
+
+    def test_cached_source_chapter_is_extracted_without_network(self):
+        cache = ROOT / ".source-cache"
+        cache.mkdir(exist_ok=True)
+        path = cache / "gutenberg-987654.source"
+        original = path.read_bytes() if path.exists() else None
+        try:
+            path.write_text(
+                "<html><body><h2>THE TESTING FOX</h2>"
+                "<p>" + ("A verified public-domain chapter paragraph. " * 20) + "</p>"
+                "</body></html>",
+                encoding="utf-8",
+            )
+            candidate = {
+                "heading": "THE TESTING FOX",
+                "source_url": "https://www.gutenberg.org/cache/epub/987654/pg987654-images.html",
+            }
+            excerpt = extract_story(candidate)
+            self.assertIn("verified public-domain chapter", excerpt)
+            self.assertGreater(len(excerpt), 300)
+        finally:
+            if original is None:
+                path.unlink(missing_ok=True)
+            else:
+                path.write_bytes(original)
 
     def test_json_parser_extracts_model_object(self):
         parsed = parse_model_json('{"pages": [], "parent_moral": "좋은 마음"}')
