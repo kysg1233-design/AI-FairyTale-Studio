@@ -1,0 +1,116 @@
+name: Generate one Sakura storybook daily (local models, no API)
+on:
+  schedule:
+    - cron: "30 20 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/sakura-daily-generate.yml"
+      - "sakura/generate_daily_book.py"
+      - "sakura/import_packages.py"
+permissions:
+  contents: write
+concurrency:
+  group: sakura-daily-local-generation
+  cancel-in-progress: false
+jobs:
+  generate-and-publish:
+    if: github.repository == 'kysg1233-design/AI-FairyTale-Studio'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    env:
+      HF_HOME: ~/.cache/huggingface
+      SUPERTONIC_HOME: /tmp/supertonic
+      SUPERTONIC_ASSETS: /tmp/supertonic-assets
+      OMP_NUM_THREADS: "4"
+      OPENBLAS_NUM_THREADS: "1"
+      TOKENIZERS_PARALLELISM: "false"
+      HF_HUB_DISABLE_TELEMETRY: "1"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+      - name: Install CPU build tools, FFmpeg and Korean fonts
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends build-essential cmake ffmpeg fonts-noto-cjk
+      - name: Restore public model-weight cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/huggingface/hub
+          key: sakura-models-v1-\${{ runner.os }}-sd15-qwen3b-supertonic3
+      - name: Install pinned CPU inference stack
+        run: |
+          python -m pip install --upgrade pip wheel setuptools
+          python -m pip install numpy==1.26.4 Pillow==11.3.0 requests==2.32.5 beautifulsoup4==4.13.4 soundfile==0.13.1
+          python -m pip install torch==2.5.1+cpu torchvision==0.20.1+cpu --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install diffusers==0.32.2 transformers==4.46.3 accelerate==1.1.1 safetensors==0.4.5 huggingface_hub==0.26.2 onnxruntime==1.20.1 mutagen==1.47.0
+      - name: Build local GGUF inference runtime (CPU only)
+        env:
+          CMAKE_ARGS: "-DGGML_NATIVE=OFF -DGGML_OPENMP=ON"
+          FORCE_CMAKE: "1"
+        run: python -m pip install --no-cache-dir --no-binary=llama-cpp-python llama-cpp-python==0.3.16
+      - name: Pin and prepare offline Korean male/female TTS engine
+        run: |
+          git clone --depth 1 https://github.com/supertone-oss-archive/supertonic.git "$SUPERTONIC_HOME"
+          test -s "$SUPERTONIC_HOME/py/helper.py"
+          test -s "$SUPERTONIC_HOME/py/requirements.txt"
+      - name: Generate one long-form story, six illustrations and fourteen voice files
+        run: python -u sakura/generate_daily_book.py
+      - name: Import only the complete validated book
+        run: |
+          python sakura/import_packages.py
+          python sakura/check_site.py
+      - name: Install browser QA
+        run: |
+          npm install --no-save --no-audit --no-fund playwright@1.55.1
+          npx playwright install --with-deps chromium
+      - name: Verify desktop, mobile, all public media and page turning
+        run: |
+          python -m http.server 8777 --bind 127.0.0.1 > /tmp/sakura-http.log 2>&1 &
+          for i in {1..30}; do
+            curl -fsS http://127.0.0.1:8777/sakura/ >/dev/null && break
+            sleep 1
+          done
+          SAKURA_URL=http://127.0.0.1:8777/sakura/ node sakura/qa_smoke.cjs
+      - name: Record generation receipt after every gate passes
+        if: success()
+        env:
+          RUN_ID: \${{ github.run_id }}
+          COMMIT_SHA: \${{ github.sha }}
+        run: |
+          python - <<'PY'
+          import json, os, pathlib, datetime
+          books=json.loads(pathlib.Path("sakura/books/index.json").read_text("utf-8"))["books"]
+          ready=[b for b in books if b.get("status")=="ready"]
+          receipt={
+            "status":"success",
+            "workflow":"daily-local-model-generation",
+            "run_id":os.environ["RUN_ID"],
+            "source_commit":os.environ["COMMIT_SHA"],
+            "time_utc":datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "completed_books":len(ready),
+            "latest_book":ready[-1]["title"] if ready else None,
+            "generation":"Qwen2.5-3B GGUF + Stable Diffusion 1.5 CPU + Supertonic 3 ONNX CPU",
+            "api_calls":0,
+            "integrity_verified":True,
+            "checks":["local_story_generation","six_unique_cpu_illustrations","male_female_korean_narration","mood_music_assets","complete_package_import","desktop_browser_qa","mobile_touch_qa"]
+          }
+          pathlib.Path("sakura/build-status.json").write_text(json.dumps(receipt,ensure_ascii=False,indent=2)+"\n","utf-8")
+          PY
+      - name: Publish the verified book and its media
+        if: success()
+        run: |
+          git config user.name "sakura-story-bot"
+          git config user.email "sakura-story-bot@users.noreply.github.com"
+          git add sakura/books/ sakura/incoming/ sakura/assets/ sakura/build-status.json
+          if ! git diff --cached --quiet; then
+            git commit -m "Publish daily locally generated Sakura storybook"
+            git push origin HEAD:main
+          fi
