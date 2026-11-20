@@ -1,22 +1,18 @@
 {
-  "status": "success",
-  "workflow": "offline-package-import",
-  "run_id": "44695617467",
-  "source_commit": "713c4ddfb0a3f3eef3b116418efb1d6803e7d783",
-  "time_utc": "2026-11-20T07:35:50.589268+00:00",
+  "status": "configured_pending_first_generation",
+  "workflow": "daily-local-model-generation",
   "completed_books": 5,
-  "titles": [
-    "여우와 포도",
-    "사자와 생쥐",
-    "까마귀와 물병",
-    "흥부와 놀부",
-    "쌀자루 장군"
-  ],
-  "integrity_verified": true,
-  "checks": [
-    "offline_package_validation",
-    "complete_media_validation",
-    "desktop_browser_qa",
-    "galaxy_touch_qa"
-  ]
+  "candidate_queue": 100,
+  "daily_target": 1,
+  "api_calls": 0,
+  "schedule_utc": "30 20 * * *",
+  "schedule_kst": "매일 05:30",
+  "first_generation_verified": false,
+  "note": "The local-model generator and scheduled workflow are merged. No generated-book receipt has been recorded yet; do not treat this configuration marker as a successful generation run.",
+  "previous_verified_run": {
+    "workflow": "offline-package-import",
+    "run_id": "44695617467",
+    "completed_books": 5,
+    "time_utc": "2026-11-20T07:35:50.589268+00:00"
+  }
 }
