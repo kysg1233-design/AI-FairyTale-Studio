@@ -48,7 +48,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /home/runner/.cache/huggingface/hub
-          key: sakura-models-v1-\${{ runner.os }}-sd15-qwen3b-supertonic3
+          key: sakura-models-v1-${{ runner.os }}-sd15-qwen3b-supertonic3
       - name: Restore public-domain source ebook cache
         uses: actions/cache@v4
         with:
@@ -105,8 +105,8 @@ jobs:
       - name: Record generation receipt after every gate passes
         if: success()
         env:
-          RUN_ID: \${{ github.run_id }}
-          COMMIT_SHA: \${{ github.sha }}
+          RUN_ID: ${{ github.run_id }}
+          COMMIT_SHA: ${{ github.sha }}
         run: |
           python - <<'PY'
           import json, os, pathlib, datetime
