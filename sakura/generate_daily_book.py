@@ -50,10 +50,7 @@ def extract_story(candidate: dict) -> str:
     Gutenberg HTML outages must not trigger one slow request per story. A source
     document is cached by ebook ID and reused for every chapter in that volume.
     """
-    import requests
     from bs4 import BeautifulSoup
-    from requests.adapters import HTTPAdapter
-    from urllib3.util.retry import Retry
 
     cache_dir = ROOT / ".source-cache"
     cache_dir.mkdir(parents=True, exist_ok=True)
@@ -66,6 +63,10 @@ def extract_story(candidate: dict) -> str:
     failures = []
 
     if not cached.is_file() or cached.stat().st_size < 1000:
+        import requests
+        from requests.adapters import HTTPAdapter
+        from urllib3.util.retry import Retry
+
         session = requests.Session()
         retry = Retry(total=1, connect=1, read=1, backoff_factor=0.5,
             status_forcelist=[429, 500, 502, 503, 504], allowed_methods=["GET"])
