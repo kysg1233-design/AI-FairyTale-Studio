@@ -45,57 +45,109 @@ def choose_candidate(candidates, books):
             yield candidate
 
 def extract_story(candidate: dict) -> str:
+    """Read a cached public-domain source first; download each Gutenberg book only once.
+
+    Gutenberg HTML outages must not trigger one slow request per story. A source
+    document is cached by ebook ID and reused for every chapter in that volume.
+    """
     import requests
     from bs4 import BeautifulSoup
     from requests.adapters import HTTPAdapter
     from urllib3.util.retry import Retry
 
-    session = requests.Session()
-    retry = Retry(total=3, connect=3, read=3, backoff_factor=1.2,
-        status_forcelist=[429, 500, 502, 503, 504], allowed_methods=["GET"])
-    session.mount("https://", HTTPAdapter(max_retries=retry))
-    urls = [candidate["source_url"]]
-    match = re.search(r"/epub/(\d+)/", candidate["source_url"])
-    if match:
-        book_id = match.group(1)
-        urls.extend([
-            f"https://www.gutenberg.org/cache/epub/{book_id}/pg{book_id}.txt",
-            f"https://www.gutenberg.org/files/{book_id}/{book_id}-0.txt"
-        ])
-    heading = normalize(candidate["heading"])
+    cache_dir = ROOT / ".source-cache"
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    source_url = candidate["source_url"]
+    match = re.search(r"/(?:epub|ebooks)/(\d+)", source_url)
+    if not match:
+        raise ValueError(f"Unsupported public-domain source URL: {source_url}")
+    book_id = match.group(1)
+    cached = cache_dir / f"gutenberg-{book_id}.source"
     failures = []
-    for url in urls:
-        try:
-            response = session.get(url, timeout=45,
-                headers={"User-Agent": "SakuraStorybook/1.0 (public-domain adaptation)"})
-            response.raise_for_status()
-            soup = BeautifulSoup(response.content, "html.parser")
-            matches = []
-            for tag in soup.find_all(re.compile(r"^h[1-6]$")):
-                if normalize(tag.get_text(" ", strip=True)) != heading:
-                    continue
-                paragraphs = []
-                for node in tag.find_all_next(["p", "h1", "h2", "h3", "h4", "h5", "h6"]):
-                    if node.name and node.name.startswith("h"):
-                        break
-                    value = " ".join(node.get_text(" ", strip=True).split())
-                    if value:
-                        paragraphs.append(value)
-                excerpt = "\n".join(paragraphs)
-                if len(excerpt) > 300:
-                    matches.append(excerpt)
-            if matches:
-                return max(matches, key=len)[:12000]
 
-            body = soup.get_text("\n", strip=True)
-            positions = [m.start() for m in re.finditer(re.escape(candidate["heading"]), body, re.I)]
-            for pos in reversed(positions):
-                excerpt = re.sub(r"\n{3,}", "\n\n", body[pos + len(candidate["heading"]):]).strip()
-                if len(excerpt) > 500:
-                    return excerpt[:12000]
-        except Exception as error:
-            failures.append(f"{url}: {error}")
-    raise ValueError("Could not retrieve and isolate source chapter: " + " | ".join(failures))
+    if not cached.is_file() or cached.stat().st_size < 1000:
+        session = requests.Session()
+        retry = Retry(total=1, connect=1, read=1, backoff_factor=0.5,
+            status_forcelist=[429, 500, 502, 503, 504], allowed_methods=["GET"])
+        session.mount("https://", HTTPAdapter(max_retries=retry))
+        # Prefer plain-text endpoints; HTML is the final fallback. The alternate
+        # aleph host avoids depending on the same frontend/cache path.
+        urls = [
+            f"https://www.gutenberg.org/ebooks/{book_id}.txt.utf-8",
+            f"https://www.gutenberg.org/cache/epub/{book_id}/pg{book_id}.txt",
+            f"https://www.gutenberg.org/files/{book_id}/{book_id}-8.txt",
+            f"https://aleph.gutenberg.org/cache/epub/{book_id}/pg{book_id}.txt",
+            source_url,
+        ]
+        payload = None
+        for url in urls:
+            try:
+                response = session.get(url, timeout=(8, 18),
+                    headers={"User-Agent": "SakuraStorybook/2.0 (public-domain source cache)"})
+                response.raise_for_status()
+                if len(response.content) < 1000:
+                    raise ValueError("source response is unexpectedly short")
+                payload = response.content
+                temp = cached.with_suffix(".tmp")
+                temp.write_bytes(payload)
+                temp.replace(cached)
+                print(f"SOURCE CACHED ebook={book_id} bytes={len(payload)} via={url}", flush=True)
+                break
+            except Exception as error:
+                failures.append(f"{url}: {error}")
+        if payload is None:
+            raise RuntimeError(
+                f"Unable to download source ebook {book_id}; tried {len(urls)} endpoints. "
+                + " | ".join(failures[-3:])
+            )
+
+    raw = cached.read_bytes()
+    decoded = raw.decode("utf-8-sig", errors="replace")
+    soup = BeautifulSoup(decoded, "html.parser")
+    heading = normalize(candidate["heading"])
+    matches = []
+    for tag in soup.find_all(re.compile(r"^h[1-6]$")):
+        if normalize(tag.get_text(" ", strip=True)) != heading:
+            continue
+        paragraphs = []
+        for node in tag.find_all_next(["p", "h1", "h2", "h3", "h4", "h5", "h6"]):
+            if node.name and node.name.startswith("h"):
+                break
+            value = " ".join(node.get_text(" ", strip=True).split())
+            if value:
+                paragraphs.append(value)
+        excerpt = "\n".join(paragraphs)
+        if len(excerpt) > 300:
+            matches.append(excerpt)
+    if matches:
+        return max(matches, key=len)[:12000]
+
+    # Plain-text editions have no heading tags. Isolate the requested chapter
+    # from its heading through the next likely all-caps chapter heading.
+    lines = [re.sub(r"\s+", " ", line).strip() for line in decoded.splitlines()]
+    positions = [i for i, line in enumerate(lines) if normalize(line) == heading]
+    for pos in positions:
+        collected = []
+        for line in lines[pos + 1:]:
+            if len(line) > 2 and line.isupper() and len(collected) >= 3:
+                break
+            if line:
+                collected.append(line)
+            elif collected and collected[-1] != "":
+                collected.append("")
+        excerpt = "\n".join(collected).strip()
+        if len(excerpt) > 300:
+            return excerpt[:12000]
+
+    # Last-resort HTML/text extraction: retain the chapter heading context but
+    # refuse to silently substitute an unrelated chapter.
+    body = soup.get_text("\n", strip=True)
+    positions = [m.start() for m in re.finditer(re.escape(candidate["heading"]), body, re.I)]
+    for pos in reversed(positions):
+        excerpt = re.sub(r"\n{3,}", "\n\n", body[pos + len(candidate["heading"]):]).strip()
+        if len(excerpt) > 500:
+            return excerpt[:12000]
+    raise ValueError(f"Chapter heading not found in cached ebook {book_id}: {candidate['heading']}")
 
 def parse_model_json(raw: str) -> dict:
     raw = raw.strip()
