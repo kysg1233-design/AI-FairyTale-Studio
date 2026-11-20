@@ -247,13 +247,6 @@ def generate_illustrations(story: dict, output_dir: pathlib.Path, seed: int):
     import torch
     from diffusers import DPMSolverMultistepScheduler, StableDiffusionPipeline
     torch.set_num_threads(4)
-    pipe = StableDiffusionPipeline.from_pretrained(MODEL_IMAGE, torch_dtype=torch.float32,
-        use_safetensors=True, safety_checker=None, requires_safety_checker=False)
-    pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
-    pipe.enable_attention_slicing("max")
-    pipe.enable_vae_slicing()
-    pipe = pipe.to("cpu")
-    pipe.set_progress_bar_config(disable=False)
     paths = []
     missing = []
     for index in range(1, 7):
@@ -302,6 +295,14 @@ def generate_illustrations(story: dict, output_dir: pathlib.Path, seed: int):
     return [output_dir / f"page-{index:02d}.webp" for index in range(1, 7)]
 
 def synthesize_audio(story: dict, title: str, output_dir: pathlib.Path):
+    required = [f"{voice}-{suffix}.mp3" for voice in ("male", "female")
+        for suffix in ["title", *[f"{index:02d}" for index in range(1, 7)]]]
+    missing = [name for name in required
+        if not (output_dir / name).is_file() or (output_dir / name).stat().st_size < 4000]
+    if not missing:
+        print("CHECKPOINT HIT narration: all 14 files already complete", flush=True)
+        return
+    print(f"NARRATION RESUME: {len(required) - len(missing)}/14 files complete; {len(missing)} remaining", flush=True)
     import numpy as np
     import soundfile as sf
     from huggingface_hub import snapshot_download
