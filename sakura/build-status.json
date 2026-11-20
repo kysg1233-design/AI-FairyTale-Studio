@@ -1,11 +1,10 @@
 {
   "status": "success",
-  "workflow": "daily",
-  "run_id": "44307422160",
-  "source_commit": "db90dbc4c5699457024a4ccb6b3caf5ad85bd840",
-  "time_utc": "2026-11-18T12:51:03.838226+00:00",
+  "workflow": "offline-package-import",
+  "run_id": "44695617467",
+  "source_commit": "713c4ddfb0a3f3eef3b116418efb1d6803e7d783",
+  "time_utc": "2026-11-20T07:35:50.589268+00:00",
   "completed_books": 5,
-  "newest_book": "쌀자루 장군",
   "titles": [
     "여우와 포도",
     "사자와 생쥐",
@@ -15,8 +14,7 @@
   ],
   "integrity_verified": true,
   "checks": [
-    "python_syntax",
-    "source_and_model_access",
+    "offline_package_validation",
     "complete_media_validation",
     "desktop_browser_qa",
     "galaxy_touch_qa"
