@@ -1,6 +1,4 @@
 import unittest
-from pathlib import Path
-
 from generate_daily_book import ROOT, choose_candidate, extract_story, normalize, parse_model_json, validate_story
 
 
@@ -30,7 +28,7 @@ class StoryPipelineTests(unittest.TestCase):
         try:
             path.write_text(
                 "<html><body><h2>THE TESTING FOX</h2>"
-                "<p>" + ("A verified public-domain chapter paragraph. " * 20) + "</p>"
+                "<p>" + ("A verified public-domain chapter paragraph. " * 35) + "</p>"
                 "</body></html>",
                 encoding="utf-8",
             )
