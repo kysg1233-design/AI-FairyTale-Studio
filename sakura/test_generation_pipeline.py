@@ -30,7 +30,7 @@ class StoryPipelineTests(unittest.TestCase):
             "character_bible": "A small red fox with a cream muzzle and green scarf.",
             "parent_moral": "스스로 노력하고 정직하게 행동하는 마음이 중요해요.",
             "pages": [
-                {"heading": f"장면 {i}", "text": ("숲속에서 친구들과 함께 용기를 내어 문제를 해결했어요. " * 5),
+                {"heading": f"장면 {i}", "text": ("숲속에서 친구들과 함께 용기를 내어 문제를 해결했어요. " * 6),
                  "illustration_prompt": "A fox in a forest, expressive watercolor storybook scene.",
                  "mood": "calm"}
                 for i in range(1, 7)
