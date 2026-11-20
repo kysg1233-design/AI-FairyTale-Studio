@@ -140,7 +140,7 @@ def create_story(candidate: dict, source_excerpt: str) -> dict:
 
 JSON 스키마:
 {{
- "character_bible":"한국어로 주요 인물 외형·복장·색상 묘사",
+ "character_bible":"English visual design bible describing exact character appearance, clothing, colors and proportions",
  "parent_moral":"보호자용 마무리 문장",
  "pages":[
   {{"heading":"짧은 페이지 제목","text":"180~300자 한국어 본문",
