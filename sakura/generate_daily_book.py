@@ -5,7 +5,7 @@ No hosted inference endpoint, API key, or paid generation service is called.
 Model weights and public-domain source texts are downloaded as ordinary files.
 """
 from __future__ import annotations
-import gc, hashlib, json, os, pathlib, re, shutil, subprocess, sys, unicodedata
+import gc, hashlib, json, os, pathlib, re, shutil, subprocess, sys, threading, time, unicodedata
 from datetime import datetime, timezone
 
 ROOT = pathlib.Path(__file__).resolve().parent
@@ -279,8 +279,18 @@ def generate_illustrations(story: dict, output_dir: pathlib.Path, seed: int):
             "as the other pages. Portrait children's book composition.")
         generator = torch.Generator(device="cpu").manual_seed(seed + index * 97)
         print(f"ILLUSTRATION START {index}/6", flush=True)
-        image = pipe(prompt=prompt, negative_prompt=NEGATIVE, width=512, height=768,
-            num_inference_steps=18, guidance_scale=7.0, generator=generator).images[0]
+        heartbeat_stop = threading.Event()
+        def report_heartbeat():
+            while not heartbeat_stop.wait(60):
+                print(f"HEARTBEAT illustration {index}/6 still generating", flush=True)
+        heartbeat = threading.Thread(target=report_heartbeat, daemon=True)
+        heartbeat.start()
+        try:
+            image = pipe(prompt=prompt, negative_prompt=NEGATIVE, width=512, height=768,
+                num_inference_steps=18, guidance_scale=7.0, generator=generator).images[0]
+        finally:
+            heartbeat_stop.set()
+            heartbeat.join(timeout=2)
         target = output_dir / f"page-{index:02d}.webp"
         temp = target.with_suffix(".tmp.webp")
         image.save(temp, "WEBP", quality=93, method=6)
