@@ -275,6 +275,14 @@ def make_cover(page_image: pathlib.Path, title: str, target: pathlib.Path):
 
 def main():
     books = read_json(INDEX).get("books", [])
+    today = datetime.now(timezone.utc).date().isoformat()
+    published_today = any(
+        b.get("status") == "ready" and str(b.get("published_at", "")).startswith(today)
+        for b in books
+    )
+    if published_today:
+        print("A complete book is already published for this UTC date; skip duplicate run.")
+        return
     ready_count = sum(b.get("status") == "ready" for b in books)
     if ready_count >= 100:
         print("Catalogue reached the 100-book publishing cap; no generation needed.")
