@@ -58,6 +58,7 @@ jobs:
         env:
           CMAKE_ARGS: "-DGGML_NATIVE=OFF -DGGML_OPENMP=ON"
           FORCE_CMAKE: "1"
+          CMAKE_BUILD_PARALLEL_LEVEL: "4"
         run: python -m pip install --no-cache-dir --no-binary=llama-cpp-python llama-cpp-python==0.3.16
       - name: Pin and prepare offline Korean male/female TTS engine
         run: |
