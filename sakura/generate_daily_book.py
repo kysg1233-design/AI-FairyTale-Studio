@@ -47,34 +47,55 @@ def choose_candidate(candidates, books):
 def extract_story(candidate: dict) -> str:
     import requests
     from bs4 import BeautifulSoup
-    response = requests.get(candidate["source_url"], timeout=35,
-        headers={"User-Agent": "SakuraStorybook/1.0 (public-domain adaptation)"})
-    response.raise_for_status()
-    soup = BeautifulSoup(response.content, "html.parser")
+    from requests.adapters import HTTPAdapter
+    from urllib3.util.retry import Retry
+
+    session = requests.Session()
+    retry = Retry(total=3, connect=3, read=3, backoff_factor=1.2,
+        status_forcelist=[429, 500, 502, 503, 504], allowed_methods=["GET"])
+    session.mount("https://", HTTPAdapter(max_retries=retry))
+    urls = [candidate["source_url"]]
+    match = re.search(r"/epub/(\d+)/", candidate["source_url"])
+    if match:
+        book_id = match.group(1)
+        urls.extend([
+            f"https://www.gutenberg.org/cache/epub/{book_id}/pg{book_id}.txt",
+            f"https://www.gutenberg.org/files/{book_id}/{book_id}-0.txt"
+        ])
     heading = normalize(candidate["heading"])
-    matches = []
-    for tag in soup.find_all(re.compile(r"^h[1-6]$")):
-        if normalize(tag.get_text(" ", strip=True)) != heading:
-            continue
-        paragraphs = []
-        for node in tag.find_all_next(["p", "h1", "h2", "h3", "h4", "h5", "h6"]):
-            if node.name and node.name.startswith("h"):
-                break
-            value = " ".join(node.get_text(" ", strip=True).split())
-            if value:
-                paragraphs.append(value)
-        excerpt = "\n".join(paragraphs)
-        if len(excerpt) > 300:
-            matches.append(excerpt)
-    if matches:
-        return max(matches, key=len)[:12000]
-    body = soup.get_text("\n", strip=True)
-    pos = body.casefold().find(candidate["heading"].casefold())
-    if pos >= 0:
-        excerpt = re.sub(r"\n{3,}", "\n\n", body[pos + len(candidate["heading"]):]).strip()
-        if len(excerpt) > 300:
-            return excerpt[:12000]
-    raise ValueError(f"Could not isolate source chapter: {candidate['heading']}")
+    failures = []
+    for url in urls:
+        try:
+            response = session.get(url, timeout=45,
+                headers={"User-Agent": "SakuraStorybook/1.0 (public-domain adaptation)"})
+            response.raise_for_status()
+            soup = BeautifulSoup(response.content, "html.parser")
+            matches = []
+            for tag in soup.find_all(re.compile(r"^h[1-6]$")):
+                if normalize(tag.get_text(" ", strip=True)) != heading:
+                    continue
+                paragraphs = []
+                for node in tag.find_all_next(["p", "h1", "h2", "h3", "h4", "h5", "h6"]):
+                    if node.name and node.name.startswith("h"):
+                        break
+                    value = " ".join(node.get_text(" ", strip=True).split())
+                    if value:
+                        paragraphs.append(value)
+                excerpt = "\n".join(paragraphs)
+                if len(excerpt) > 300:
+                    matches.append(excerpt)
+            if matches:
+                return max(matches, key=len)[:12000]
+
+            body = soup.get_text("\n", strip=True)
+            positions = [m.start() for m in re.finditer(re.escape(candidate["heading"]), body, re.I)]
+            for pos in reversed(positions):
+                excerpt = re.sub(r"\n{3,}", "\n\n", body[pos + len(candidate["heading"]):]).strip()
+                if len(excerpt) > 500:
+                    return excerpt[:12000]
+        except Exception as error:
+            failures.append(f"{url}: {error}")
+    raise ValueError("Could not retrieve and isolate source chapter: " + " | ".join(failures))
 
 def parse_model_json(raw: str) -> dict:
     raw = raw.strip()
