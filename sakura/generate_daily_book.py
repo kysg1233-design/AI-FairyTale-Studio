@@ -5,7 +5,7 @@ No hosted inference endpoint, API key, or paid generation service is called.
 Model weights and public-domain source texts are downloaded as ordinary files.
 """
 from __future__ import annotations
-import gc, hashlib, json, os, pathlib, re, shutil, subprocess, sys, unicodedata
+import gc, hashlib, json, os, pathlib, re, shutil, subprocess, sys, threading, time, unicodedata
 from datetime import datetime, timezone
 
 ROOT = pathlib.Path(__file__).resolve().parent
@@ -247,33 +247,72 @@ def generate_illustrations(story: dict, output_dir: pathlib.Path, seed: int):
     import torch
     from diffusers import DPMSolverMultistepScheduler, StableDiffusionPipeline
     torch.set_num_threads(4)
-    pipe = StableDiffusionPipeline.from_pretrained(MODEL_IMAGE, torch_dtype=torch.float32,
-        use_safetensors=True, safety_checker=None, requires_safety_checker=False)
-    pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
-    pipe.enable_attention_slicing("max")
-    pipe.enable_vae_slicing()
-    pipe = pipe.to("cpu")
-    pipe.set_progress_bar_config(disable=False)
     paths = []
-    for index, page in enumerate(story["pages"], 1):
+    missing = []
+    for index in range(1, 7):
+        target = output_dir / f"page-{index:02d}.webp"
+        if target.is_file() and target.stat().st_size >= 4000:
+            try:
+                from PIL import Image
+                with Image.open(target) as cached_image:
+                    cached_image.verify()
+                paths.append(target)
+                print(f"CHECKPOINT HIT illustration {index}/6 ({target.stat().st_size} bytes)", flush=True)
+                continue
+            except Exception:
+                target.unlink(missing_ok=True)
+        missing.append(index)
+    pipe = None
+    if missing:
+        pipe = StableDiffusionPipeline.from_pretrained(MODEL_IMAGE, torch_dtype=torch.float32,
+            use_safetensors=True, safety_checker=None, requires_safety_checker=False)
+        pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config)
+        pipe.enable_attention_slicing("max")
+        pipe.enable_vae_slicing()
+        pipe = pipe.to("cpu")
+        pipe.set_progress_bar_config(disable=False)
+    for index in missing:
+        page = story["pages"][index - 1]
         prompt = (f"{STYLE}. Character design bible: {story['character_bible']}. "
             f"Scene {index} of the same coherent picture book: {page['illustration_prompt']}. "
             "Keep the exact same character faces, fur, hair, clothing and proportions "
             "as the other pages. Portrait children's book composition.")
         generator = torch.Generator(device="cpu").manual_seed(seed + index * 97)
-        image = pipe(prompt=prompt, negative_prompt=NEGATIVE, width=512, height=768,
-            num_inference_steps=18, guidance_scale=7.0, generator=generator).images[0]
+        print(f"ILLUSTRATION START {index}/6", flush=True)
+        heartbeat_stop = threading.Event()
+        def report_heartbeat():
+            while not heartbeat_stop.wait(60):
+                print(f"HEARTBEAT illustration {index}/6 still generating", flush=True)
+        heartbeat = threading.Thread(target=report_heartbeat, daemon=True)
+        heartbeat.start()
+        try:
+            image = pipe(prompt=prompt, negative_prompt=NEGATIVE, width=512, height=768,
+                num_inference_steps=18, guidance_scale=7.0, generator=generator).images[0]
+        finally:
+            heartbeat_stop.set()
+            heartbeat.join(timeout=2)
         target = output_dir / f"page-{index:02d}.webp"
-        image.save(target, "WEBP", quality=93, method=6)
-        if target.stat().st_size < 4000:
+        temp = target.with_suffix(".tmp.webp")
+        image.save(temp, "WEBP", quality=93, method=6)
+        if temp.stat().st_size < 4000:
             raise ValueError(f"Generated illustration {index} is unexpectedly small")
+        temp.replace(target)
         paths.append(target)
-        print(f"ILLUSTRATION {index}/6: {target.stat().st_size} bytes", flush=True)
-    del pipe
+        print(f"ILLUSTRATION {index}/6 COMPLETE: {target.stat().st_size} bytes", flush=True)
+    if pipe is not None:
+        del pipe
     gc.collect()
-    return paths
+    return [output_dir / f"page-{index:02d}.webp" for index in range(1, 7)]
 
 def synthesize_audio(story: dict, title: str, output_dir: pathlib.Path):
+    required = [f"{voice}-{suffix}.mp3" for voice in ("male", "female")
+        for suffix in ["title", *[f"{index:02d}" for index in range(1, 7)]]]
+    missing = [name for name in required
+        if not (output_dir / name).is_file() or (output_dir / name).stat().st_size < 4000]
+    if not missing:
+        print("CHECKPOINT HIT narration: all 14 files already complete", flush=True)
+        return
+    print(f"NARRATION RESUME: {len(required) - len(missing)}/14 files complete; {len(missing)} remaining", flush=True)
     import numpy as np
     import soundfile as sf
     from huggingface_hub import snapshot_download
@@ -290,21 +329,27 @@ def synthesize_audio(story: dict, title: str, output_dir: pathlib.Path):
         "male": load_voice_style([str(assets / "voice_styles" / "M1.json")]),
         "female": load_voice_style([str(assets / "voice_styles" / "F1.json")])}
     def save_audio(text: str, voice: str, name: str):
+        target_mp3 = output_dir / (name + ".mp3")
+        if target_mp3.is_file() and target_mp3.stat().st_size >= 4000:
+            print(f"CHECKPOINT HIT narration {name}", flush=True)
+            return
+        print(f"NARRATION START {name}", flush=True)
         wav, duration = tts(text, "ko", voices[voice], total_step=8, speed=0.98)
         length = max(1, int(tts.sample_rate * float(duration[0])))
         samples = np.asarray(wav[0, :length], dtype=np.float32)
-        temp_wav, target_mp3 = output_dir / (name + ".wav"), output_dir / (name + ".mp3")
+        temp_wav, temp_mp3 = output_dir / (name + ".wav"), output_dir / (name + ".tmp.mp3")
         sf.write(str(temp_wav), samples, tts.sample_rate)
         subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-i", str(temp_wav),
-            "-codec:a", "libmp3lame", "-b:a", "96k", str(target_mp3)], check=True)
+            "-codec:a", "libmp3lame", "-b:a", "96k", str(temp_mp3)], check=True)
         temp_wav.unlink(missing_ok=True)
-        if target_mp3.stat().st_size < 4000:
-            raise ValueError(f"Generated narration is too small: {target_mp3.name}")
+        if temp_mp3.stat().st_size < 4000:
+            raise ValueError(f"Generated narration is too small: {temp_mp3.name}")
+        temp_mp3.replace(target_mp3)
+        print(f"NARRATION COMPLETE {name}: {target_mp3.stat().st_size} bytes", flush=True)
     for voice in ("male", "female"):
         save_audio(f"오늘의 동화는 {title}입니다.", voice, f"{voice}-title")
         for index, page in enumerate(story["pages"], 1):
             save_audio(page["text"], voice, f"{voice}-{index:02d}")
-            print(f"NARRATION {voice} {index}/6", flush=True)
 
 def make_cover(page_image: pathlib.Path, title: str, target: pathlib.Path):
     from PIL import Image, ImageDraw, ImageFont
@@ -354,21 +399,41 @@ def main():
     if selected is None:
         raise RuntimeError("No unused candidate has a verifiable source chapter")
     print("Selected public-domain source:", selected["heading"], flush=True)
-    story = create_story(selected, source_text)
-    date = datetime.now(timezone.utc).strftime("%Y%m%d")
     slug_hash = hashlib.sha256((selected["source_url"] + selected["heading"]).encode("utf-8")).hexdigest()[:10]
+    checkpoint = ROOT / ".generation-cache" / slug_hash
+    checkpoint_assets = checkpoint / "assets"
+    checkpoint_assets.mkdir(parents=True, exist_ok=True)
+    story_file = checkpoint / "story.json"
+    if story_file.is_file():
+        story = read_json(story_file)
+        validate_story(story)
+        print(f"CHECKPOINT HIT story: {selected['title']}", flush=True)
+    else:
+        print(f"STORY GENERATION START: {selected['title']}", flush=True)
+        story = create_story(selected, source_text)
+        temp_story = story_file.with_suffix(".tmp")
+        temp_story.write_text(json.dumps(story, ensure_ascii=False, indent=2) + "\n", "utf-8")
+        temp_story.replace(story_file)
+        print("STORY CHECKPOINT SAVED", flush=True)
+    date = datetime.now(timezone.utc).strftime("%Y%m%d")
     package = INBOX / f"daily-{date}-{slug_hash}"
     if package.exists():
         shutil.rmtree(package)
     assets = package / "assets"
     assets.mkdir(parents=True, exist_ok=True)
     seed = int(slug_hash[:8], 16)
-    images = generate_illustrations(story, assets, seed)
-    make_cover(images[0], selected["title"], assets / "cover.webp")
+    images = generate_illustrations(story, checkpoint_assets, seed)
+    cover = checkpoint_assets / "cover.webp"
+    if not cover.is_file() or cover.stat().st_size < 4000:
+        make_cover(images[0], selected["title"], cover)
     home = pathlib.Path(os.environ.get("SUPERTONIC_HOME", "/tmp/supertonic"))
     if not (home / "py" / "helper.py").is_file():
         raise FileNotFoundError("Supertonic checkout missing; workflow must pin and clone it")
-    synthesize_audio(story, selected["title"], assets)
+    synthesize_audio(story, selected["title"], checkpoint_assets)
+    for asset in checkpoint_assets.iterdir():
+        if asset.is_file() and not asset.name.endswith(".tmp.mp3"):
+            shutil.copy2(asset, assets / asset.name)
+    print(f"ASSETS COPIED {len(list(assets.iterdir()))} files into package", flush=True)
     metadata = {
         "title": selected["title"], "region": selected["region"],
         "source_title": selected["heading"], "source_url": selected["source_url"],
