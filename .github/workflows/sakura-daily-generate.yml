@@ -10,7 +10,7 @@ on:
 permissions:
   contents: write
 concurrency:
-  group: sakura-daily-local-generation
+  group: sakura-daily-local-generation-v2
   cancel-in-progress: true
 jobs:
   generate-and-publish:
