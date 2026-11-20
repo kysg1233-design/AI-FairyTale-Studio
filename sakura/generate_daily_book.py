@@ -412,7 +412,7 @@ def main():
         print(f"STORY GENERATION START: {selected['title']}", flush=True)
         story = create_story(selected, source_text)
         temp_story = story_file.with_suffix(".tmp")
-        temp_story.write_text(json.dumps(story, ensure_ascii=False, indent=2) + "\\n", "utf-8")
+        temp_story.write_text(json.dumps(story, ensure_ascii=False, indent=2) + "\n", "utf-8")
         temp_story.replace(story_file)
         print("STORY CHECKPOINT SAVED", flush=True)
     date = datetime.now(timezone.utc).strftime("%Y%m%d")
