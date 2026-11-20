@@ -117,3 +117,5 @@ jobs:
             git commit -m "Publish daily locally generated Sakura storybook"
             git push origin HEAD:main
           fi
+
+# Manual smoke-test trigger: generate the next complete storybook.
