@@ -149,15 +149,24 @@ JSON 스키마:
 }}
 """
     try:
-        result = llm.create_chat_completion(
-            messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
-            temperature=0.72, top_p=0.88, max_tokens=3800,
-            response_format={"type": "json_object"})
-        story = parse_model_json(result["choices"][0]["message"]["content"])
+        story, last_error = None, None
+        for attempt in range(1, 4):
+            try:
+                result = llm.create_chat_completion(
+                    messages=[{"role": "system", "content": system}, {"role": "user", "content": user}],
+                    temperature=0.68 + attempt * 0.04, top_p=0.88, max_tokens=3800,
+                    response_format={"type": "json_object"})
+                story = parse_model_json(result["choices"][0]["message"]["content"])
+                validate_story(story)
+                break
+            except Exception as error:
+                last_error = error
+                print(f"STORY QUALITY RETRY {attempt}/3: {error}", flush=True)
+        if story is None:
+            raise RuntimeError("Local model failed all three story quality attempts") from last_error
     finally:
         del llm
         gc.collect()
-    validate_story(story)
     return story
 
 def generate_illustrations(story: dict, output_dir: pathlib.Path, seed: int):
