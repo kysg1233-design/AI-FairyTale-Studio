@@ -20,7 +20,7 @@ def main():
     added=0
     for folder in folders:
         m=json.loads((folder/"book.json").read_text("utf-8"))
-        for k in ("title","region","source_title","source_url","source_credit","parent_moral"):
+        for k in ("title","region","source_title","source_url","source_credit","parent_moral","character_bible"):
             if not isinstance(m.get(k),str) or not m[k].strip(): raise ValueError(f"{folder.name}: {k} missing")
         if not m["source_url"].startswith("https://www.gutenberg.org/"): raise ValueError("unverified source URL")
         if len(m.get("pages",[]))!=6: raise ValueError(f"{folder.name}: exactly 6 pages required")
@@ -34,7 +34,7 @@ def main():
             if im.format!="WEBP" or min(im.size)<480: raise ValueError("invalid cover")
         hashes=set()
         for i,page in enumerate(m["pages"],1):
-            if not page.get("heading") or len(page.get("text","").strip())<80: raise ValueError(f"page {i}: incomplete text")
+            if not page.get("heading") or len(page.get("text","").strip())<160: raise ValueError(f"page {i}: incomplete text")
             image=f"page-{i:02d}.webp"; files[image]=asset(a,image)
             with Image.open(files[image]) as im:
                 if im.format!="WEBP" or min(im.size)<480: raise ValueError(f"invalid {image}")
